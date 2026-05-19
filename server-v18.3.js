@@ -97,6 +97,9 @@ metricsMiddleware(app);
 
 healthCheckEndpoints(app);
 
+// Versione deploy — per diagnostica
+app.get('/api/version', (req, res) => res.json({ version: '1a3a310', built: new Date().toISOString() }));
+
 // ============================================================================
 // API ROUTES
 // ============================================================================
