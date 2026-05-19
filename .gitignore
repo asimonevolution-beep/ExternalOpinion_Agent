@@ -1,0 +1,41 @@
+# Dipendenze
+node_modules/
+node_modules - Copia/
+
+# Ambiente - MAI committare
+.env
+.env - Copia.*
+.env.*
+env.production
+env - Copia.production
+
+# Database locale
+*.db
+*.db-journal
+prisma/migrations/
+
+# Log
+logs/
+*.log
+
+# File duplicati (- Copia)
+*- Copia*
+*- Copia/
+
+# ZIP e backup
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# Report e upload temporanei
+REPORT_FINALI/
+CARICO_ASTE/
+
+# Build
+dist/
+build/

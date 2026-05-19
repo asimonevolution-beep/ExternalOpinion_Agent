@@ -1,0 +1,354 @@
+/**
+ * EXTERNAL OPINION — SERVER V18.3
+ * Direzione Tecnica: Geometra Simone Azzali
+ * 
+ * Express server con:
+ * - DAG orchestrator (BullMQ FlowProducer)
+ * - Security hardening (Helmet, CSP, rate limiting)
+ * - Observability stack (Prometheus, Sentry)
+ * - Healthcheck endpoints
+ * - API endpoints aggiornati per V18.3
+ */
+
+const express = require('express');
+const cors = require('cors');
+const compression = require('compression');
+const morgan = require('morgan');
+require('dotenv').config();
+
+// ============================================================================
+// SECURITY & OBSERVABILITY IMPORTS
+// ============================================================================
+
+const {
+  securityMiddleware,
+  globalLimiter,
+  analyzeApiLimiter,
+  checkoutLimiter,
+  metricsMiddleware,
+  initSentry,
+  sentryErrorHandler,
+  healthCheckEndpoints,
+} = require('./middleware-security');
+
+// ============================================================================
+// DAG & ORCHESTRATOR IMPORTS
+// ============================================================================
+
+const {
+  createAnalysisPipeline,
+} = require('./dag-orchestrator');
+
+const {
+  validateClientToken,
+  createJob,
+  getJob,
+  updateJobStatus,
+} = require('./orchestrator');
+
+const {
+  createCheckoutSession,
+  getSessionStatus,
+  router: stripeRouter,
+} = require('./stripe-webhook-handler');
+
+// ============================================================================
+// APP INITIALIZATION
+// ============================================================================
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// ============================================================================
+// MIDDLEWARE SETUP
+// ============================================================================
+
+// Sentry early init
+initSentry(app);
+
+// Security hardening
+securityMiddleware(app);
+
+// Standard middleware
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true,
+}));
+app.use(compression());
+app.use(morgan('combined'));
+
+// Body parsers
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Global rate limiter
+app.use(globalLimiter);
+
+// Metrics collection
+metricsMiddleware(app);
+
+// ============================================================================
+// HEALTHCHECK ENDPOINTS
+// ============================================================================
+
+healthCheckEndpoints(app);
+
+// ============================================================================
+// API ROUTES
+// ============================================================================
+
+const apiRouter = express.Router();
+
+/**
+ * POST /api/analyze — Create analysis job (non-blocking with DAG)
+ */
+apiRouter.post(
+  '/analyze',
+  analyzeApiLimiter,
+  async (req, res) => {
+    const { urlAsta, email, token, service, zonaDati = {}, tier = 'TIER_2_ADVISORY_150' } = req.body;
+
+    try {
+      // Validazione
+      if (!urlAsta) {
+        return res.status(400).json({
+          success: false,
+          error: 'urlAsta è obbligatorio',
+        });
+      }
+
+      // Token validation (opzionale)
+      if (token) {
+        try {
+          await validateClientToken(token, service);
+        } catch (err) {
+          return res.status(401).json({
+            success: false,
+            error: err.message,
+          });
+        }
+      }
+
+      // Crea Job (atomic transaction)
+      const jobRecord = await createJob({
+        url: urlAsta,
+        email,
+        token,
+        service,
+        zonaDati,
+      });
+
+      console.log(`[API] Job created: ${jobRecord.id}`);
+
+      // ===== CREA DAG PIPELINE =====
+      await createAnalysisPipeline(jobRecord.id, jobRecord.payload, tier);
+
+      // HTTP 202 ACCEPTED - Job enqueued
+      return res.status(202).json({
+        success: true,
+        jobId: jobRecord.id,
+        status: 'PENDING',
+        createdAt: jobRecord.createdAt,
+        pollingUrl: `/api/jobs/${jobRecord.id}`,
+        checkoutUrl: `/api/jobs/${jobRecord.id}/checkout`,
+      });
+    } catch (err) {
+      console.error(`[API] Error creating job:`, err.message);
+      return res.status(500).json({
+        success: false,
+        error: err.message,
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/jobs/:jobId — Poll job status
+ */
+apiRouter.get('/jobs/:jobId', async (req, res) => {
+  const { jobId } = req.params;
+
+  try {
+    const jobRecord = await getJob(jobId);
+
+    if (!jobRecord) {
+      return res.status(404).json({
+        success: false,
+        error: 'Job not found',
+      });
+    }
+
+    const responseData = {
+      success: true,
+      job: {
+        id: jobRecord.id,
+        status: jobRecord.status,
+        createdAt: jobRecord.createdAt,
+        updatedAt: jobRecord.updatedAt,
+        url: jobRecord.url,
+      },
+    };
+
+    // Includi immobile data se completato
+    if (jobRecord.immobile) {
+      responseData.immobile = {
+        id: jobRecord.immobile.id,
+        status: jobRecord.immobile.status,
+        coherenceIndex: jobRecord.immobile.coherenceIndex,
+        roi: jobRecord.immobile.roi,
+        roiConveniente: jobRecord.immobile.roiConveniente,
+        datiComputati: jobRecord.immobile.datiComputati,
+        hashReport: jobRecord.immobile.hashReport,
+        pagato: jobRecord.immobile.pagato,
+        livelloCommerciale: jobRecord.immobile.livelloCommerciale,
+      };
+    }
+
+    // Includi audit events
+    if (jobRecord.jobEvents?.length > 0) {
+      responseData.events = jobRecord.jobEvents.map((evt) => ({
+        type: evt.eventType,
+        timestamp: evt.timestamp,
+        workerId: evt.workerId,
+      }));
+    }
+
+    return res.json(responseData);
+  } catch (err) {
+    console.error(`[API] Error retrieving job:`, err.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Error retrieving job',
+    });
+  }
+});
+
+/**
+ * POST /api/jobs/:jobId/checkout — Initiate Stripe payment
+ */
+apiRouter.post(
+  '/jobs/:jobId/checkout',
+  checkoutLimiter,
+  async (req, res) => {
+    const { jobId } = req.params;
+    const { tier, email } = req.body;
+
+    try {
+      // Validazione tier
+      const validTiers = [
+        'TIER_1_ENTRY_89',
+        'TIER_2_ADVISORY_150',
+        'TIER_3_PREMIUM_690',
+        'TIER_4_ENTERPRISE_API',
+      ];
+
+      if (!validTiers.includes(tier)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid tier',
+        });
+      }
+
+      // Verifica job
+      const jobRecord = await getJob(jobId);
+      if (!jobRecord) {
+        return res.status(404).json({
+          success: false,
+          error: 'Job not found',
+        });
+      }
+
+      // Crea Stripe session
+      const checkoutSession = await createCheckoutSession(jobId, tier, email);
+
+      return res.json({
+        success: true,
+        sessionId: checkoutSession.id,
+        checkoutUrl: checkoutSession.url,
+        amount: checkoutSession.amount_total / 100,
+        tier,
+      });
+    } catch (err) {
+      console.error(`[API] Error creating checkout:`, err.message);
+      return res.status(500).json({
+        success: false,
+        error: err.message,
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/checkout/:sessionId — Get payment status
+ */
+apiRouter.get('/checkout/:sessionId', async (req, res) => {
+  const { sessionId } = req.params;
+
+  try {
+    const sessionStatus = await getSessionStatus(sessionId);
+
+    return res.json({
+      success: true,
+      session: sessionStatus,
+      isPaid: sessionStatus.status === 'paid',
+    });
+  } catch (err) {
+    console.error(`[API] Error retrieving session:`, err.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Error retrieving payment status',
+    });
+  }
+});
+
+// Mount API router
+app.use('/api', apiRouter);
+
+// Mount Stripe webhook
+app.use('/api/stripe', stripeRouter);
+
+// ============================================================================
+// ERROR HANDLING
+// ============================================================================
+
+sentryErrorHandler(app);
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('[ERROR]', err);
+
+  res.status(err.status || 500).json({
+    success: false,
+    error: err.message || 'Internal server error',
+  });
+});
+
+// ============================================================================
+// SERVER START
+// ============================================================================
+
+async function start() {
+  try {
+    app.listen(PORT, () => {
+      console.log(`
+╔════════════════════════════════════════╗
+║   EXTERNAL OPINION — V18.3             ║
+║   Distributed Risk Intelligence        ║
+║════════════════════════════════════════╝
+║ Server running on port: ${PORT}              │
+║ Environment: ${process.env.NODE_ENV || 'development'}        │
+║ DAG Orchestrator: ACTIVE               │
+║ Security: Hardened                    │
+║ Observability: Prometheus/Sentry       │
+╚════════════════════════════════════════╝
+      `);
+    });
+  } catch (err) {
+    console.error('[FATAL]', err);
+    process.exit(1);
+  }
+}
+
+start();
+
+module.exports = app;

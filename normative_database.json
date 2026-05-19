@@ -1,0 +1,33 @@
+{
+  "cadastral_zones": {
+    "Modena": {
+      "avg_value_per_sqm": 1200,
+      "urban_coefficient": 0.6,
+      "max_buildable_area": 0.35,
+      "puc_restrictions": [
+        "No industrial in residential zones"
+      ]
+    },
+    "Bologna": {
+      "avg_value_per_sqm": 1500,
+      "urban_coefficient": 0.7,
+      "max_buildable_area": 0.4,
+      "puc_restrictions": [
+        "Green areas protected"
+      ]
+    }
+  },
+  "building_codes": {
+    "residential": {
+      "min_room_height": 2.7,
+      "insulation_req": "Class A",
+      "seismic_zone": "2"
+    },
+    "commercial": {
+      "min_room_height": 3,
+      "insulation_req": "Class A+",
+      "seismic_zone": "2"
+    }
+  },
+  "last_updated": "2026-05-16T02:49:36.900Z"
+}

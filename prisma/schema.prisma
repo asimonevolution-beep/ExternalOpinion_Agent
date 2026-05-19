@@ -1,0 +1,196 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Job {
+  id                  String     @id @default(uuid())
+  url                 String
+  status              String     @default("PENDING")
+  riskScore           Float?
+  hiddenSavings       Float?
+  payload             String
+  result              String?
+  error               String?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  immobile            Immobile?
+  jobEvents           JobEvent[]
+}
+
+model Immobile {
+  id                         String   @id @default(uuid())
+  jobId                      String   @unique
+  job                        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  urlAsta                    String?
+  status                     String   @default("GIALLO")
+  coherenceIndex             Float    @default(0)
+  confidenceScore            Float    @default(0)
+  datiComputati              String   @default("{}")
+  hashReport                 String?
+  pagato                     Boolean  @default(false)
+  livelloCommerciale         String?
+  valoreOMI                  Float?
+  valoreAttuale              Float?
+  valorePotenziale           Float?
+  valoreFuturoProiettato     Float?
+  margineReale               Float?
+  profittoFuturoPostRivendita Float?
+  roi                        Float?
+  roiConveniente             Boolean  @default(false)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+}
+
+model JobEvent {
+  id                  String   @id @default(uuid())
+  jobId               String
+  job                 Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  eventType           String
+  timestamp           DateTime @default(now())
+  workerId            String?
+  durationMs          Int?
+  payloadHash         String?
+  aiModel             String?
+  logicEngineVersion  String   @default("18.0")
+  metadata            String   @default("{}")
+
+  @@index([jobId])
+  @@index([eventType])
+  @@index([timestamp])
+}
+
+model ClientToken {
+  token      String   @id
+  email      String
+  service    String
+  amount     Float
+  expiresAt  DateTime
+  isActive   Boolean  @default(true)
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  timestamp DateTime @default(now())
+  event     String
+  dataJson  String
+}
+
+model ModelVersion {
+  id           String   @id @default(uuid())
+  modelName    String
+  modelVersion String
+  provider     String
+  isActive     Boolean  @default(true)
+  deployedAt   DateTime @default(now())
+  parameters   String   @default("{}")
+  description  String?
+  createdAt    DateTime @default(now())
+
+  @@unique([modelName, modelVersion])
+  @@index([provider])
+  @@index([isActive])
+}
+
+model PromptVersion {
+  id          String   @id @default(uuid())
+  promptHash  String   @unique
+  promptText  String
+  version     String
+  purpose     String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  description String?
+
+  @@index([purpose])
+  @@index([isActive])
+}
+
+model WorkerMetric {
+  id              String   @id @default(uuid())
+  workerId        String
+  queueName       String
+  taskCount       Int      @default(0)
+  successCount    Int      @default(0)
+  failureCount    Int      @default(0)
+  totalDurationMs BigInt   @default(0)
+  averageDurationMs Float  @default(0)
+  lastHeartbeat   DateTime @default(now())
+  memoryUsageMb   Float?
+  cpuPercent      Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([workerId])
+  @@index([queueName])
+  @@index([lastHeartbeat])
+}
+
+model AuditHash {
+  id            String   @id @default(uuid())
+  jobId         String
+  stepName      String
+  hashValue     String
+  hashAlgorithm String   @default("sha256")
+  timestamp     DateTime @default(now())
+  payload       String
+  workerId      String?
+  createdAt     DateTime @default(now())
+
+  @@unique([jobId, stepName, timestamp])
+  @@index([jobId])
+  @@index([stepName])
+}
+
+model ReportArtifact {
+  id                String   @id @default(uuid())
+  jobId             String
+  artifactType      String
+  storageUrl        String
+  fileHash          String
+  fileSizeBytes     BigInt
+  mimeType          String?
+  signedUrl         String?
+  signedUrlExpiresAt DateTime?
+  isPublic          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  @@index([jobId])
+  @@index([artifactType])
+}
+
+model IdempotencyKey {
+  id             String   @id @default(uuid())
+  idempotencyKey String   @unique
+  jobId          String
+  operation      String
+  resultHash     String?
+  status         String   @default("PENDING")
+  result         String?
+  error          String?
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+
+  @@index([jobId])
+  @@index([operation])
+  @@index([expiresAt])
+}
+
+model CircuitBreakerState {
+  id               String   @id @default(uuid())
+  serviceName      String   @unique
+  state            String   @default("CLOSED")
+  failureCount     Int      @default(0)
+  successCount     Int      @default(0)
+  lastFailureTime  DateTime?
+  lastSuccessTime  DateTime?
+  openedAt         DateTime?
+  cooldownUntil    DateTime?
+  failureThreshold Int      @default(5)
+  cooldownMs       Int      @default(30000)
+  updatedAt        DateTime @updatedAt
+}
