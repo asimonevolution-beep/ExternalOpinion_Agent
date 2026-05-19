@@ -180,6 +180,46 @@ model IdempotencyKey {
   @@index([expiresAt])
 }
 
+// Aste scoperte autonomamente dal crawler
+model DiscoveredAuction {
+  id            String   @id @default(uuid())
+  portalSource  String
+  externalId    String?
+  url           String   @unique
+  title         String?
+  tribunal      String?
+  city          String?
+  province      String?
+  basePrice     Float?
+  auctionDate   DateTime?
+  rawData       String   @default("{}")
+  status        String   @default("NEW") // NEW, QUEUED, ANALYZED, SKIPPED
+  jobId         String?
+  discoveredAt  DateTime @default(now())
+  queuedAt      DateTime?
+
+  @@index([status])
+  @@index([portalSource])
+  @@index([discoveredAt])
+}
+
+// Step di revisione umana prima della consegna al cliente
+model ReviewQueue {
+  id            String   @id @default(uuid())
+  jobId         String   @unique
+  status        String   @default("PENDING") // PENDING, APPROVED, REJECTED, MODIFIED
+  aiReport      String
+  reviewerNotes String?
+  reviewedAt    DateTime?
+  notifiedAt    DateTime?
+  deliveredAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
 model CircuitBreakerState {
   id               String   @id @default(uuid())
   serviceName      String   @unique
