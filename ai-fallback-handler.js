@@ -171,16 +171,25 @@ async function tryClaude(testoGrezzo, timeoutMs = 45000) {
       timeout: timeoutMs,
     });
 
+    // Haiku per estrazione dati (8x più economico di Sonnet, 60x di Opus)
+    const model = 'claude-haiku-4-5-20251001';
+    const inputTokenEstimate = Math.ceil(testoGrezzo.length / 4);
+
     const response = await client.messages.create({
-      model: 'claude-3-opus-20240229',
+      model,
       max_tokens: 1024,
       messages: [
         {
           role: 'user',
-          content: `${SYSTEM_PROMPT}\n\nTesto da analizzare:\n${testoGrezzo}`,
+          content: `${SYSTEM_PROMPT}\n\nTesto da analizzare:\n${testoGrezzo.slice(0, 8000)}`,
         },
       ],
     });
+
+    // Cost tracking
+    const outputTokens = response.usage?.output_tokens || 0;
+    const costUsd = (inputTokenEstimate * 0.00000025) + (outputTokens * 0.00000125);
+    console.log(`[AI-COST] Claude Haiku: ~${inputTokenEstimate} in + ${outputTokens} out = $${costUsd.toFixed(5)}`);
 
     const jsonGrezzo = JSON.parse(response.content[0].text);
     const validated = SchemaEstrazioneAI.parse(jsonGrezzo);
@@ -188,14 +197,15 @@ async function tryClaude(testoGrezzo, timeoutMs = 45000) {
     return {
       success: true,
       data: validated,
-      model: 'anthropic-claude3',
+      model,
+      costUsd,
       timestamp: new Date().toISOString(),
     };
   } catch (err) {
     return {
       success: false,
       error: `Claude failed: ${err.message}`,
-      model: 'anthropic-claude3',
+      model: 'claude-haiku-4-5-20251001',
     };
   }
 }
