@@ -1,309 +1,212 @@
 /**
  * EXTERNAL OPINION — PORTAL CRAWLER AUTONOMO
  *
- * Scansiona ogni notte i portali di aste giudiziarie italiani,
- * scopre nuove aste, le inserisce in coda per analisi AI automatica.
- *
- * Portali target:
- * - pvp.giustizia.it (portale ufficiale Ministero della Giustizia)
- * - astegiudiziarie.it
- * - aste.it
+ * Scansiona ogni notte i portali di aste giudiziarie italiani.
+ * Usa axios + cheerio (leggero, nessun Chrome da scaricare).
+ * Puppeteer disponibile solo come fallback opzionale.
  */
 
-const puppeteerExtra = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const axios = require('axios');
+const cheerio = require('cheerio');
 const prisma = require('./db');
 
-puppeteerExtra.use(StealthPlugin());
-
-const BROWSER_OPTS = {
-  headless: true,
-  args: [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--disable-dev-shm-usage',
-    '--disable-gpu',
-    '--no-first-run',
-    '--no-zygote',
-    '--single-process',
-  ],
+const HTTP_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept-Language': 'it-IT,it;q=0.9,en;q=0.5',
+  'Accept-Encoding': 'gzip, deflate, br',
 };
 
 // ============================================================================
-// PORTALI CONFIGURATI
+// PORTALI
 // ============================================================================
 
 const PORTALS = [
   {
     id: 'pvp_giustizia',
     name: 'PVP Giustizia',
-    baseUrl: 'https://pvp.giustizia.it',
-    searchUrl: 'https://pvp.giustizia.it/pvp/it/ricerca_avanzata.page?tipoRicerca=IMMOBILI',
+    searchUrl: 'https://pvp.giustizia.it/pvp/it/ricerca_avanzata.page?tipoRicerca=IMMOBILI&categoria=IMMOBILE',
     type: 'official',
-    rateLimit: 4000,
+    rateLimit: 5000,
   },
   {
     id: 'astegiudiziarie',
     name: 'Aste Giudiziarie',
-    baseUrl: 'https://www.astegiudiziarie.it',
     searchUrl: 'https://www.astegiudiziarie.it/aste-giudiziarie/immobili',
     type: 'private',
     rateLimit: 3000,
   },
   {
-    id: 'aste_it',
-    name: 'Aste.it',
-    baseUrl: 'https://www.aste.it',
-    searchUrl: 'https://www.aste.it/aste/immobili',
-    type: 'private',
+    id: 'ivg_modena',
+    name: 'IVG Modena',
+    searchUrl: 'https://www.ivgmodena.it/inserzioni?categoria=Immobili',
+    type: 'ivg',
+    rateLimit: 3000,
+  },
+  {
+    id: 'ivg_milano',
+    name: 'IVG Milano',
+    searchUrl: 'https://www.ivgmilano.it/inserzioni?categoria=Immobili',
+    type: 'ivg',
     rateLimit: 3000,
   },
 ];
 
 // ============================================================================
-// SCRAPERS PER PORTALE
+// SCRAPERS
 // ============================================================================
 
-async function scrapePVP(page, portalUrl) {
+async function scrapePortal(portal) {
   const auctions = [];
   try {
-    await page.goto(portalUrl, { waitUntil: 'networkidle2', timeout: 45000 });
-    await dismissCookies(page);
-
-    // Estrai tutte le righe della tabella risultati
-    const items = await page.evaluate(() => {
-      const rows = Array.from(document.querySelectorAll(
-        '.risultati-ricerca .lotto, .lotto-item, [class*="lotto"], .ricerca-result, tr.annuncio'
-      ));
-      return rows.map(row => {
-        const link = row.querySelector('a[href*="lotto"], a[href*="immobile"], a[href*="pvp"]');
-        const priceEl = row.querySelector('[class*="prezzo"], [class*="base"], .importo');
-        const titleEl = row.querySelector('[class*="titolo"], [class*="descrizione"], h3, h4');
-        const dateEl = row.querySelector('[class*="data"], time');
-        const tribunaleEl = row.querySelector('[class*="tribunale"], [class*="tribunal"]');
-        return {
-          url: link ? link.href : null,
-          title: titleEl ? titleEl.textContent.trim() : null,
-          basePrice: priceEl ? priceEl.textContent.trim() : null,
-          auctionDate: dateEl ? dateEl.textContent.trim() : null,
-          tribunal: tribunaleEl ? tribunaleEl.textContent.trim() : null,
-        };
-      }).filter(a => a.url);
+    const resp = await axios.get(portal.searchUrl, {
+      headers: HTTP_HEADERS,
+      timeout: 20000,
+      maxRedirects: 5,
     });
-    auctions.push(...items);
-  } catch (err) {
-    console.error(`[CRAWLER] PVP scrape error: ${err.message}`);
-  }
-  return auctions;
-}
+    const $ = cheerio.load(resp.data);
 
-async function scrapePrivatePortal(page, portalUrl, portalId) {
-  const auctions = [];
-  try {
-    await page.goto(portalUrl, { waitUntil: 'networkidle2', timeout: 45000 });
-    await dismissCookies(page);
+    // Selettori generici per portali aste italiani
+    const selectors = [
+      '.annuncio', '.lotto', '.inserzione', '.listing-item',
+      '.property-item', '.asta-item', 'article.item',
+      '[class*="annuncio"]', '[class*="lotto"]', '[class*="inserzione"]',
+    ];
 
-    const items = await page.evaluate(() => {
-      // Selettori generici che funzionano su molti portali italiani
-      const selectors = [
-        '.annuncio', '.listing-item', '.property-item',
-        '.asta-item', '[class*="annuncio"]', '[class*="lotto"]',
-        'article.item', '.search-result', '.immobile-card',
-      ];
+    let items = [];
+    for (const sel of selectors) {
+      items = $(sel).toArray();
+      if (items.length > 0) break;
+    }
 
-      let rows = [];
-      for (const sel of selectors) {
-        rows = Array.from(document.querySelectorAll(sel));
-        if (rows.length > 0) break;
-      }
+    items.forEach(el => {
+      const $el = $(el);
+      const link = $el.find('a').first();
+      const href = link.attr('href');
+      if (!href) return;
 
-      return rows.map(row => {
-        const link = row.querySelector('a');
-        const priceEl = row.querySelector(
-          '[class*="prezzo"], [class*="price"], [class*="importo"], [class*="base"]'
-        );
-        const titleEl = row.querySelector('h1, h2, h3, h4, [class*="titol"]');
-        const locationEl = row.querySelector(
-          '[class*="citta"], [class*="city"], [class*="comune"], [class*="luogo"]'
-        );
-        return {
-          url: link ? link.href : null,
-          title: titleEl ? titleEl.textContent.trim() : null,
-          basePrice: priceEl ? priceEl.textContent.trim() : null,
-          city: locationEl ? locationEl.textContent.trim() : null,
-        };
-      }).filter(a => a.url && a.url.startsWith('http'));
+      const url = href.startsWith('http') ? href : `${new URL(portal.searchUrl).origin}${href}`;
+      const title = $el.find('h1,h2,h3,h4,[class*="titol"]').first().text().trim();
+      const priceText = $el.find('[class*="prezzo"],[class*="price"],[class*="importo"],[class*="base"]').first().text().trim();
+      const cityText = $el.find('[class*="citta"],[class*="comune"],[class*="luogo"],[class*="localita"]').first().text().trim();
+
+      auctions.push({ url, title: title || null, basePrice: priceText || null, city: cityText || null });
     });
-    auctions.push(...items);
-  } catch (err) {
-    console.error(`[CRAWLER] ${portalId} scrape error: ${err.message}`);
-  }
-  return auctions;
-}
 
-// ============================================================================
-// UTILITY
-// ============================================================================
-
-async function dismissCookies(page) {
-  try {
-    await page.evaluate(() => {
-      const btns = Array.from(document.querySelectorAll('button, a, [role="button"]'));
-      btns.forEach(btn => {
-        const text = (btn.innerText || btn.value || '').toLowerCase();
-        if (/accetta|accept|ok|consenti|chiudi/.test(text)) btn.click();
+    // Fallback: cerca tutti i link con keyword asta
+    if (auctions.length === 0) {
+      $('a[href]').each((_, el) => {
+        const href = $(el).attr('href') || '';
+        const text = $(el).text().toLowerCase();
+        if (
+          (href.includes('/inserzioni/') || href.includes('/lotto/') || href.includes('/asta/') || href.includes('/immobile/')) &&
+          !href.includes('#')
+        ) {
+          const url = href.startsWith('http') ? href : `${new URL(portal.searchUrl).origin}${href}`;
+          auctions.push({ url, title: $(el).text().trim() || null, basePrice: null, city: null });
+        }
       });
-    });
-    await new Promise(r => setTimeout(r, 800));
-  } catch (_) {}
+    }
+  } catch (err) {
+    console.error(`[CRAWLER] Errore ${portal.name}: ${err.message}`);
+  }
+  return auctions;
 }
+
+// ============================================================================
+// DATABASE
+// ============================================================================
 
 function parsePrice(raw) {
   if (!raw) return null;
-  const match = raw.replace(/\./g, '').replace(',', '.').match(/[\d]+\.?\d*/);
+  const match = raw.replace(/\./g, '').replace(',', '.').match(/\d+\.?\d*/);
   return match ? parseFloat(match[0]) : null;
 }
 
-function parseDate(raw) {
-  if (!raw) return null;
-  const match = raw.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/);
-  if (match) return new Date(`${match[3]}-${match[2].padStart(2,'0')}-${match[1].padStart(2,'0')}`);
-  return null;
-}
-
-// ============================================================================
-// SALVATAGGIO NEL DATABASE
-// ============================================================================
-
 async function saveDiscoveredAuctions(auctions, portalId) {
-  let saved = 0;
-  let skipped = 0;
-
+  let saved = 0, skipped = 0;
   for (const auction of auctions) {
-    if (!auction.url) continue;
+    if (!auction.url || !auction.url.startsWith('http')) continue;
     try {
-      await prisma.discoveredAuction.upsert({
-        where: { url: auction.url },
-        update: {},
-        create: {
+      const existing = await prisma.discoveredAuction.findUnique({ where: { url: auction.url } });
+      if (existing) { skipped++; continue; }
+      await prisma.discoveredAuction.create({
+        data: {
           portalSource: portalId,
           url: auction.url,
           title: auction.title,
-          tribunal: auction.tribunal || null,
-          city: auction.city || null,
+          city: auction.city,
           basePrice: parsePrice(auction.basePrice),
-          auctionDate: parseDate(auction.auctionDate),
           rawData: JSON.stringify(auction),
           status: 'NEW',
         },
       });
       saved++;
     } catch (err) {
-      if (err.code === 'P2002') {
-        skipped++;
-      } else {
-        console.error(`[CRAWLER] DB error for ${auction.url}: ${err.message}`);
+      if (!err.message.includes('Unique')) {
+        console.error(`[CRAWLER] DB error: ${err.message}`);
       }
     }
   }
-
   return { saved, skipped };
 }
 
 // ============================================================================
-// CODA PER ANALISI AI
+// CODA ANALISI
 // ============================================================================
 
-async function queueNewAuctionsForAnalysis(limit = 10) {
-  const { createAnalysisPipeline } = require('./dag-orchestrator');
-
+async function queueNewAuctionsForAnalysis(limit = 5) {
   const newAuctions = await prisma.discoveredAuction.findMany({
     where: { status: 'NEW' },
     orderBy: { discoveredAt: 'asc' },
     take: limit,
   });
 
-  console.log(`[CRAWLER] Trovate ${newAuctions.length} aste da analizzare`);
+  console.log(`[CRAWLER] ${newAuctions.length} aste da analizzare`);
+  let queued = 0;
 
   for (const auction of newAuctions) {
     try {
-      const pipeline = await createAnalysisPipeline({
+      const { createAnalysisPipeline } = require('./dag-orchestrator');
+      await createAnalysisPipeline({
         url: auction.url,
         email: process.env.ADMIN_REVIEW_EMAIL || 'a.simonevolution@gmail.com',
         tier: 'TIER_1_SCREENING_69',
         source: 'AUTONOMOUS_CRAWLER',
-        discoveredAuctionId: auction.id,
       });
-
       await prisma.discoveredAuction.update({
         where: { id: auction.id },
-        data: {
-          status: 'QUEUED',
-          jobId: pipeline.jobId || null,
-          queuedAt: new Date(),
-        },
+        data: { status: 'QUEUED', queuedAt: new Date() },
       });
-
-      console.log(`[CRAWLER] Accodata: ${auction.url}`);
-
-      // Rate limit tra un'asta e l'altra
+      queued++;
       await new Promise(r => setTimeout(r, 2000));
     } catch (err) {
       console.error(`[CRAWLER] Errore accodamento ${auction.url}: ${err.message}`);
     }
   }
-
-  return newAuctions.length;
+  return queued;
 }
 
 // ============================================================================
-// ENTRY POINT PRINCIPALE
+// MAIN
 // ============================================================================
 
 async function runCrawler(options = {}) {
   const { portals = PORTALS, maxPerPortal = 20, autoQueue = true } = options;
   const results = { discovered: 0, queued: 0, errors: [] };
 
-  console.log(`[CRAWLER] Avvio scansione — ${new Date().toISOString()}`);
+  console.log(`[CRAWLER] Avvio — ${new Date().toISOString()}`);
 
-  let browser;
-  try {
-    browser = await puppeteerExtra.launch(BROWSER_OPTS);
-
-    for (const portal of portals) {
-      console.log(`[CRAWLER] Scansione: ${portal.name}`);
-      const page = await browser.newPage();
-      await page.setUserAgent(
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      );
-      await page.setViewport({ width: 1366, height: 768 });
-
-      let auctions = [];
-      if (portal.id === 'pvp_giustizia') {
-        auctions = await scrapePVP(page, portal.searchUrl);
-      } else {
-        auctions = await scrapePrivatePortal(page, portal.searchUrl, portal.id);
-      }
-
-      await page.close();
-
-      // Limita per non sovraccaricare
-      const limited = auctions.slice(0, maxPerPortal);
-      const { saved, skipped } = await saveDiscoveredAuctions(limited, portal.id);
-      results.discovered += saved;
-      console.log(`[CRAWLER] ${portal.name}: ${saved} nuove, ${skipped} già presenti`);
-
-      // Pausa tra portali
-      await new Promise(r => setTimeout(r, portal.rateLimit));
-    }
-  } catch (err) {
-    console.error(`[CRAWLER] Errore browser: ${err.message}`);
-    results.errors.push(err.message);
-  } finally {
-    if (browser) await browser.close();
+  for (const portal of portals) {
+    console.log(`[CRAWLER] Scansione: ${portal.name}`);
+    const auctions = await scrapePortal(portal);
+    const limited = auctions.slice(0, maxPerPortal);
+    const { saved, skipped } = await saveDiscoveredAuctions(limited, portal.id);
+    results.discovered += saved;
+    console.log(`[CRAWLER] ${portal.name}: ${saved} nuove, ${skipped} già presenti`);
+    await new Promise(r => setTimeout(r, portal.rateLimit));
   }
 
-  // Accoda le nuove aste per analisi AI
   if (autoQueue && results.discovered > 0) {
     results.queued = await queueNewAuctionsForAnalysis(5);
   }
