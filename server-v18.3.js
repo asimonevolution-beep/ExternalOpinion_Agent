@@ -323,19 +323,10 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-const {
-  addToReviewQueue,
-  approveReport,
-  rejectReport,
-  getPendingReviews,
-  getReviewByJobId,
-} = require('./review-queue');
-
-const { runCrawler, queueNewAuctionsForAnalysis } = require('./portal-crawler');
-
 // GET /admin/review — lista report in attesa
 app.get('/admin/review', requireAdmin, async (req, res) => {
   try {
+    const { getPendingReviews } = require('./review-queue');
     const pending = await getPendingReviews();
     res.json({ success: true, count: pending.length, items: pending });
   } catch (err) {
@@ -346,6 +337,7 @@ app.get('/admin/review', requireAdmin, async (req, res) => {
 // GET /admin/review/:jobId — singolo report
 app.get('/admin/review/:jobId', requireAdmin, async (req, res) => {
   try {
+    const { getReviewByJobId } = require('./review-queue');
     const review = await getReviewByJobId(req.params.jobId);
     if (!review) return res.status(404).json({ error: 'Not found' });
 
@@ -400,6 +392,7 @@ async function submitReview(action) {
 // POST /admin/review/:jobId/approve
 app.post('/admin/review/:jobId/approve', requireAdmin, async (req, res) => {
   try {
+    const { approveReport } = require('./review-queue');
     await approveReport(req.params.jobId, req.body.notes || '');
     res.json({ success: true, message: 'Report approvato e cliente notificato' });
   } catch (err) {
@@ -410,6 +403,7 @@ app.post('/admin/review/:jobId/approve', requireAdmin, async (req, res) => {
 // POST /admin/review/:jobId/reject
 app.post('/admin/review/:jobId/reject', requireAdmin, async (req, res) => {
   try {
+    const { rejectReport } = require('./review-queue');
     await rejectReport(req.params.jobId, req.body.notes || 'Rifiutato');
     res.json({ success: true, message: 'Report rifiutato' });
   } catch (err) {
@@ -420,6 +414,7 @@ app.post('/admin/review/:jobId/reject', requireAdmin, async (req, res) => {
 // POST /admin/crawler/run — lancia crawler manuale
 app.post('/admin/crawler/run', requireAdmin, async (req, res) => {
   res.json({ success: true, message: 'Crawler avviato in background' });
+  const { runCrawler } = require('./portal-crawler');
   runCrawler({ maxPerPortal: req.body.maxPerPortal || 10 })
     .then(r => console.log('[ADMIN] Crawler completato:', r))
     .catch(e => console.error('[ADMIN] Crawler error:', e.message));
