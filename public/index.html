@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>External Opinion — Parere Tecnico Indipendente Prima della Firma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --ink: #1A1612;
+    --warm-gray: #8C8279;
+    --accent: #C8A96E;
+    --accent-dark: #9E7E45;
+    --red: #C0392B;
+    --yellow: #D4AC0D;
+    --green: #1E8449;
+    --border: rgba(26,22,18,0.12);
+    --border-accent: rgba(200,169,110,0.4);
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Instrument Sans', sans-serif;
+    font-weight: 400;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 3rem;
+    background: rgba(245,240,232,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .logo span {
+    color: var(--accent-dark);
+  }
+
+  nav {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  nav a {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  nav a:hover { color: var(--ink); }
+
+  .nav-cta {
+    background: var(--ink) !important;
+    color: var(--cream) !important;
+    padding: 0.55rem 1.2rem;
+    border-radius: 2px;
+    transition: background 0.2s !important;
+  }
+
+  .nav-cta:hover { background: var(--accent-dark) !important; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding-top: 4.5rem;
+    position: relative;
+  }
+
+  .hero-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 5rem 3rem 5rem 3rem;
+    border-right: 1px solid var(--border);
+  }
+
+  .hero-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent-dark);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3rem, 5vw, 5.5rem);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.35s forwards;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent-dark);
+  }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--warm-gray);
+    max-width: 420px;
+    margin-bottom: 3rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.5s forwards;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.65s forwards;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--ink);
+    color: var(--cream);
+    padding: 1.1rem 1.5rem;
+    border-radius: 3px;
+    text-decoration: none;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.25s, transform 0.2s;
+    max-width: 380px;
+  }
+
+  .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+
+  .btn-primary .price-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    background: rgba(255,255,255,0.15);
+    padding: 0.2rem 0.5rem;
+    border-radius: 2px;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    background: transparent;
+    color: var(--ink);
+    padding: 1.1rem 1.5rem;
+    border-radius: 3px;
+    border: 1px solid var(--border-accent);
+    text-decoration: none;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: border-color 0.25s, background 0.25s;
+    max-width: 380px;
+  }
+
+  .btn-secondary:hover { border-color: var(--accent); background: rgba(200,169,110,0.05); }
+
+  .btn-secondary .price-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--accent-dark);
+  }
+
+  .btn-label-small {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    margin-top: 0.3rem;
+    padding-left: 1.5rem;
+  }
+
+  /* ── HERO RIGHT ── */
+  .hero-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 5rem 3rem 3rem;
+    position: relative;
+  }
+
+  .hero-visual {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 260px;
+    height: 260px;
+    opacity: 0;
+    animation: fadeIn 1s 0.8s forwards;
+  }
+
+  .circle-diagram {
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    border: 1px solid var(--border-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .circle-diagram::before {
+    content: '';
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+  }
+
+  .circle-diagram::after {
+    content: '';
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: rgba(200,169,110,0.08);
+    border: 1px solid var(--border-accent);
+  }
+
+  .circle-core {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+  }
+
+  .circle-core .verdict {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent-dark);
+  }
+
+  .circle-core .verdict-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 0.2rem;
+  }
+
+  .stats-bottom {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-top: none;
+    margin-top: auto;
+    opacity: 0;
+    animation: fadeUp 0.8s 1s forwards;
+  }
+
+  .stat-cell {
+    background: var(--cream);
+    padding: 1.5rem;
+  }
+
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.2rem;
+    font-weight: 300;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    margin-top: 0.4rem;
+  }
+
+  /* ── SECTION COMUNE ── */
+  section {
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent-dark);
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 3.5vw, 3.2rem);
+    font-weight: 300;
+    line-height: 1.1;
+  }
+
+  /* ── PROBLEMA ── */
+  .problem {
+    padding: 6rem 3rem;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+
+  .problem-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.6rem, 2.5vw, 2.4rem);
+    font-weight: 300;
+    line-height: 1.3;
+    font-style: italic;
+    color: var(--ink);
+    border-left: 2px solid var(--accent);
+    padding-left: 2rem;
+  }
+
+  .problem-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  .problem-list li {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #3A3530;
+  }
+
+  .problem-list .icon {
+    color: var(--red);
+    font-size: 1rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  /* ── PRODOTTI ── */
+  .products {
+    padding: 6rem 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .products-header {
+    margin-bottom: 3rem;
+  }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .product-card {
+    background: var(--cream);
+    padding: 2.5rem;
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .product-card:hover { background: #F0EAE0; }
+
+  .product-card.featured {
+    background: var(--ink);
+    color: var(--cream);
+  }
+
+  .product-card.featured:hover { background: #2A2420; }
+
+  .product-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 0.3rem 0.7rem;
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+  }
+
+  .product-card:not(.featured) .product-badge {
+    background: rgba(200,169,110,0.15);
+    color: var(--accent-dark);
+  }
+
+  .product-card.featured .product-badge {
+    background: rgba(200,169,110,0.2);
+    color: var(--accent);
+  }
+
+  .product-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+  }
+
+  .product-card.featured .product-name { color: var(--cream); }
+
+  .product-tagline {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  .product-card:not(.featured) .product-tagline { color: var(--warm-gray); }
+  .product-card.featured .product-tagline { color: rgba(245,240,232,0.7); }
+
+  .product-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .product-features li {
+    display: flex;
+    gap: 0.7rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .product-card:not(.featured) .product-features li { color: #3A3530; }
+  .product-card.featured .product-features li { color: rgba(245,240,232,0.85); }
+
+  .feat-dot {
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+
+  .product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .product-card.featured .product-footer {
+    border-top-color: rgba(245,240,232,0.15);
+  }
+
+  .product-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    line-height: 1;
+  }
+
+  .product-card.featured .product-price { color: var(--accent); }
+
+  .product-price-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    margin-top: 0.3rem;
+  }
+
+  .product-card.featured .product-price-label { color: rgba(245,240,232,0.5); }
+
+  .product-cta {
+    display: inline-block;
+    padding: 0.75rem 1.4rem;
+    border-radius: 2px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .product-card:not(.featured) .product-cta {
+    background: var(--ink);
+    color: var(--cream);
+  }
+
+  .product-card:not(.featured) .product-cta:hover { background: var(--accent-dark); }
+
+  .product-card.featured .product-cta {
+    background: var(--accent);
+    color: var(--ink);
+  }
+
+  .product-card.featured .product-cta:hover { background: #DDB97E; }
+
+  /* ── COME FUNZIONA ── */
+  .process {
+    padding: 6rem 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .process-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 3rem;
+  }
+
+  .step {
+    background: var(--cream);
+    padding: 2rem;
+    position: relative;
+  }
+
+  .step-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem;
+    font-weight: 300;
+    color: rgba(26,22,18,0.1);
+    line-height: 1;
+    margin-bottom: 1rem;
+  }
+
+  .step-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    margin-bottom: 0.6rem;
+  }
+
+  .step-desc {
+    font-size: 0.82rem;
+    line-height: 1.65;
+    color: var(--warm-gray);
+  }
+
+  .step-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-dark);
+    margin-top: 1rem;
+  }
+
+  /* ── SEMAFORO REPORT ── */
+  .report-preview {
+    padding: 6rem 3rem;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  .semaphore {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .sem-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.2rem 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+
+  .sem-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .sem-dot.green { background: var(--green); box-shadow: 0 0 8px rgba(30,132,73,0.4); }
+  .sem-dot.yellow { background: var(--yellow); box-shadow: 0 0 8px rgba(212,172,13,0.4); }
+  .sem-dot.red { background: var(--red); box-shadow: 0 0 8px rgba(192,57,43,0.4); }
+
+  .sem-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .sem-desc {
+    font-size: 0.82rem;
+    color: var(--warm-gray);
+    line-height: 1.5;
+  }
+
+  .sem-item.active-green { border-color: rgba(30,132,73,0.3); background: rgba(30,132,73,0.04); }
+  .sem-item.active-yellow { border-color: rgba(212,172,13,0.3); background: rgba(212,172,13,0.04); }
+  .sem-item.active-red { border-color: rgba(192,57,43,0.3); background: rgba(192,57,43,0.04); }
+
+  /* ── CHI È SIMONE ── */
+  .about {
+    padding: 6rem 3rem;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  .about-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.4rem, 2vw, 2rem);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.45;
+    color: var(--ink);
+  }
+
+  .about-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-dark);
+    margin-top: 1.5rem;
+  }
+
+  .about-text {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: #3A3530;
+  }
+
+  .about-text p + p { margin-top: 1rem; }
+
+  .about-principle {
+    margin-top: 2rem;
+    padding: 1.2rem 1.5rem;
+    border-left: 2px solid var(--accent);
+    background: rgba(200,169,110,0.06);
+  }
+
+  .about-principle p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--ink);
+  }
+
+  .about-principle span {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--warm-gray);
+    margin-top: 0.4rem;
+    display: block;
+  }
+
+  /* ── GARANZIA ── */
+  .guarantee {
+    padding: 5rem 3rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--ink);
+    color: var(--cream);
+    text-align: center;
+  }
+
+  .guarantee .section-label { color: var(--accent); }
+
+  .guarantee .section-title {
+    color: var(--cream);
+    margin-bottom: 1.5rem;
+  }
+
+  .guarantee p {
+    max-width: 600px;
+    margin: 0 auto;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: rgba(245,240,232,0.75);
+  }
+
+  /* ── FINAL CTA ── */
+  .final-cta {
+    padding: 7rem 3rem;
+    text-align: center;
+  }
+
+  .final-cta .section-title {
+    margin-bottom: 1rem;
+  }
+
+  .final-cta .sub {
+    font-size: 0.95rem;
+    color: var(--warm-gray);
+    margin-bottom: 3rem;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+  }
+
+  .final-cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 2rem 3rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  footer .logo { font-size: 0.9rem; }
+
+  .footer-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    header { padding: 1rem 1.5rem; }
+    nav { display: none; }
+    .hero { grid-template-columns: 1fr; }
+    .hero-right { display: none; }
+    .hero-left { padding: 3rem 1.5rem; }
+    .problem, .products-grid, .process-steps, .report-preview, .about { grid-template-columns: 1fr; }
+    section, .process, .report-preview, .about, .guarantee, .final-cta { padding: 4rem 1.5rem; }
+    .problem { padding: 4rem 1.5rem; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a href="#" class="logo">External <span>Opinion</span></a>
+  <nav>
+    <a href="#come-funziona">Come funziona</a>
+    <a href="#prodotti">Servizi</a>
+    <a href="#chi-siamo">Chi siamo</a>
+    <a href="#contatto" class="nav-cta">Richiedi analisi</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <p class="hero-tag">Parere Tecnico Indipendente · Pre-Firma</p>
+    <h1>Stai per<br>comprare<br><em>casa?</em></h1>
+    <p class="hero-sub">Prima di firmare, ottieni un parere esterno e neutro. Analisi tecnica indipendente in 48 ore per evitare errori da decine di migliaia di euro.</p>
+    <div class="hero-actions">
+      <div>
+        <a href="mailto:info@externalopinion.it?subject=Richiesta%20Due%20Diligence%20Tecnica" class="btn-primary">
+          Due Diligence Completa
+          <span class="price-tag">€ 690</span>
+        </a>
+        <p class="btn-label-small">Analisi completa · Report in 48h · Validata da Simone Azzali</p>
+      </div>
+      <div>
+        <a href="mailto:info@externalopinion.it?subject=Richiesta%20Analisi%20Asta" class="btn-secondary">
+          Analisi Investimento Asta
+          <span class="price-tag">€ 69</span>
+        </a>
+        <p class="btn-label-small">Valutazione costi/rendimento · Risposta in 24h</p>
+      </div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-visual">
+      <div class="circle-diagram">
+        <div class="circle-core">
+          <p class="verdict">Esito</p>
+          <p class="verdict-value">Verde</p>
+        </div>
+      </div>
+    </div>
+    <div class="stats-bottom">
+      <div class="stat-cell">
+        <div class="stat-num">48h</div>
+        <div class="stat-label">Consegna report</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Neutrale e indipendente</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">A.I.</div>
+        <div class="stat-label">Visione artificiale</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">+€0</div>
+        <div class="stat-label">Interessi nell'affare</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEMA -->
+<section class="problem reveal">
+  <div>
+    <p class="section-label">Il problema</p>
+    <blockquote class="problem-quote">
+      "Chi vende ha tutte le informazioni.<br>Chi compra spesso no."
+    </blockquote>
+  </div>
+  <div>
+    <ul class="problem-list">
+      <li>
+        <span class="icon">✕</span>
+        <span>L'agenzia è pagata dal venditore — non è neutrale per definizione</span>
+      </li>
+      <li>
+        <span class="icon">✕</span>
+        <span>La planimetria catastale può non corrispondere allo stato reale dell'immobile</span>
+      </li>
+      <li>
+        <span class="icon">✕</span>
+        <span>Irregolarità non rilevate possono costare 30.000–80.000 € dopo la firma</span>
+      </li>
+      <li>
+        <span class="icon">✕</span>
+        <span>Le aste immobiliari nascondono rischi tecnici e normativi spesso ignorati</span>
+      </li>
+      <li>
+        <span class="icon">✕</span>
+        <span>Un rogito firmato è difficilmente reversibile — il danno è permanente</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- PRODOTTI -->
+<section class="products reveal" id="prodotti">
+  <div class="products-header">
+    <p class="section-label">I servizi</p>
+    <h2 class="section-title">Due livelli di analisi.<br>Un unico obiettivo.</h2>
+  </div>
+  <div class="products-grid">
+    <!-- Card 1: Asta -->
+    <div class="product-card">
+      <span class="product-badge">Entry · Investitori</span>
+      <h3 class="product-name">Analisi Investimento Asta</h3>
+      <p class="product-tagline">Valutazione costi/rendimento completa prima di partecipare a un'asta immobiliare. Capisci se l'affare è conveniente prima di offrire.</p>
+      <ul class="product-features">
+        <li><span class="feat-dot">◆</span> Analisi costi di acquisto e ristrutturazione stimata</li>
+        <li><span class="feat-dot">◆</span> Calcolo valore di mercato post-intervento</li>
+        <li><span class="feat-dot">◆</span> Identificazione criticità normative (altezze, classe energetica)</li>
+        <li><span class="feat-dot">◆</span> Verdetto chiaro: conveniente / da evitare</li>
+        <li><span class="feat-dot">◆</span> Report PDF strutturato entro 24 ore</li>
+      </ul>
+      <div class="product-footer">
+        <div>
+          <div class="product-price">€ 69</div>
+          <div class="product-price-label">Report singolo · 24h</div>
+        </div>
+        <button type="button" class="product-cta" onclick="document.getElementById('analisi-form').scrollIntoView({behavior:'smooth'})">Richiedi ora →</button>
+      </div>
+    </div>
+
+    <!-- Card 2: Due Diligence (FEATURED) -->
+    <div class="product-card featured">
+      <span class="product-badge">Core · Pre-Firma</span>
+      <h3 class="product-name">Due Diligence Tecnica</h3>
+      <p class="product-tagline">Analisi completa prima del rogito. Visione artificiale + validazione esperta per sapere esattamente cosa stai comprando.</p>
+      <ul class="product-features">
+        <li><span class="feat-dot">◆</span> Analisi coerenza spaziale (geometrie, allineamenti, proporzioni)</li>
+        <li><span class="feat-dot">◆</span> Verifica congruenza planimetria ↔ stato reale da video</li>
+        <li><span class="feat-dot">◆</span> Risk assessment con impatto economico stimato</li>
+        <li><span class="feat-dot">◆</span> Valutazione coerenza evolutiva dell'immobile</li>
+        <li><span class="feat-dot">◆</span> Report semaforico Verde / Giallo / Rosso</li>
+        <li><span class="feat-dot">◆</span> Validato personalmente da Simone Azzali</li>
+      </ul>
+      <div class="product-footer">
+        <div>
+          <div class="product-price">€ 690</div>
+          <div class="product-price-label">Analisi completa · 48h</div>
+        </div>
+        <a href="mailto:info@externalopinion.it?subject=Due%20Diligence%20Tecnica%20-%20Richiesta" class="product-cta">Richiedi ora →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FORM ANALISI API -->
+<section id="analisi-form" style="padding:4rem 1.5rem; max-width:700px; margin:0 auto;">
+  <p class="section-label">Avvia analisi</p>
+  <h2 class="section-title" style="margin-bottom:1.5rem;">Inserisci l'asta.<br>Il sistema lavora per te.</h2>
+  <div id="form-box" style="background:#fff; border:1px solid var(--border); padding:2rem;">
+    <div style="margin-bottom:1rem;">
+      <label style="display:block; font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--warm-gray); margin-bottom:0.4rem;">URL Annuncio Asta *</label>
+      <input id="urlAsta" type="url" placeholder="https://www.astevendo.com/..." style="width:100%; padding:0.8rem 1rem; border:1px solid var(--border); background:var(--cream); font-size:0.9rem; outline:none;" required>
+    </div>
+    <div style="margin-bottom:1.5rem;">
+      <label style="display:block; font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--warm-gray); margin-bottom:0.4rem;">Email per il report *</label>
+      <input id="emailInput" type="email" placeholder="tua@email.it" style="width:100%; padding:0.8rem 1rem; border:1px solid var(--border); background:var(--cream); font-size:0.9rem; outline:none;" required>
+    </div>
+    <button id="btnAnalizza" onclick="avviaAnalisi()" style="width:100%; padding:1rem; background:var(--ink); color:#fff; border:none; cursor:pointer; font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase;">
+      Avvia Analisi Gratuita →
+    </button>
+    <p style="font-size:0.72rem; color:var(--warm-gray); margin-top:0.8rem; text-align:center;">Analisi preliminare gratuita · Report completo € 69 · 24h</p>
+  </div>
+
+  <!-- Progress -->
+  <div id="progress-box" style="display:none; margin-top:1.5rem; padding:1.5rem; background:#fff; border:1px solid var(--border); text-align:center;">
+    <div style="width:100%; height:2px; background:var(--border); overflow:hidden; margin-bottom:1rem;">
+      <div id="progress-bar" style="height:100%; background:var(--accent-dark); width:0; transition:width 8s ease;"></div>
+    </div>
+    <p id="progress-label" style="font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--warm-gray);">Analisi in corso...</p>
+  </div>
+
+  <!-- Result -->
+  <div id="result-box" style="display:none; margin-top:1.5rem; padding:2rem; background:var(--ink); color:#fff;">
+    <p style="font-family:'DM Mono',monospace; font-size:0.5rem; letter-spacing:0.18em; text-transform:uppercase; color:rgba(245,240,232,0.35); margin-bottom:0.8rem;">Risultato Analisi</p>
+    <div id="result-score" style="font-family:'Cormorant Garamond',serif; font-size:5rem; font-weight:300; line-height:1; margin-bottom:0.5rem;">—</div>
+    <div id="result-verdict" style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-style:italic; color:rgba(245,240,232,0.6); margin-bottom:1.5rem;">In elaborazione</div>
+    <div id="result-summary" style="font-size:0.85rem; line-height:1.7; color:rgba(245,240,232,0.75); margin-bottom:1.5rem;"></div>
+    <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:1.5rem;">
+      <p style="font-family:'DM Mono',monospace; font-size:0.52rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin-bottom:1rem;">Report completo con rischi dettagliati e raccomandazione finale</p>
+      <button id="btnPaga" onclick="avviaPagamento()" style="width:100%; padding:1rem; background:var(--accent-dark); color:#fff; border:none; cursor:pointer; font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase;">
+        Sblocca Report Completo — € 69 →
+      </button>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div id="error-box" style="display:none; margin-top:1.5rem; padding:1.5rem; background:#fff; border:1px solid rgba(192,57,43,0.3); color:var(--red);">
+    <p id="error-msg" style="font-size:0.85rem;"></p>
+  </div>
+</section>
+
+<style>
+  #urlAsta:focus, #emailInput:focus { border-color:var(--accent); background:#fff; }
+  #btnAnalizza:hover { background:var(--accent-dark); }
+</style>
+
+<!-- COME FUNZIONA -->
+<section class="process reveal" id="come-funziona">
+  <p class="section-label">Il processo</p>
+  <h2 class="section-title">Quattro passi.<br>Quarantotto ore.</h2>
+  <div class="process-steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h4 class="step-title">Invii i materiali</h4>
+      <p class="step-desc">Indirizzo immobile, planimetria catastale e video dell'appartamento. Bastano questi tre elementi.</p>
+      <p class="step-time">→ 5 minuti</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h4 class="step-title">Analisi A.I.</h4>
+      <p class="step-desc">Il sistema di visione artificiale analizza geometrie, allineamenti, proporzioni e anomalie strutturali nel dettaglio.</p>
+      <p class="step-time">→ Automatico</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h4 class="step-title">Validazione esperta</h4>
+      <p class="step-desc">Simone Azzali verifica, integra e firma ogni analisi prima della consegna. Nessun report esce non validato.</p>
+      <p class="step-time">→ Garanzia umana</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h4 class="step-title">Report in 48h</h4>
+      <p class="step-desc">Ricevi il documento strutturato via email con esito chiaro, rischi quantificati e raccomandazione finale.</p>
+      <p class="step-time">→ Entro 48 ore</p>
+    </div>
+  </div>
+</section>
+
+<!-- REPORT SEMAFORO -->
+<section class="report-preview reveal">
+  <div>
+    <p class="section-label">Il report</p>
+    <h2 class="section-title">Un esito.<br>Nessuna ambiguità.</h2>
+    <p style="margin-top:1.2rem; font-size:0.9rem; line-height:1.7; color:var(--warm-gray); max-width:380px;">Ogni report si conclude con un giudizio diretto. Non "dipende". Non "valutare caso per caso". Un semaforo chiaro, motivato punto per punto.</p>
+  </div>
+  <div class="semaphore">
+    <div class="sem-item active-green">
+      <div class="sem-dot green"></div>
+      <div>
+        <div class="sem-label">Verde — Coerente</div>
+        <div class="sem-desc">L'immobile è regolare. Nessuna criticità rilevante. Puoi procedere con consapevolezza.</div>
+      </div>
+    </div>
+    <div class="sem-item active-yellow">
+      <div class="sem-dot yellow"></div>
+      <div>
+        <div class="sem-label">Giallo — Attenzione</div>
+        <div class="sem-desc">Presenti alcune anomalie da approfondire. Il report indica cosa verificare prima della firma.</div>
+      </div>
+    </div>
+    <div class="sem-item active-red">
+      <div class="sem-dot red"></div>
+      <div>
+        <div class="sem-label">Rosso — Criticità elevata</div>
+        <div class="sem-desc">Rischi tecnici o documentali significativi rilevati. Fortemente sconsigliato procedere senza accertamenti.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHI È SIMONE -->
+<section class="about reveal" id="chi-siamo">
+  <div>
+    <p class="section-label">Chi firma ogni analisi</p>
+    <blockquote class="about-quote">
+      "La mia firma su ogni report non è un dettaglio. È la garanzia che qualcuno con esperienza reale si è preso la responsabilità di dirti la verità."
+    </blockquote>
+    <p class="about-meta">— Simone Azzali, Fondatore</p>
+  </div>
+  <div>
+    <div class="about-text">
+      <p>External Opinion nasce da una convinzione semplice: chi compra casa ha diritto a un parere neutro, da qualcuno che non ha nulla da guadagnare dalla vendita.</p>
+      <p>Non siamo un'agenzia. Non vendiamo immobili. Non abbiamo interesse in nessun affare. Il nostro unico cliente sei tu — e il nostro unico obiettivo è dirti la verità su quello che stai per comprare.</p>
+      <p>Ogni analisi combina visione artificiale avanzata con supervisione tecnica diretta. Non è un algoritmo lasciato solo. È uno strumento potente nelle mani di chi sa cosa cercare.</p>
+    </div>
+    <div class="about-principle">
+      <p>"Coerenza tra progetto e stato reale."</p>
+      <span>Principio tecnico fondante di ogni analisi</span>
+    </div>
+  </div>
+</section>
+
+<!-- GARANZIA -->
+<section class="guarantee reveal">
+  <p class="section-label">La nostra posizione</p>
+  <h2 class="section-title">Neutralità assoluta.<br>Senza eccezioni.</h2>
+  <p style="margin-top:1.5rem;">Non riceviamo provvigioni. Non abbiamo accordi con agenzie o venditori. Non siamo legati a nessun immobile che analizziamo. Ogni parere è prodotto nell'unico interesse di chi lo commissiona.</p>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta reveal" id="contatto">
+  <p class="section-label">Prossimo passo</p>
+  <h2 class="section-title">Prima di firmare,<br>chiedi un parere esterno.</h2>
+  <p class="sub">Invia i materiali adesso. Ricevi il report in 48 ore. Firma — o non firmare — con piena consapevolezza.</p>
+  <div class="final-cta-buttons">
+    <a href="mailto:info@externalopinion.it?subject=Due%20Diligence%20Tecnica" class="btn-primary" style="max-width:none;">
+      Due Diligence Completa
+      <span class="price-tag">€ 690</span>
+    </a>
+    <a href="mailto:info@externalopinion.it?subject=Analisi%20Asta" class="btn-secondary" style="max-width:none;">
+      Analisi Asta
+      <span class="price-tag">€ 69</span>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="logo">External <span>Opinion</span></a>
+  <p class="footer-meta">Parere tecnico indipendente · Fondato da Simone Azzali · Italia</p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(el => {
+      if (el.isIntersecting) { el.target.classList.add('visible'); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // ── API CONFIG ──
+  const API_BASE = '';
+  let currentJobId = null;
+
+  async function avviaAnalisi() {
+    const urlAsta = document.getElementById('urlAsta').value.trim();
+    const email = document.getElementById('emailInput').value.trim();
+    if (!urlAsta || !email) { mostraErrore('Inserisci URL asta e email.'); return; }
+    if (!urlAsta.startsWith('http')) { mostraErrore('URL non valido. Deve iniziare con http://'); return; }
+
+    document.getElementById('btnAnalizza').disabled = true;
+    document.getElementById('btnAnalizza').textContent = 'Avvio analisi...';
+    document.getElementById('form-box').style.display = 'none';
+    document.getElementById('progress-box').style.display = 'block';
+    document.getElementById('result-box').style.display = 'none';
+    document.getElementById('error-box').style.display = 'none';
+
+    setTimeout(() => { document.getElementById('progress-bar').style.width = '70%'; }, 100);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urlAsta, email, tier: 'TIER_1_SCREENING_69' })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Errore server');
+      currentJobId = data.jobId;
+      pollRisultato(currentJobId);
+    } catch (err) {
+      mostraErrore('Errore di connessione: ' + err.message);
+      resetForm();
+    }
+  }
+
+  async function pollRisultato(jobId) {
+    document.getElementById('progress-label').textContent = 'Analisi AI in corso...';
+    let tentativi = 0;
+    const intervallo = setInterval(async () => {
+      tentativi++;
+      if (tentativi > 60) { clearInterval(intervallo); mostraErrore('Timeout analisi. Riprova.'); resetForm(); return; }
+      try {
+        const res = await fetch(`${API_BASE}/api/jobs/${jobId}`);
+        const data = await res.json();
+        if (data.job && (data.job.status === 'COMPLETED' || data.job.status === 'READY_FOR_PAYMENT')) {
+          clearInterval(intervallo);
+          document.getElementById('progress-bar').style.width = '100%';
+          setTimeout(() => mostraRisultato(data.job), 500);
+        } else if (data.job && data.job.status === 'FAILED') {
+          clearInterval(intervallo);
+          mostraErrore('Analisi fallita: ' + (data.job.error || 'errore sconosciuto'));
+          resetForm();
+        }
+      } catch (_) {}
+    }, 3000);
+  }
+
+  function mostraRisultato(job) {
+    document.getElementById('progress-box').style.display = 'none';
+    document.getElementById('result-box').style.display = 'block';
+    const score = job.riskScore ? Math.round(job.riskScore) : '—';
+    document.getElementById('result-score').textContent = score;
+    const verdict = job.riskScore > 70 ? 'Rischio Elevato' : job.riskScore > 40 ? 'Rischio Moderato' : 'Rischio Contenuto';
+    document.getElementById('result-verdict').textContent = verdict;
+    document.getElementById('result-summary').textContent = 'Analisi preliminare completata. Sblocca il report completo per vedere tutti i rischi dettagliati, le criticità normative e la raccomandazione finale.';
+    document.getElementById('result-box').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  async function avviaPagamento() {
+    if (!currentJobId) return;
+    document.getElementById('btnPaga').textContent = 'Reindirizzamento...';
+    document.getElementById('btnPaga').disabled = true;
+    try {
+      const res = await fetch(`${API_BASE}/api/jobs/${currentJobId}/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier: 'TIER_1_SCREENING_69' })
+      });
+      const data = await res.json();
+      if (data.checkoutUrl) { window.location.href = data.checkoutUrl; }
+      else { throw new Error(data.error || 'Errore checkout'); }
+    } catch (err) {
+      mostraErrore('Errore pagamento: ' + err.message);
+      document.getElementById('btnPaga').textContent = 'Sblocca Report Completo — € 69 →';
+      document.getElementById('btnPaga').disabled = false;
+    }
+  }
+
+  function mostraErrore(msg) {
+    document.getElementById('error-box').style.display = 'block';
+    document.getElementById('error-msg').textContent = msg;
+    document.getElementById('progress-box').style.display = 'none';
+  }
+
+  function resetForm() {
+    document.getElementById('form-box').style.display = 'block';
+    document.getElementById('btnAnalizza').disabled = false;
+    document.getElementById('btnAnalizza').textContent = 'Avvia Analisi Gratuita →';
+    document.getElementById('progress-bar').style.width = '0';
+  }
+</script>
+
+</body>
+</html>

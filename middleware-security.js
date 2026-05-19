@@ -28,11 +28,12 @@ function securityMiddleware(app) {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", 'https://js.stripe.com'],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com'],
           imgSrc: ["'self'", 'data:', 'https:'],
-          connectSrc: ["'self'"],
-          frameSrc: ["'none'"],
+          connectSrc: ["'self'", 'https://api.stripe.com'],
+          frameSrc: ["'none'", 'https://js.stripe.com'],
           objectSrc: ["'none'"],
           upgradeInsecureRequests: [],
         },

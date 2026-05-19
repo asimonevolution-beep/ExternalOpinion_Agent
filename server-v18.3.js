@@ -14,6 +14,7 @@ const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
 const morgan = require('morgan');
+const path = require('path');
 require('dotenv').config();
 
 // ============================================================================
@@ -83,6 +84,9 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Global rate limiter
 app.use(globalLimiter);
+
+// Serve frontend statico
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Metrics collection
 metricsMiddleware(app);
@@ -306,6 +310,11 @@ app.use('/api', apiRouter);
 
 // Mount Stripe webhook
 app.use('/api/stripe', stripeRouter);
+
+// SPA fallback — serve index.html per qualsiasi route non-API
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // ============================================================================
 // ERROR HANDLING
