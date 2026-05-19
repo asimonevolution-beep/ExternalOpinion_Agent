@@ -7,7 +7,6 @@
  */
 
 const prisma = require('./db');
-const nodemailer = require('nodemailer');
 
 // ============================================================================
 // EMAIL NOTIFICHE
@@ -15,15 +14,20 @@ const nodemailer = require('nodemailer');
 
 function getMailer() {
   if (!process.env.SMTP_HOST) return null;
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
+  try {
+    const nodemailer = require('nodemailer');
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+  } catch (_) {
+    return null;
+  }
 }
 
 async function notifyReviewer(jobId, reportSummary, auctionUrl) {
