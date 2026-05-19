@@ -99,7 +99,7 @@ async function recordJobEvent(jobId, eventType, metadata = {}, workerId = null, 
         payloadHash,
         aiModel,
         logicEngineVersion: '18.0',
-        metadata,
+        metadata: JSON.stringify(metadata),
       },
     });
   } catch (err) {
@@ -142,13 +142,13 @@ async function createJob({ url, email, token, service, zonaDati = {} }) {
         data: {
           url,
           status: 'PENDING',
-          payload: {
+          payload: JSON.stringify({
             email: email || null,
             clientToken: token || null,
             service: service || null,
             zonaDati,
             timestamp: new Date().toISOString(),
-          },
+          }),
         },
       });
 
@@ -294,11 +294,11 @@ async function handleStripeCheckoutCompleted(session) {
         data: {
           jobId: targetReportId,
           eventType: 'JOB_COMPLETED',
-          metadata: {
+          metadata: JSON.stringify({
             paymentMethod: 'stripe',
             amount: incassoEuro,
             tier: tierSelezionato,
-          },
+          }),
         },
       });
     });
