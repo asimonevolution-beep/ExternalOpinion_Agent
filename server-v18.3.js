@@ -466,6 +466,27 @@ app.use((err, req, res, next) => {
 
 async function start() {
   try {
+    // ============================================================
+    // AVVIO WORKER BULLMQ (in-process, single Railway dyno)
+    // ============================================================
+    const workerModules = [
+      './worker-scraper',
+      './worker-ocr',
+      './worker-llm',
+      './worker-scoring',
+      './worker-report',
+      './worker-notify',
+      './worker-review',
+    ];
+    for (const mod of workerModules) {
+      try {
+        require(mod);
+        console.log(`[WORKERS] Avviato: ${mod}`);
+      } catch (err) {
+        console.error(`[WORKERS] Errore avvio ${mod}: ${err.message}`);
+      }
+    }
+
     app.listen(PORT, () => {
       console.log(`
 â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—

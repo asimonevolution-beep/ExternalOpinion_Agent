@@ -10,7 +10,6 @@
  */
 
 const { Worker } = require('bullmq');
-const Tesseract = require('tesseract.js');
 const crypto = require('crypto');
 const { recordJobEvent } = require('./orchestrator');
 
