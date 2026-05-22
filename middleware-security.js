@@ -212,34 +212,38 @@ function healthCheckEndpoints(app) {
     });
   });
 
-  // Readiness probe (Kubernetes)
+  // Readiness probe
   app.get('/health/ready', async (req, res) => {
+    const result = { database: 'unknown', redis: 'unknown', timestamp: new Date().toISOString() };
+    let ok = true;
+
+    // Check DB
     try {
-      // Verifica connessione DB
       await require('./db').$queryRaw`SELECT 1`;
-
-      // Verifica Redis
-      const redis = require('redis');
-      const client = process.env.REDIS_URL
-        ? redis.createClient({ url: process.env.REDIS_URL })
-        : redis.createClient({ host: process.env.REDIS_HOST || '127.0.0.1', port: process.env.REDIS_PORT || 6379 });
-      await client.connect();
-      await client.ping();
-      await client.quit();
-
-      res.status(200).json({
-        status: 'ready',
-        database: 'connected',
-        redis: 'connected',
-        timestamp: new Date().toISOString(),
-      });
+      result.database = 'connected';
     } catch (err) {
-      res.status(503).json({
-        status: 'not_ready',
-        error: err.message,
-        timestamp: new Date().toISOString(),
-      });
+      result.database = `error: ${err.message.slice(0, 120)}`;
+      ok = false;
     }
+
+    // Check Redis via ioredis
+    try {
+      const Redis = require('ioredis');
+      const { getRedisConnection } = require('./redis-connection');
+      const conn = getRedisConnection();
+      const ioredis = conn.url
+        ? new Redis(conn.url, { lazyConnect: true, connectTimeout: 3000, maxRetriesPerRequest: 0, enableOfflineQueue: false })
+        : new Redis({ ...conn, lazyConnect: true, connectTimeout: 3000, maxRetriesPerRequest: 0, enableOfflineQueue: false });
+      await ioredis.connect();
+      await ioredis.ping();
+      await ioredis.quit();
+      result.redis = 'connected';
+    } catch (err) {
+      result.redis = `error: ${err.message.slice(0, 80)}`;
+      ok = false;
+    }
+
+    return res.status(ok ? 200 : 503).json({ status: ok ? 'ready' : 'not_ready', ...result });
   });
 
   // Metrics endpoint
