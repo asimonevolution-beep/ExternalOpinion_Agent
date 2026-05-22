@@ -1,4 +1,4 @@
-/**
+﻿/**
  * EXTERNAL OPINION — WORKER SCRAPER V18.3
  * Direzione Tecnica: Geometra Simone Azzali
  *
@@ -15,11 +15,8 @@ const { recordJobEvent } = require('./orchestrator');
 
 const WORKER_ID = `scraper-${crypto.randomBytes(4).toString('hex')}`;
 
-const redisConnection = {
-  host: process.env.REDIS_HOST || '127.0.0.1',
-  port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT, 10) : 6379,
-  password: process.env.REDIS_PASSWORD || undefined,
-};
+const { getRedisConnection } = require('./redis-connection');
+const redisConnection = getRedisConnection();
 
 const HTTP_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',

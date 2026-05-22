@@ -24,11 +24,8 @@ const OUTPUT_DIR = path.join(__dirname, 'OUTPUT_REPORT');
 // Assicura che la directory di output esista
 if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
-const redisConnection = {
-  host:     process.env.REDIS_HOST || '127.0.0.1',
-  port:     process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT, 10) : 6379,
-  password: process.env.REDIS_PASSWORD || undefined,
-};
+const { getRedisConnection } = require('./redis-connection');
+const redisConnection = getRedisConnection();
 
 // ============================================================================
 // HELPER — formatta euro

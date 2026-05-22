@@ -1,4 +1,4 @@
-/**
+﻿/**
  * EXTERNAL OPINION — WORKER OCR V18.3
  * Direzione Tecnica: Geometra Simone Azzali
  * 
@@ -16,11 +16,8 @@ const { recordJobEvent } = require('./orchestrator');
 
 const WORKER_ID = `ocr-${crypto.randomBytes(4).toString('hex')}`;
 
-const redisConnection = {
-  host: process.env.REDIS_HOST || '127.0.0.1',
-  port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT, 10) : 6379,
-  password: process.env.REDIS_PASSWORD || undefined,
-};
+const { getRedisConnection } = require('./redis-connection');
+const redisConnection = getRedisConnection();
 
 const worker = new Worker('ocrQueue', async (job) => {
   const { jobId } = job.data;

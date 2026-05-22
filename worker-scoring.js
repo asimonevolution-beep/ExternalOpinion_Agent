@@ -18,11 +18,8 @@ const { generaRelazioneCompletaSpiegata } = require('./explainability-engine');
 
 const WORKER_ID = `scoring-${crypto.randomBytes(4).toString('hex')}`;
 
-const redisConnection = {
-  host: process.env.REDIS_HOST || '127.0.0.1',
-  port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT, 10) : 6379,
-  password: process.env.REDIS_PASSWORD || undefined,
-};
+const { getRedisConnection } = require('./redis-connection');
+const redisConnection = getRedisConnection();
 
 const COEFFICIENTI_DEGRADO = {
   STATO_OTTIMO:   1.0,
