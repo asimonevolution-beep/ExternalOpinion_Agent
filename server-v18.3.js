@@ -79,16 +79,25 @@ initSentry(app);
 securityMiddleware(app);
 
 // Standard middleware
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+  : [];
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS non consentito'));
+    }
+  },
   credentials: true,
 }));
 app.use(compression());
 app.use(morgan('combined'));
 
 // Body parsers
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Global rate limiter
 app.use(globalLimiter);
@@ -328,11 +337,15 @@ app.use('/api/stripe', stripeRouter);
 // ADMIN ROUTES â€” Pannello revisione per Simone
 // ============================================================================
 
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'ext-opinion-admin-2025';
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
+if (!ADMIN_TOKEN) {
+  console.error('[FATAL] ADMIN_TOKEN non configurato — le route /admin sono disabilitate');
+}
 
 function requireAdmin(req, res, next) {
+  if (!ADMIN_TOKEN) return res.status(503).json({ error: 'Admin non configurato' });
   const token = req.headers['x-admin-token'] || req.query.token;
-  if (token !== ADMIN_TOKEN) return res.status(401).json({ error: 'Unauthorized' });
+  if (!token || token !== ADMIN_TOKEN) return res.status(401).json({ error: 'Unauthorized' });
   next();
 }
 
@@ -387,12 +400,16 @@ app.get('/admin/review/:jobId', requireAdmin, async (req, res) => {
 <script>
 async function submitReview(action) {
   const notes = document.getElementById('notes').value;
+  const token = sessionStorage.getItem('adminToken') || prompt('Admin token:');
+  if (!token) return;
+  sessionStorage.setItem('adminToken', token);
   const r = await fetch('/admin/review/${req.params.jobId}/' + action, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-admin-token': '${ADMIN_TOKEN}' },
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
     body: JSON.stringify({ notes })
   });
   const d = await r.json();
+  if (r.status === 401) { sessionStorage.removeItem('adminToken'); alert('Token non valido'); return; }
   alert(d.success ? 'Fatto!' : 'Errore: ' + d.error);
   if (d.success) location.reload();
 }
@@ -478,13 +495,13 @@ async function start() {
     // AVVIO WORKER BULLMQ (in-process, single Railway dyno)
     // ============================================================
     const workerModules = [
-      './worker-scraper',
-      './worker-ocr',
-      './worker-llm',
-      './worker-scoring',
-      './worker-report',
-      './worker-notify',
-      './worker-review',
+      './src/workers/worker-scraper',
+      './src/workers/worker-ocr',
+      './src/workers/worker-llm',
+      './src/workers/worker-scoring',
+      './src/workers/worker-report',
+      './src/workers/worker-notify',
+      './src/workers/worker-review',
     ];
     for (const mod of workerModules) {
       try {

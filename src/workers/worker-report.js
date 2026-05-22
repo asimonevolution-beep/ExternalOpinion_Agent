@@ -15,8 +15,8 @@ const PDFDocument   = require('pdfkit');
 const crypto        = require('crypto');
 const fs            = require('fs');
 const path          = require('path');
-const prisma        = require('./db');
-const { recordJobEvent } = require('./orchestrator');
+const prisma        = require('../../db');
+const { recordJobEvent } = require('../../orchestrator');
 
 const WORKER_ID  = `report-${crypto.randomBytes(4).toString('hex')}`;
 const OUTPUT_DIR = path.join(__dirname, 'OUTPUT_REPORT');
@@ -24,7 +24,7 @@ const OUTPUT_DIR = path.join(__dirname, 'OUTPUT_REPORT');
 // Assicura che la directory di output esista
 if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
-const { getRedisConnection } = require('./redis-connection');
+const { getRedisConnection } = require('../../redis-connection');
 const redisConnection = getRedisConnection();
 
 // ============================================================================

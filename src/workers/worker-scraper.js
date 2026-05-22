@@ -10,12 +10,12 @@ const { Worker } = require('bullmq');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const crypto = require('crypto');
-const prisma = require('./db');
-const { recordJobEvent } = require('./orchestrator');
+const prisma = require('../../db');
+const { recordJobEvent } = require('../../orchestrator');
 
 const WORKER_ID = `scraper-${crypto.randomBytes(4).toString('hex')}`;
 
-const { getRedisConnection } = require('./redis-connection');
+const { getRedisConnection } = require('../../redis-connection');
 const redisConnection = getRedisConnection();
 
 const HTTP_HEADERS = {

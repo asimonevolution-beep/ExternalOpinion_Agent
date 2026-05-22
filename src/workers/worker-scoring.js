@@ -12,13 +12,13 @@
 
 const { Worker } = require('bullmq');
 const crypto = require('crypto');
-const prisma = require('./db');
-const { recordJobEvent, safeRoiCalculation } = require('./orchestrator');
+const prisma = require('../../db');
+const { recordJobEvent, safeRoiCalculation } = require('../../orchestrator');
 const { generaRelazioneCompletaSpiegata } = require('./explainability-engine');
 
 const WORKER_ID = `scoring-${crypto.randomBytes(4).toString('hex')}`;
 
-const { getRedisConnection } = require('./redis-connection');
+const { getRedisConnection } = require('../../redis-connection');
 const redisConnection = getRedisConnection();
 
 const COEFFICIENTI_DEGRADO = {

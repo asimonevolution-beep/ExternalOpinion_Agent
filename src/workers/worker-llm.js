@@ -13,13 +13,13 @@
 const { Worker } = require('bullmq');
 const { z } = require('zod');
 const crypto = require('crypto');
-const prisma = require('./db');
-const { recordJobEvent, validateConfidenceThreshold } = require('./orchestrator');
-const { estraiDatiConFallback } = require('./ai-fallback-handler');
+const prisma = require('../../db');
+const { recordJobEvent, validateConfidenceThreshold } = require('../../orchestrator');
+const { estraiDatiConFallback } = require('../../ai-fallback-handler');
 
 const WORKER_ID = `llm-${crypto.randomBytes(4).toString('hex')}`;
 
-const { getRedisConnection } = require('./redis-connection');
+const { getRedisConnection } = require('../../redis-connection');
 const redisConnection = getRedisConnection();
 
 // Schema validazione

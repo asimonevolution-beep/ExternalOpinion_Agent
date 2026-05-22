@@ -16,14 +16,14 @@
 const { Worker } = require('bullmq');
 const crypto = require('crypto');
 const { z } = require('zod');
-const prisma = require('./db');
+const prisma = require('../../db');
 const {
   createTimeoutPromise,
   recordJobEvent,
   updateJobStatus,
   validateConfidenceThreshold,
   safeRoiCalculation,
-} = require('./orchestrator');
+} = require('../../orchestrator');
 
 // ============================================================================
 // CONFIGURAZIONE WORKER

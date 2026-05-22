@@ -12,13 +12,13 @@
 
 const { Worker, Queue } = require('bullmq');
 const crypto            = require('crypto');
-const prisma            = require('./db');
-const { recordJobEvent } = require('./orchestrator');
+const prisma            = require('../../db');
+const { recordJobEvent } = require('../../orchestrator');
 const { addToReviewQueue } = require('./review-queue');
 
 const WORKER_ID = `review-${crypto.randomBytes(4).toString('hex')}`;
 
-const { getRedisConnection } = require('./redis-connection');
+const { getRedisConnection } = require('../../redis-connection');
 const redisConnection = getRedisConnection();
 
 const notificationQueue = new Queue('notificationQueue', { connection: redisConnection });

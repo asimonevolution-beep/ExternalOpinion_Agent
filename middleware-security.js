@@ -57,24 +57,24 @@ function securityMiddleware(app) {
 // ============================================================================
 
 const globalLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minuto
-  max: 1000, // 1000 richieste per IP
+  windowMs: 1 * 60 * 1000,
+  max: 120, // 2 req/sec per IP
   message: 'Troppe richieste da questo IP, riprova più tardi',
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 const analyzeApiLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000,
-  max: 100, // 100 analisi per minuto per IP
-  keyGenerator: (req, res) => req.body?.token || req.ip,
+  windowMs: 15 * 60 * 1000, // finestra 15 minuti
+  max: 10, // 10 analisi per finestra per IP/token
+  keyGenerator: (req) => req.body?.token || req.ip,
   message: 'Limite di analisi raggiunto',
 });
 
 const checkoutLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000,
-  max: 10, // 10 checkout per minuto
-  keyGenerator: (req, res) => req.user?.id || req.ip,
+  windowMs: 15 * 60 * 1000,
+  max: 5, // 5 checkout per finestra
+  keyGenerator: (req) => req.ip,
   message: 'Troppi tentativi di checkout',
 });
 
@@ -130,8 +130,14 @@ function metricsMiddleware(app) {
     next();
   });
 
-  // Endpoint Prometheus
-  app.get('/metrics', async (req, res) => {
+  // Endpoint Prometheus — protetto da ADMIN_TOKEN
+  app.get('/metrics', (req, res, next) => {
+    const token = req.headers['x-admin-token'] || req.query.token;
+    if (!process.env.ADMIN_TOKEN || token !== process.env.ADMIN_TOKEN) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    next();
+  }, async (req, res) => {
     res.set('Content-Type', prometheus.register.contentType);
     res.end(await prometheus.register.metrics());
   });

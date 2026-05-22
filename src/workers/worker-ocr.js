@@ -11,12 +11,12 @@
 
 const { Worker } = require('bullmq');
 const crypto = require('crypto');
-const prisma = require('./db');
-const { recordJobEvent } = require('./orchestrator');
+const prisma = require('../../db');
+const { recordJobEvent } = require('../../orchestrator');
 
 const WORKER_ID = `ocr-${crypto.randomBytes(4).toString('hex')}`;
 
-const { getRedisConnection } = require('./redis-connection');
+const { getRedisConnection } = require('../../redis-connection');
 const redisConnection = getRedisConnection();
 
 const worker = new Worker('ocrQueue', async (job) => {
