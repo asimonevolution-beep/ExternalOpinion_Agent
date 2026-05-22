@@ -207,7 +207,7 @@ function healthCheckEndpoints(app) {
   app.get('/health/live', (req, res) => {
     res.status(200).json({
       status: 'alive',
-      version: 'v2-6a801c6',
+      version: 'v3-f0ea437',
       timestamp: new Date().toISOString(),
     });
   });
