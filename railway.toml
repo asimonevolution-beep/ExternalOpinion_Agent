@@ -2,7 +2,7 @@
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "npx prisma generate; npx prisma db push --accept-data-loss; node server.js"
+startCommand = "export DATABASE_URL=${DATABASE_URL:-${POSTGRES_URL:-${DATABASE_PRIVATE_URL}}}; npx prisma generate; npx prisma db push --accept-data-loss; node server.js"
 healthcheckPath = "/health/live"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
