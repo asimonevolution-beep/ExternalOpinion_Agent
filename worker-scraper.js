@@ -84,6 +84,23 @@ const worker = new Worker('scrapeQueue', async (job) => {
     const textHash = crypto.createHash('sha256').update(testoGrezzo).digest('hex');
     const durationMs = Date.now() - startTime;
 
+    // Salva nel DB: datiComputati è il bus di comunicazione tra worker
+    const immobile = await prisma.immobile.findUnique({ where: { jobId } });
+    const datiAttuali = immobile?.datiComputati ? JSON.parse(immobile.datiComputati) : {};
+    await prisma.immobile.update({
+      where: { jobId },
+      data: {
+        datiComputati: JSON.stringify({
+          ...datiAttuali,
+          testoGrezzo,
+          metadata,
+          scraperUsed,
+          textHash,
+        }),
+      },
+    });
+    await prisma.job.update({ where: { id: jobId }, data: { status: 'SCRAPING_DONE' } });
+
     await recordJobEvent(jobId, 'SCRAPE_COMPLETED', {
       urlProcessed: url,
       textLength: testoGrezzo.length,

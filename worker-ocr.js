@@ -11,6 +11,7 @@
 
 const { Worker } = require('bullmq');
 const crypto = require('crypto');
+const prisma = require('./db');
 const { recordJobEvent } = require('./orchestrator');
 
 const WORKER_ID = `ocr-${crypto.randomBytes(4).toString('hex')}`;
@@ -22,37 +23,38 @@ const redisConnection = {
 };
 
 const worker = new Worker('ocrQueue', async (job) => {
-  const { jobId, urlOriginale, testoGrezzo, metadata } = job.data;
+  const { jobId } = job.data;
   const startTime = Date.now();
 
   try {
     console.log(`[OCR ${WORKER_ID}] Processing Job: ${jobId}`);
+    await recordJobEvent(jobId, 'OCR_STARTED', { source: 'db_bus' }, WORKER_ID);
 
-    await recordJobEvent(jobId, 'OCR_COMPLETED', { source: 'scraper_output' }, WORKER_ID);
+    // Legge testoGrezzo dal DB (salvato dal worker-scraper)
+    const immobile = await prisma.immobile.findUnique({ where: { jobId } });
+    const datiAttuali = immobile?.datiComputati ? JSON.parse(immobile.datiComputati) : {};
+    const testoGrezzo = datiAttuali.testoGrezzo || '';
+    const metadata = datiAttuali.metadata || {};
+    const urlOriginale = immobile?.urlAsta || '';
 
-    // In questa versione, testoGrezzo è già estratto da Puppeteer
-    // Se fosse un PDF binario, applicheremmo Tesseract qui
+    if (!testoGrezzo) throw new Error('testoGrezzo non trovato nel DB — scraper non completato?');
+
+    // Passthrough: il testo è già pulito dallo scraper
     const testoOCR = testoGrezzo;
 
-    const durationMs = Date.now() - startTime;
-
-    await recordJobEvent(
-      jobId,
-      'OCR_COMPLETED',
-      {
-        textLength: testoOCR.length,
-        confidence: 1.0, // Puppeteer è 100% accurato
+    // Salva testoOCR nel DB
+    await prisma.immobile.update({
+      where: { jobId },
+      data: {
+        datiComputati: JSON.stringify({ ...datiAttuali, testoOCR }),
       },
-      WORKER_ID,
-      durationMs
-    );
+    });
+    await prisma.job.update({ where: { id: jobId }, data: { status: 'OCR_DONE' } });
 
-    return {
-      jobId,
-      urlOriginale,
-      testoOCR,
-      metadata,
-    };
+    const durationMs = Date.now() - startTime;
+    await recordJobEvent(jobId, 'OCR_COMPLETED', { textLength: testoOCR.length, confidence: 1.0 }, WORKER_ID, durationMs);
+
+    return { jobId, urlOriginale, testoOCR, metadata };
   } catch (err) {
     console.error(`[OCR ${WORKER_ID}] Error for Job ${jobId}:`, err.message);
 

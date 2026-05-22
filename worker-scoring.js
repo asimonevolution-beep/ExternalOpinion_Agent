@@ -77,15 +77,23 @@ function eseguiMotoreDeterministico(datiAI, parametriMercato) {
 // ============================================================================
 
 const worker = new Worker('deterministicScoringQueue', async (job) => {
-  const { jobId, urlOriginale, datiEstrattiEValidati, metadata, aiModel } = job.data;
+  const { jobId } = job.data;
   const startTime = Date.now();
 
   try {
     console.log(`[SCORING ${WORKER_ID}] Processing Job: ${jobId}`);
     await recordJobEvent(jobId, 'SCORING_STARTED', {}, WORKER_ID);
 
-    // Leggi parametri di mercato da Immobile (valorizzati al momento della richiesta)
+    // Legge datiAI e parametri dal DB (salvati dal worker-llm)
     const immobile = await prisma.immobile.findUnique({ where: { jobId } });
+    const datiAttuali = immobile?.datiComputati ? JSON.parse(immobile.datiComputati) : {};
+    const datiEstrattiEValidati = datiAttuali.datiAI;
+    const aiModel = datiAttuali.aiModel || 'unknown';
+    const urlOriginale = immobile?.urlAsta || '';
+    const metadata = datiAttuali.metadata || {};
+
+    if (!datiEstrattiEValidati) throw new Error('datiAI non trovati nel DB — LLM non completato?');
+
     const parametriMercato = {
       valoreOMI:       immobile?.valoreOMI || 2100,
       trendZona:       0.02,
@@ -135,7 +143,7 @@ const worker = new Worker('deterministicScoringQueue', async (job) => {
         roi:                         calcoliScoring.roi,
         roiConveniente:              calcoliScoring.roiConveniente,
         confidenceScore:             datiEstrattiEValidati.confidence,
-        datiComputati:               JSON.stringify({ calcoliScoring, spiegazione, aiModel: aiModel || 'unknown' }),
+        datiComputati:               JSON.stringify({ calcoliScoring, spiegazione, hashScoring, aiModel: aiModel || 'unknown', datiAI: datiEstrattiEValidati }),
       },
     });
 

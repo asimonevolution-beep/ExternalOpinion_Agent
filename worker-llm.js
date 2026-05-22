@@ -49,13 +49,21 @@ const SchemaEstrazioneAI = z.object({
 });
 
 const worker = new Worker('llmExtractionQueue', async (job) => {
-  const { jobId, urlOriginale, testoOCR, metadata } = job.data;
+  const { jobId } = job.data;
   const startTime = Date.now();
 
   try {
     console.log(`[LLM ${WORKER_ID}] Processing Job: ${jobId}`);
-
     await recordJobEvent(jobId, 'LLM_PARSE_STARTED', {}, WORKER_ID);
+
+    // Legge testoOCR dal DB (salvato dal worker-ocr)
+    const immobile = await prisma.immobile.findUnique({ where: { jobId } });
+    const datiAttuali = immobile?.datiComputati ? JSON.parse(immobile.datiComputati) : {};
+    const testoOCR = datiAttuali.testoOCR || datiAttuali.testoGrezzo || '';
+    const metadata = datiAttuali.metadata || {};
+    const urlOriginale = immobile?.urlAsta || '';
+
+    if (!testoOCR) throw new Error('testoOCR non trovato nel DB — OCR non completato?');
 
     // Estrai con fallback (Ollama → OpenAI → Claude)
     const extractionResult = await estraiDatiConFallback(testoOCR);
@@ -69,34 +77,31 @@ const worker = new Worker('llmExtractionQueue', async (job) => {
     // Validazione confidence (>= 0.80)
     validateConfidenceThreshold(datiEstrattiEValidati.confidence, 0.8);
 
-    // Salva versione modello usato
-    const modelHash = crypto
-      .createHash('sha256')
-      .update(extractionResult.model)
-      .digest('hex');
+    // Salva datiAI nel DB per il worker-scoring
+    const immobileAggiornato = await prisma.immobile.findUnique({ where: { jobId } });
+    const datiAggiornati = immobileAggiornato?.datiComputati ? JSON.parse(immobileAggiornato.datiComputati) : {};
+    await prisma.immobile.update({
+      where: { jobId },
+      data: {
+        datiComputati: JSON.stringify({
+          ...datiAggiornati,
+          datiAI: datiEstrattiEValidati,
+          aiModel: extractionResult.model,
+        }),
+      },
+    });
+    await prisma.job.update({ where: { id: jobId }, data: { status: 'LLM_DONE' } });
 
+    const modelHash = crypto.createHash('sha256').update(extractionResult.model).digest('hex');
     const durationMs = Date.now() - startTime;
 
-    await recordJobEvent(
-      jobId,
-      'LLM_PARSE_COMPLETED',
-      {
-        confidence: datiEstrattiEValidati.confidence,
-        model: extractionResult.model,
-        duration: durationMs,
-      },
-      WORKER_ID,
-      durationMs,
-      extractionResult.model
-    );
+    await recordJobEvent(jobId, 'LLM_PARSE_COMPLETED', {
+      confidence: datiEstrattiEValidati.confidence,
+      model: extractionResult.model,
+      duration: durationMs,
+    }, WORKER_ID, durationMs, extractionResult.model);
 
-    return {
-      jobId,
-      urlOriginale,
-      datiEstrattiEValidati,
-      metadata,
-      aiModel: extractionResult.model,
-    };
+    return { jobId, urlOriginale, datiEstrattiEValidati, metadata, aiModel: extractionResult.model };
   } catch (err) {
     console.error(`[LLM ${WORKER_ID}] Error for Job ${jobId}:`, err.message);
 

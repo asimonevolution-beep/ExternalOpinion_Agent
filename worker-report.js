@@ -202,17 +202,23 @@ async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValida
 // ============================================================================
 
 const worker = new Worker('reportRenderQueue', async (job) => {
-  const { jobId, calcoliScoring, spiegazione, hashScoring, urlOriginale } = job.data;
+  const { jobId } = job.data;
   const startTime = Date.now();
 
   try {
     console.log(`[REPORT ${WORKER_ID}] Processing Job: ${jobId}`);
     await recordJobEvent(jobId, 'REPORT_STARTED', {}, WORKER_ID);
 
-    // Leggi datiEstrattiEValidati da DB
+    // Legge tutti i dati dal DB (salvati dai worker precedenti)
     const immobile = await prisma.immobile.findUnique({ where: { jobId } });
     const datiComputati = immobile?.datiComputati ? JSON.parse(immobile.datiComputati) : {};
-    const datiEstrattiEValidati = datiComputati?.datiEstrazione || { confidence: 0.9, source: { document: 'perizia.pdf' } };
+    const calcoliScoring = datiComputati.calcoliScoring;
+    const spiegazione    = datiComputati.spiegazione;
+    const hashScoring    = datiComputati.hashScoring || '';
+    const urlOriginale   = immobile?.urlAsta || '';
+    const datiEstrattiEValidati = datiComputati.datiAI || { confidence: 0.9, source: { document: 'perizia.pdf' } };
+
+    if (!calcoliScoring) throw new Error('calcoliScoring non trovati nel DB — scoring non completato?');
 
     // Genera PDF
     const pdfBuffer = await generaPDF(
