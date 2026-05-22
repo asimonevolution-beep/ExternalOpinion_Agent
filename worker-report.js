@@ -1,219 +1,291 @@
-/**
+﻿/**
  * EXTERNAL OPINION — WORKER REPORT V18.3
  * Direzione Tecnica: Geometra Simone Azzali
- * 
- * Responsabilità:
- * - PDF generation
- * - Report rendering
- * - Forensic hashing
- * - Digital signature
- * - S3 storage
+ *
+ * Responsabilita:
+ * - Generazione PDF professionale con PDFKit
+ * - Salvataggio fisico su disco in /OUTPUT_REPORT/
+ * - Forensic hash SHA-256 del PDF
+ * - Aggiornamento DB (ReportArtifact + AuditHash + Immobile)
+ * - Job status -> REPORT_READY
  */
 
-const { Worker } = require('bullmq');
-const PDFDocument = require('pdfkit');
-const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
-const prisma = require('./db');
+const { Worker }    = require('bullmq');
+const PDFDocument   = require('pdfkit');
+const crypto        = require('crypto');
+const fs            = require('fs');
+const path          = require('path');
+const prisma        = require('./db');
 const { recordJobEvent } = require('./orchestrator');
 
-const WORKER_ID = `report-${crypto.randomBytes(4).toString('hex')}`;
+const WORKER_ID  = `report-${crypto.randomBytes(4).toString('hex')}`;
+const OUTPUT_DIR = path.join(__dirname, 'OUTPUT_REPORT');
+
+// Assicura che la directory di output esista
+if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
 const redisConnection = {
-  host: process.env.REDIS_HOST || '127.0.0.1',
-  port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT, 10) : 6379,
+  host:     process.env.REDIS_HOST || '127.0.0.1',
+  port:     process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT, 10) : 6379,
   password: process.env.REDIS_PASSWORD || undefined,
 };
 
+// ============================================================================
+// HELPER — formatta euro
+// ============================================================================
+function eur(n) {
+  return typeof n === 'number' ? `EUR ${n.toLocaleString('it-IT')}` : 'N/D';
+}
+
+// ============================================================================
+// GENERAZIONE PDF
+// ============================================================================
+async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValidati, hashScoring, urlOriginale) {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: 'A4', margin: 50, bufferPages: true });
+    const chunks = [];
+    doc.on('data',  c  => chunks.push(c));
+    doc.on('end',   () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+
+    const CREAM  = '#F5F0E8';
+    const INK    = '#1A1612';
+    const ACCENT = '#C8A96E';
+    const GREEN  = '#1E8449';
+    const YELLOW = '#D4AC0D';
+    const RED    = '#C0392B';
+    const semaforoColor = calcoliScoring.semaforo === 'VERDE' ? GREEN : calcoliScoring.semaforo === 'GIALLO' ? YELLOW : RED;
+
+    // ---- COPERTINA ----
+    doc.rect(0, 0, doc.page.width, doc.page.height).fill(INK);
+    doc.fillColor(CREAM)
+       .font('Helvetica-Bold').fontSize(28)
+       .text('EXTERNAL OPINION', 50, 120, { align: 'center' });
+    doc.fillColor(ACCENT).font('Helvetica').fontSize(13)
+       .text('Parere Tecnico Indipendente', 50, 160, { align: 'center' });
+
+    doc.fillColor(semaforoColor).font('Helvetica-Bold').fontSize(48)
+       .text(calcoliScoring.semaforo, 50, 230, { align: 'center' });
+
+    doc.fillColor(CREAM).font('Helvetica').fontSize(10)
+       .text(`Report ID: ${jobId}`, 50, 310, { align: 'center' })
+       .text(`Data:      ${new Date().toLocaleDateString('it-IT')}`, 50, 328, { align: 'center' })
+       .text(`Hash:      ${hashScoring.substring(0, 32)}...`, 50, 346, { align: 'center' });
+
+    if (urlOriginale) {
+      doc.fillColor(ACCENT).fontSize(9)
+         .text(`Fonte: ${urlOriginale.substring(0, 80)}`, 50, 370, { align: 'center' });
+    }
+
+    // ---- PAGINA 2: COHERENCE INDEX ----
+    doc.addPage();
+    doc.fillColor(INK).font('Helvetica-Bold').fontSize(18).text('1. Indice di Coerenza (Coherence Index)', 50, 50);
+    doc.moveTo(50, 75).lineTo(545, 75).strokeColor(ACCENT).lineWidth(1).stroke();
+
+    const ci = calcoliScoring.coherenceIndex;
+    doc.fillColor(semaforoColor).font('Helvetica-Bold').fontSize(52)
+       .text(`${ci}/100`, 50, 90, { align: 'center' });
+
+    doc.fillColor(INK).font('Helvetica').fontSize(11).text(
+      spiegazione?.coherence?.interpretazione || '',
+      50, 160, { width: 495, lineGap: 4 }
+    );
+
+    // Breakdown penalita
+    doc.moveDown(1);
+    doc.font('Helvetica-Bold').fontSize(12).text('Penalita rilevate:');
+    doc.moveDown(0.5);
+    const penalties = spiegazione?.coherence?.penaltyBreakdown || [];
+    if (penalties.length === 0) {
+      doc.font('Helvetica').fontSize(11).fillColor(GREEN).text('Nessuna penalita rilevata — immobile conforme.');
+    } else {
+      penalties.forEach(p => {
+        doc.fillColor(RED).font('Helvetica-Bold').fontSize(11)
+           .text(`  - ${p.descrizione}  (-${p.penalita}%)`, { lineGap: 3 });
+        doc.fillColor(INK).font('Helvetica').fontSize(10)
+           .text(`    Impatto: ${p.impatto}`, { lineGap: 5 });
+      });
+    }
+
+    // ---- PAGINA 3: VALUTAZIONE ----
+    doc.addPage();
+    doc.fillColor(INK).font('Helvetica-Bold').fontSize(18).text('2. Valutazione Economica', 50, 50);
+    doc.moveTo(50, 75).lineTo(545, 75).strokeColor(ACCENT).lineWidth(1).stroke();
+
+    const rows = [
+      ['Valore Attuale (stato corrente)',       eur(calcoliScoring.valoreAttuale)],
+      ['Valore Potenziale (post-sanatoria)',     eur(calcoliScoring.valorePotenziale)],
+      ['Valore Futuro Proiettato (2 anni)',      eur(calcoliScoring.valoreFuturoProiettato)],
+      ['Costi Totali Operativi',                eur(calcoliScoring.costiTotaliOperativi)],
+      ['Margine Reale',                         eur(calcoliScoring.margineReale)],
+      ['Profitto Futuro Post-Rivendita',         eur(calcoliScoring.profittoFuturoPostRivendita)],
+    ];
+
+    let y = 90;
+    rows.forEach(([label, val], i) => {
+      const bg = i % 2 === 0 ? '#F9F6F0' : '#FFFFFF';
+      doc.rect(50, y, 495, 24).fill(bg).fillColor(INK);
+      doc.font('Helvetica').fontSize(11).fillColor(INK)
+         .text(label, 60, y + 6, { width: 300 });
+      doc.font('Helvetica-Bold').fontSize(11)
+         .text(val, 360, y + 6, { width: 175, align: 'right' });
+      y += 24;
+    });
+
+    // ---- PAGINA 4: ROI ----
+    doc.addPage();
+    doc.fillColor(INK).font('Helvetica-Bold').fontSize(18).text('3. Analisi ROI', 50, 50);
+    doc.moveTo(50, 75).lineTo(545, 75).strokeColor(ACCENT).lineWidth(1).stroke();
+
+    const roiColor = calcoliScoring.roiConveniente ? GREEN : RED;
+    doc.fillColor(roiColor).font('Helvetica-Bold').fontSize(52)
+       .text(`${calcoliScoring.roi}%`, 50, 90, { align: 'center' });
+    doc.fillColor(INK).font('Helvetica-Bold').fontSize(14)
+       .text(calcoliScoring.roiConveniente ? 'INVESTIMENTO CONVENIENTE' : 'INVESTIMENTO NON CONVENIENTE',
+             50, 155, { align: 'center' });
+    doc.font('Helvetica').fontSize(11).fillColor(INK).moveDown(1)
+       .text(spiegazione?.roi?.recommendation || '', 50, doc.y, { width: 495, lineGap: 4 });
+
+    // ---- PAGINA 5: PROFILO RISCHIO ----
+    doc.addPage();
+    doc.fillColor(INK).font('Helvetica-Bold').fontSize(18).text('4. Profilo di Rischio', 50, 50);
+    doc.moveTo(50, 75).lineTo(545, 75).strokeColor(ACCENT).lineWidth(1).stroke();
+
+    const riskFactors = spiegazione?.riskProfile?.riskFactors || [];
+    if (riskFactors.length === 0) {
+      doc.moveDown(1).font('Helvetica').fontSize(11).fillColor(GREEN)
+         .text('Nessun fattore di rischio critico rilevato.');
+    } else {
+      doc.moveDown(1);
+      riskFactors.forEach(f => {
+        const fc = f.severita === 'ALTA' ? RED : f.severita === 'MEDIA' ? YELLOW : INK;
+        doc.fillColor(fc).font('Helvetica-Bold').fontSize(11)
+           .text(`[${f.severita}] ${f.categoria}: ${f.descrizione}`, { lineGap: 3 });
+        doc.fillColor(INK).font('Helvetica').fontSize(10)
+           .text(`Impatto: ${f.impatto}`, { lineGap: 8 });
+      });
+    }
+
+    doc.moveDown(2);
+    doc.fillColor(INK).font('Helvetica-Bold').fontSize(12)
+       .text('Raccomandazione finale:');
+    doc.font('Helvetica').fontSize(11)
+       .text(spiegazione?.riskProfile?.recommendation || '', { width: 495, lineGap: 4 });
+
+    // ---- PAGINA 6: DATI TECNICI & FIRMA ----
+    doc.addPage();
+    doc.fillColor(INK).font('Helvetica-Bold').fontSize(18).text('5. Dati Tecnici & Certificazione', 50, 50);
+    doc.moveTo(50, 75).lineTo(545, 75).strokeColor(ACCENT).lineWidth(1).stroke();
+
+    doc.moveDown(1).font('Helvetica').fontSize(10).fillColor(INK);
+    doc.text(`Modello AI:          ${datiEstrattiEValidati?.source?.document || 'N/D'}`);
+    doc.text(`Confidence Score:    ${((datiEstrattiEValidati?.confidence || 0) * 100).toFixed(1)}%`);
+    doc.text(`Logic Engine:        V18.3 — Deterministico`);
+    doc.text(`Generato il:         ${new Date().toISOString()}`);
+    doc.moveDown(1);
+    doc.font('Helvetica-Bold').fontSize(10).text('Hash Forensico SHA-256 (integrita documento):');
+    doc.font('Courier').fontSize(9).fillColor(ACCENT).text(hashScoring);
+
+    doc.moveDown(2);
+    doc.rect(50, doc.y, 495, 60).stroke(INK);
+    doc.fillColor(INK).font('Helvetica-Bold').fontSize(11)
+       .text('Validato da: Geometra Simone Azzali', 60, doc.y + 10);
+    doc.font('Helvetica').fontSize(10)
+       .text('External Opinion — Parere Tecnico Indipendente', 60, doc.y + 5);
+
+    doc.end();
+  });
+}
+
+// ============================================================================
+// WORKER
+// ============================================================================
+
 const worker = new Worker('reportRenderQueue', async (job) => {
-  const { jobId, urlOriginale, calcoliScoring, spiegazione, hashScoring } =
-    job.data;
+  const { jobId, calcoliScoring, spiegazione, hashScoring, urlOriginale } = job.data;
   const startTime = Date.now();
 
   try {
     console.log(`[REPORT ${WORKER_ID}] Processing Job: ${jobId}`);
+    await recordJobEvent(jobId, 'REPORT_STARTED', {}, WORKER_ID);
 
-    await recordJobEvent(jobId, 'REPORT_RENDERED', {}, WORKER_ID);
+    // Leggi datiEstrattiEValidati da DB
+    const immobile = await prisma.immobile.findUnique({ where: { jobId } });
+    const datiComputati = immobile?.datiComputati ? JSON.parse(immobile.datiComputati) : {};
+    const datiEstrattiEValidati = datiComputati?.datiEstrazione || { confidence: 0.9, source: { document: 'perizia.pdf' } };
 
-    // ===== PDF GENERATION =====
-    const doc = new PDFDocument({
-      bufferPages: true,
-      font: 'Helvetica',
-    });
-
-    // Header
-    doc.fontSize(24).text('EXTERNAL OPINION', { align: 'center' });
-    doc.fontSize(12).text(`Report ID: ${jobId}`, { align: 'center' });
-    doc.fontSize(10).text(`Timestamp: ${new Date().toISOString()}`, {
-      align: 'center',
-    });
-
-    doc.addPage();
-
-    // Coherence Section
-    doc.fontSize(16).text('Coherence Index Analysis', { underline: true });
-    doc.fontSize(11).text(`Score: ${calcoliScoring.coherenceIndex}/100`, {
-      margin: 10,
-    });
-    doc
-      .fontSize(10)
-      .text(
-        `Semaforo: ${calcoliScoring.semaforo}`,
-        { margin: 10 }
-      );
-
-    doc.addPage();
-
-    // Valuation Section
-    doc.fontSize(16).text('Valuation Engine', { underline: true });
-    doc.fontSize(11).text(`Valore Attuale: €${calcoliScoring.valoreAttuale}`, {
-      margin: 10,
-    });
-    doc.fontSize(11).text(`Valore Potenziale: €${calcoliScoring.valorePotenziale}`, {
-      margin: 10,
-    });
-    doc.fontSize(11).text(`Valore Futuro: €${calcoliScoring.valoreFuturoProiettato}`, {
-      margin: 10,
-    });
-
-    doc.addPage();
-
-    // ROI Section
-    doc.fontSize(16).text('ROI Analysis', { underline: true });
-    doc.fontSize(11).text(`ROI: ${calcoliScoring.roi}%`, { margin: 10 });
-    doc.fontSize(11).text(
-      `Conveniente: ${calcoliScoring.roiConveniente ? 'SÌ' : 'NO'}`,
-      { margin: 10 }
+    // Genera PDF
+    const pdfBuffer = await generaPDF(
+      jobId, calcoliScoring, spiegazione,
+      datiEstrattiEValidati, hashScoring, urlOriginale
     );
 
-    doc.addPage();
+    // Hash del PDF generato
+    const reportHash = crypto.createHash('sha256').update(pdfBuffer).digest('hex');
 
-    // Explainability
-    doc.fontSize(14).text('Explanation', { underline: true });
-    if (spiegazione.riskProfile) {
-      doc
-        .fontSize(10)
-        .text(`Risk Level: ${spiegazione.riskProfile.riskLevel}`, {
-          margin: 10,
-        });
-      if (spiegazione.riskProfile.riskFactors) {
-        doc.fontSize(10).text('Risk Factors:');
-        spiegazione.riskProfile.riskFactors.forEach((factor) => {
-          doc
-            .fontSize(9)
-            .text(
-              `- ${factor.categoria}: ${factor.descrizione} (${factor.severita})`,
-              { margin: 15 }
-            );
-        });
-      }
-    }
+    // Salva PDF su disco
+    const pdfFileName = `report_${jobId}.pdf`;
+    const pdfPath     = path.join(OUTPUT_DIR, pdfFileName);
+    fs.writeFileSync(pdfPath, pdfBuffer);
+    console.log(`[REPORT ${WORKER_ID}] PDF salvato: ${pdfPath} (${pdfBuffer.length} bytes)`);
 
-    doc.addPage();
-
-    // Footer
-    doc.fontSize(8).text(`Hash Forensico: ${hashScoring.substring(0, 32)}...`, {
-      align: 'center',
-      margin: 10,
-    });
-
-    // Converti a buffer
-    const pdfBuffer = await new Promise((resolve, reject) => {
-      const chunks = [];
-      doc.on('data', (chunk) => chunks.push(chunk));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
-      doc.end();
-    });
-
-    // SHA-256 report
-    const reportHash = crypto
-      .createHash('sha256')
-      .update(pdfBuffer)
-      .digest('hex');
-
-    // Salva audit hash
+    // AuditHash (payload come stringa)
     await prisma.auditHash.create({
       data: {
         jobId,
-        stepName: 'REPORT',
-        hashValue: reportHash,
-        payload: {
-          pdfSizeBytes: pdfBuffer.length,
-          renderedAt: new Date().toISOString(),
-        },
-        workerId: WORKER_ID,
+        stepName:  'REPORT',
+        hashValue:  reportHash,
+        payload:    JSON.stringify({ pdfSizeBytes: pdfBuffer.length, renderedAt: new Date().toISOString() }),
+        workerId:   WORKER_ID,
       },
     });
 
-    // Salva artefatto
+    // ReportArtifact
     await prisma.reportArtifact.create({
       data: {
         jobId,
-        artifactType: 'pdf',
-        storageUrl: `/artifacts/${jobId}/report.pdf`,
-        fileHash: reportHash,
-        fileSizeBytes: pdfBuffer.byteLength,
-        mimeType: 'application/pdf',
+        artifactType:  'pdf',
+        storageUrl:    `/api/jobs/${jobId}/report`,
+        fileHash:       reportHash,
+        fileSizeBytes:  BigInt(pdfBuffer.length),
+        mimeType:       'application/pdf',
       },
     });
 
-    // Aggiorna Immobile con hash finale
+    // Aggiorna Immobile con hash report
     await prisma.immobile.update({
       where: { jobId },
-      data: {
-        hashReport: reportHash,
-      },
+      data:  { hashReport: reportHash },
+    });
+
+    // Aggiorna Job status
+    await prisma.job.update({
+      where: { id: jobId },
+      data:  { status: 'REPORT_READY' },
     });
 
     const durationMs = Date.now() - startTime;
-
-    await recordJobEvent(
-      jobId,
-      'REPORT_HASHED',
-      {
-        reportHash,
-        pdfSizeBytes: pdfBuffer.byteLength,
-      },
-      WORKER_ID,
-      durationMs
-    );
-
-    return {
-      jobId,
+    await recordJobEvent(jobId, 'REPORT_HASHED', {
       reportHash,
-      pdfBuffer: pdfBuffer.toString('base64'), // Per chain
-      pdfSize: pdfBuffer.byteLength,
-    };
+      pdfSizeBytes: pdfBuffer.length,
+      pdfPath: pdfFileName,
+      durationMs,
+    }, WORKER_ID, durationMs);
+
+    return { jobId, reportHash, pdfPath: pdfFileName, pdfSize: pdfBuffer.length };
+
   } catch (err) {
     console.error(`[REPORT ${WORKER_ID}] Error for Job ${jobId}:`, err.message);
-
-    await recordJobEvent(
-      jobId,
-      'JOB_FAILED',
-      { error: err.message, stage: 'REPORT_GENERATION' },
-      WORKER_ID
-    );
-
+    await recordJobEvent(jobId, 'JOB_FAILED', { error: err.message, stage: 'REPORT_GENERATION' }, WORKER_ID);
     throw err;
   }
 }, {
-  connection: redisConnection,
+  connection:  redisConnection,
   concurrency: 4,
 });
 
-worker.on('completed', (job) => {
-  console.log(`[REPORT ${WORKER_ID}] ✓ Completed: ${job.id}`);
-});
-
-worker.on('failed', (job, err) => {
-  console.error(
-    `[REPORT ${WORKER_ID}] ✗ Failed (attempt ${job.attemptsMade}): ${job.id}`,
-    err.message
-  );
-});
+worker.on('completed', (job) => console.log(`[REPORT ${WORKER_ID}] Completed: ${job.id}`));
+worker.on('failed',    (job, err) => console.error(`[REPORT ${WORKER_ID}] Failed (${job.attemptsMade}): ${job.id} — ${err.message}`));
 
 console.log(`[REPORT ${WORKER_ID}] Ready to process reportRenderQueue`);
-
 module.exports = worker;

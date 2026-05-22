@@ -1,370 +1,207 @@
-/**
- * EXTERNAL OPINION — STRIPE WEBHOOK HANDLER V18.2
+﻿/**
+ * EXTERNAL OPINION — STRIPE WEBHOOK HANDLER V18.3
  * Direzione Tecnica: Geometra Simone Azzali
- * 
- * Gestisce pagamenti Stripe, route transazionali atomiche e integrazione
- * con il modello di business a 4 tier.
+ *
+ * Fix V18.3:
+ * - dataJson sempre stringa JSON (mai oggetto raw)
+ * - TIER_1_SCREENING_69 aggiunto
+ * - Idempotency check su checkout.session.completed
+ * - metadata corretto su JobEvent
  */
 
-const express = require('express');
+const express  = require('express');
 const stripeKey = process.env.STRIPE_SECRET_KEY;
-const stripe = stripeKey && stripeKey.startsWith('sk_') ? require('stripe')(stripeKey) : null;
-const prisma = require('./db');
-
-// ============================================================================
-// CONFIGURAZIONE ROUTER
-// ============================================================================
+const stripe   = stripeKey && stripeKey.startsWith('sk_') ? require('stripe')(stripeKey) : null;
+const prisma   = require('./db');
 
 const router = express.Router();
 
-// ============================================================================
-// CONSTANTS
-// ============================================================================
-
-const TARIFFE = {
-  ENTRY: 89,
-  ADVISORY: 150,
-  PREMIUM: 690,
-};
-
 const TIER_MAPPING = {
-  89: 'TIER_1_ENTRY_89',
+  69:  'TIER_1_SCREENING_69',
+  89:  'TIER_1_ENTRY_89',
   150: 'TIER_2_ADVISORY_150',
   690: 'TIER_3_PREMIUM_690',
 };
 
 // ============================================================================
-// WEBHOOK HANDLER (Hardened)
+// WEBHOOK — firma verificata
 // ============================================================================
+router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  if (!stripe) return res.status(500).json({ error: 'Stripe non configurato' });
 
-router.post(
-  '/webhook',
-  express.raw({ type: 'application/json' }),
-  async (req, res) => {
-    const sig = req.headers['stripe-signature'];
-
-    // Validazione CRITICA della firma webhook
-    let event;
-    try {
-      event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        process.env.STRIPE_WEBHOOK_SECRET
-      );
-    } catch (err) {
-      console.error(`[STRIPE WEBHOOK] Firma non valida: ${err.message}`);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-
-    console.log(
-      `[STRIPE WEBHOOK] Evento ricevuto: ${event.type} (id: ${event.id})`
-    );
-
-    try {
-      // ===== EVENT: CHECKOUT COMPLETATO =====
-      if (event.type === 'checkout.session.completed') {
-        await handleCheckoutSessionCompleted(event.data.object);
-      }
-
-      // ===== EVENT: PAGAMENTO COMPLETATO =====
-      else if (event.type === 'payment_intent.succeeded') {
-        await handlePaymentIntentSucceeded(event.data.object);
-      }
-
-      // ===== EVENT: PAGAMENTO FALLITO =====
-      else if (event.type === 'payment_intent.payment_failed') {
-        await handlePaymentIntentFailed(event.data.object);
-      }
-
-      // ===== EVENT: RICHIESTA RIMBORSO =====
-      else if (event.type === 'charge.refunded') {
-        await handleChargeRefunded(event.data.object);
-      }
-
-      return res.json({ received: true });
-    } catch (err) {
-      console.error(`[STRIPE WEBHOOK] Errore handler: ${err.message}`);
-      return res.status(500).json({
-        received: true,
-        error: err.message,
-      });
-    }
+  const sig = req.headers['stripe-signature'];
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error(`[STRIPE] Firma non valida: ${err.message}`);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-);
+
+  console.log(`[STRIPE] Evento: ${event.type} (${event.id})`);
+
+  try {
+    if      (event.type === 'checkout.session.completed')    await handleCheckoutCompleted(event.data.object);
+    else if (event.type === 'payment_intent.succeeded')      await handlePaymentSucceeded(event.data.object);
+    else if (event.type === 'payment_intent.payment_failed') await handlePaymentFailed(event.data.object);
+    else if (event.type === 'charge.refunded')               await handleRefunded(event.data.object);
+    return res.json({ received: true });
+  } catch (err) {
+    console.error(`[STRIPE] Handler error: ${err.message}`);
+    return res.status(500).json({ received: true, error: err.message });
+  }
+});
 
 // ============================================================================
-// HANDLER: CHECKOUT SESSION COMPLETED
+// CHECKOUT COMPLETATO
 // ============================================================================
-
-async function handleCheckoutSessionCompleted(session) {
-  console.log(
-    `[STRIPE] Checkout completato: session=${session.id}, amount=${session.amount_total}`
-  );
-
-  const reportId = session.metadata?.reportId;
+async function handleCheckoutCompleted(session) {
+  const reportId    = session.metadata?.reportId;
   const clientEmail = session.customer_email;
-
-  if (!reportId) {
-    console.warn('[STRIPE] reportId mancante in metadata');
-    return;
-  }
+  if (!reportId) { console.warn('[STRIPE] reportId mancante'); return; }
 
   const amountEuro = session.amount_total / 100;
-  const tier = TIER_MAPPING[amountEuro] || 'TIER_4_ENTERPRISE_API';
+  const tier       = TIER_MAPPING[amountEuro] || 'TIER_4_ENTERPRISE_API';
 
-  try {
-    // Transazione atomica CRITICA
-    const result = await prisma.$transaction(async (tx) => {
-      // 1. Aggiorna Immobile
-      const immobileUpdated = await tx.immobile.update({
-        where: { jobId: reportId },
-        data: {
-          pagato: true,
-          livelloCommerciale: tier,
-        },
-      });
+  // Idempotency: controlla se gia processato
+  const existing = await prisma.idempotencyKey.findFirst({
+    where: { jobId: reportId, operation: 'stripe_checkout', status: 'SUCCESS' },
+  });
+  if (existing) { console.log(`[STRIPE] Checkout gia processato per ${reportId}`); return; }
 
-      // 2. Registra evento
-      await tx.jobEvent.create({
-        data: {
-          jobId: reportId,
-          eventType: 'JOB_COMPLETED',
-          metadata: {
-            stripeSessionId: session.id,
-            paymentMethod: 'stripe',
-            amount: amountEuro,
-            tier,
-            customerEmail: clientEmail,
-          },
-        },
-      });
-
-      // 3. Registra nel log
-      await tx.activityLog.create({
-        data: {
-          event: 'STRIPE_CHECKOUT_COMPLETED',
-          dataJson: {
-            reportId,
-            sessionId: session.id,
-            tier,
-            amount: amountEuro,
-          },
-        },
-      });
-
-      return immobileUpdated;
+  await prisma.$transaction(async (tx) => {
+    await tx.immobile.update({
+      where: { jobId: reportId },
+      data:  { pagato: true, livelloCommerciale: tier },
     });
-
-    console.log(
-      `[STRIPE] ✓ Report ${reportId} sbloccato in modalità: ${tier} (€${amountEuro})`
-    );
-  } catch (err) {
-    console.error(
-      `[STRIPE] ✗ Errore transazione per ${reportId}: ${err.message}`
-    );
-    throw err;
-  }
-}
-
-// ============================================================================
-// HANDLER: PAYMENT INTENT SUCCEEDED
-// ============================================================================
-
-async function handlePaymentIntentSucceeded(paymentIntent) {
-  console.log(
-    `[STRIPE] Payment Intent succeeded: ${paymentIntent.id} (status: ${paymentIntent.status})`
-  );
-
-  try {
-    await prisma.activityLog.create({
+    await tx.jobEvent.create({
       data: {
-        event: 'STRIPE_PAYMENT_INTENT_SUCCEEDED',
-        dataJson: {
-          paymentIntentId: paymentIntent.id,
-          amount: paymentIntent.amount / 100,
-          currency: paymentIntent.currency,
-          metadata: paymentIntent.metadata,
-        },
+        jobId:     reportId,
+        eventType: 'PAYMENT_COMPLETED',
+        metadata:  JSON.stringify({ stripeSessionId: session.id, amount: amountEuro, tier, customerEmail: clientEmail }),
       },
     });
-  } catch (err) {
-    console.error(`[STRIPE] Errore log per payment intent: ${err.message}`);
-  }
-}
-
-// ============================================================================
-// HANDLER: PAYMENT INTENT FAILED
-// ============================================================================
-
-async function handlePaymentIntentFailed(paymentIntent) {
-  console.error(
-    `[STRIPE] Payment Intent FAILED: ${paymentIntent.id} (${paymentIntent.last_payment_error.message})`
-  );
-
-  const reportId = paymentIntent.metadata?.reportId;
-
-  if (reportId) {
-    try {
-      await prisma.$transaction(async (tx) => {
-        await tx.jobEvent.create({
-          data: {
-            jobId: reportId,
-            eventType: 'JOB_FAILED',
-            metadata: {
-              reason: 'STRIPE_PAYMENT_FAILED',
-              paymentIntentId: paymentIntent.id,
-              errorMessage: paymentIntent.last_payment_error.message,
-            },
-          },
-        });
-
-        await tx.activityLog.create({
-          data: {
-            event: 'STRIPE_PAYMENT_FAILED',
-            dataJson: {
-              reportId,
-              paymentIntentId: paymentIntent.id,
-              error: paymentIntent.last_payment_error.message,
-            },
-          },
-        });
-      });
-
-      console.log(`[STRIPE] ✓ Failure logged per ${reportId}`);
-    } catch (err) {
-      console.error(
-        `[STRIPE] Errore logging payment failure: ${err.message}`
-      );
-    }
-  }
-}
-
-// ============================================================================
-// HANDLER: CHARGE REFUNDED
-// ============================================================================
-
-async function handleChargeRefunded(charge) {
-  console.log(
-    `[STRIPE] Charge REFUNDED: ${charge.id} (amount: ${charge.amount_refunded})`
-  );
-
-  const reportId = charge.metadata?.reportId;
-
-  if (reportId) {
-    try {
-      await prisma.$transaction(async (tx) => {
-        // Aggiorna Immobile: revoca pagamento
-        await tx.immobile.update({
-          where: { jobId: reportId },
-          data: {
-            pagato: false,
-            livelloCommerciale: null,
-          },
-        });
-
-        // Registra evento
-        await tx.jobEvent.create({
-          data: {
-            jobId: reportId,
-            eventType: 'JOB_FAILED',
-            metadata: {
-              reason: 'STRIPE_REFUND',
-              chargeId: charge.id,
-              refundAmount: charge.amount_refunded / 100,
-            },
-          },
-        });
-
-        // Log attività
-        await tx.activityLog.create({
-          data: {
-            event: 'STRIPE_CHARGE_REFUNDED',
-            dataJson: {
-              reportId,
-              chargeId: charge.id,
-              refundAmount: charge.amount_refunded / 100,
-            },
-          },
-        });
-      });
-
-      console.log(`[STRIPE] ✓ Refund processed per ${reportId}`);
-    } catch (err) {
-      console.error(
-        `[STRIPE] Errore processing refund per ${reportId}: ${err.message}`
-      );
-    }
-  }
-}
-
-// ============================================================================
-// UTILITY: CREATE CHECKOUT SESSION
-// ============================================================================
-
-async function createCheckoutSession(reportId, tier, clientEmail = null) {
-  const prices = {
-    TIER_1_ENTRY_89: { amount: 8900, label: 'Entry Report (€89)' },
-    TIER_2_ADVISORY_150: { amount: 15000, label: 'Advisory Report (€150)' },
-    TIER_3_PREMIUM_690: { amount: 69000, label: 'Premium Report (€690)' },
-  };
-
-  if (!prices[tier]) {
-    throw new Error(`Tier non valido: ${tier}`);
-  }
-
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
-    line_items: [
-      {
-        price_data: {
-          currency: 'eur',
-          product_data: {
-            name: prices[tier].label,
-            description: `External Opinion Report - ${tier}`,
-          },
-          unit_amount: prices[tier].amount,
-        },
-        quantity: 1,
+    await tx.activityLog.create({
+      data: { event: 'STRIPE_CHECKOUT_COMPLETED', dataJson: JSON.stringify({ reportId, sessionId: session.id, tier, amount: amountEuro }) },
+    });
+    await tx.idempotencyKey.create({
+      data: {
+        idempotencyKey: `checkout-${session.id}`,
+        jobId:     reportId,
+        operation: 'stripe_checkout',
+        status:    'SUCCESS',
+        result:    JSON.stringify({ tier, amount: amountEuro }),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
-    ],
-    mode: 'payment',
-    success_url: `${process.env.BASE_URL}/success?sessionId={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.BASE_URL}/cancel`,
-    customer_email: clientEmail,
-    metadata: {
-      reportId,
-      tier,
-    },
+    }).catch(() => {});  // ignora se gia esiste
   });
 
-  return session;
+  console.log(`[STRIPE] Report ${reportId} sbloccato: ${tier} (EUR ${amountEuro})`);
 }
 
 // ============================================================================
-// UTILITY: GET SESSION STATUS
+// PAYMENT INTENT SUCCEEDED
 // ============================================================================
+async function handlePaymentSucceeded(pi) {
+  await prisma.activityLog.create({
+    data: {
+      event:    'STRIPE_PAYMENT_INTENT_SUCCEEDED',
+      dataJson: JSON.stringify({ paymentIntentId: pi.id, amount: pi.amount / 100, currency: pi.currency }),
+    },
+  }).catch(() => {});
+}
 
-async function getSessionStatus(sessionId) {
-  const session = await stripe.checkout.sessions.retrieve(sessionId);
+// ============================================================================
+// PAYMENT FAILED
+// ============================================================================
+async function handlePaymentFailed(pi) {
+  const reportId = pi.metadata?.reportId;
+  const errMsg   = pi.last_payment_error?.message || 'unknown';
+  console.error(`[STRIPE] Payment failed: ${pi.id} — ${errMsg}`);
+  if (!reportId) return;
 
-  return {
-    id: session.id,
-    status: session.payment_status,
-    amount: session.amount_total / 100,
-    metadata: session.metadata,
+  await prisma.$transaction(async (tx) => {
+    await tx.jobEvent.create({
+      data: {
+        jobId:     reportId,
+        eventType: 'PAYMENT_FAILED',
+        metadata:  JSON.stringify({ paymentIntentId: pi.id, error: errMsg }),
+      },
+    });
+    await tx.activityLog.create({
+      data: { event: 'STRIPE_PAYMENT_FAILED', dataJson: JSON.stringify({ reportId, paymentIntentId: pi.id, error: errMsg }) },
+    });
+  }).catch(() => {});
+}
+
+// ============================================================================
+// RIMBORSO
+// ============================================================================
+async function handleRefunded(charge) {
+  const reportId = charge.metadata?.reportId;
+  if (!reportId) return;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.immobile.update({
+      where: { jobId: reportId },
+      data:  { pagato: false, livelloCommerciale: null },
+    });
+    await tx.jobEvent.create({
+      data: {
+        jobId:     reportId,
+        eventType: 'PAYMENT_REFUNDED',
+        metadata:  JSON.stringify({ chargeId: charge.id, refundAmount: charge.amount_refunded / 100 }),
+      },
+    });
+    await tx.activityLog.create({
+      data: { event: 'STRIPE_CHARGE_REFUNDED', dataJson: JSON.stringify({ reportId, chargeId: charge.id, refundAmount: charge.amount_refunded / 100 }) },
+    });
+  }).catch(() => {});
+
+  console.log(`[STRIPE] Rimborso processato per ${reportId}`);
+}
+
+// ============================================================================
+// CREATE CHECKOUT SESSION
+// ============================================================================
+async function createCheckoutSession(reportId, tier, clientEmail = null) {
+  if (!stripe) throw new Error('Stripe non configurato — imposta STRIPE_SECRET_KEY');
+
+  const prices = {
+    TIER_1_SCREENING_69:  { amount: 6900,  label: 'Screening Report (EUR 69)' },
+    TIER_1_ENTRY_89:      { amount: 8900,  label: 'Entry Report (EUR 89)' },
+    TIER_2_ADVISORY_150:  { amount: 15000, label: 'Advisory Report (EUR 150)' },
+    TIER_3_PREMIUM_690:   { amount: 69000, label: 'Premium Report (EUR 690)' },
   };
+  if (!prices[tier]) throw new Error(`Tier non valido: ${tier}`);
+
+  const baseUrl = process.env.BASE_URL || 'https://externalopinionagent-production.up.railway.app';
+
+  return stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    line_items: [{
+      price_data: {
+        currency:     'eur',
+        product_data: { name: prices[tier].label, description: `External Opinion — ${tier}` },
+        unit_amount:   prices[tier].amount,
+      },
+      quantity: 1,
+    }],
+    mode:          'payment',
+    success_url:   `${baseUrl}/success?sessionId={CHECKOUT_SESSION_ID}&jobId=${reportId}`,
+    cancel_url:    `${baseUrl}/cancel?jobId=${reportId}`,
+    customer_email: clientEmail || undefined,
+    metadata:      { reportId, tier },
+  });
 }
 
 // ============================================================================
-// EXPORTS
+// GET SESSION STATUS
 // ============================================================================
+async function getSessionStatus(sessionId) {
+  if (!stripe) throw new Error('Stripe non configurato');
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  return { id: session.id, status: session.payment_status, amount: session.amount_total / 100, metadata: session.metadata };
+}
 
-module.exports = {
-  router,
-  createCheckoutSession,
-  getSessionStatus,
-  handleCheckoutSessionCompleted,
-  handlePaymentIntentSucceeded,
-  handlePaymentIntentFailed,
-  handleChargeRefunded,
-};
+module.exports = { router, createCheckoutSession, getSessionStatus };

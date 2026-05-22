@@ -1,9 +1,9 @@
-/**
- * EXTERNAL OPINION — ORCHESTRATORE V18.2 (ENTERPRISE HARDENED)
+﻿/**
+ * EXTERNAL OPINION â€” ORCHESTRATORE V18.2 (ENTERPRISE HARDENED)
  * Direzione Tecnica: Geometra Simone Azzali
  * Architettura: Distributed Deterministic Risk Processing Infrastructure
  * 
- * Responsabilità:
+ * ResponsabilitÃ :
  * - API validation & enqueue (NON compute)
  * - Job lifecycle management
  * - Token authentication
@@ -116,7 +116,7 @@ async function logActivity(event, data) {
     return await prisma.activityLog.create({
       data: {
         event,
-        dataJson: data,
+        dataJson: typeof data === 'string' ? data : JSON.stringify(data),
       },
     });
   } catch (err) {
@@ -166,11 +166,11 @@ async function createJob({ url, email, token, service, zonaDati = {} }) {
         data: {
           jobId: jobRecord.id,
           eventType: 'JOB_CREATED',
-          metadata: {
+          metadata: JSON.stringify({
             url,
             email: email || null,
             service,
-          },
+          }),
           logicEngineVersion: '18.0',
         },
       });
@@ -180,19 +180,9 @@ async function createJob({ url, email, token, service, zonaDati = {} }) {
 
     const { jobRecord } = result;
 
-    // 4. Enqueue a BullMQ (NON-BLOCKING)
-    await analysisQueue.add(
-      'analysis',
-      {
-        jobId: jobRecord.id,
-        payload: jobRecord.payload,
-      },
-      {
-        jobId: jobRecord.id,
-      }
-    );
-
-    console.log(`[JOB CREATO] ${jobRecord.id} - Enqueued su BullMQ`);
+        // 4. NON enqueue direttamente su analysisQueue legacy:
+    // il DAG pipeline viene creato da server-v18.3.js dopo createJob()
+    console.log(`[JOB CREATO] ${jobRecord.id} - Pronto per DAG pipeline`);
     await logActivity('JOB_CREATED', { jobId: jobRecord.id, url });
 
     return jobRecord;
@@ -304,7 +294,7 @@ async function handleStripeCheckoutCompleted(session) {
     });
 
     console.log(
-      `[STRIPE] Report ${targetReportId} sbloccato in modalità: ${tierSelezionato}`
+      `[STRIPE] Report ${targetReportId} sbloccato in modalitÃ : ${tierSelezionato}`
     );
     await logActivity('STRIPE_PAYMENT_COMPLETED', {
       reportId: targetReportId,

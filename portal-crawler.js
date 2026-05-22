@@ -1,5 +1,5 @@
-/**
- * EXTERNAL OPINION — PORTAL CRAWLER AUTONOMO
+﻿/**
+ * EXTERNAL OPINION â€” PORTAL CRAWLER AUTONOMO
  *
  * Scansiona ogni notte i portali di aste giudiziarie italiani.
  * Usa axios + cheerio (leggero, nessun Chrome da scaricare).
@@ -167,13 +167,16 @@ async function queueNewAuctionsForAnalysis(limit = 5) {
 
   for (const auction of newAuctions) {
     try {
+      const { createJob }             = require('./orchestrator');
       const { createAnalysisPipeline } = require('./dag-orchestrator');
-      await createAnalysisPipeline({
-        url: auction.url,
-        email: process.env.ADMIN_REVIEW_EMAIL || 'a.simonevolution@gmail.com',
-        tier: 'TIER_1_SCREENING_69',
-        source: 'AUTONOMOUS_CRAWLER',
+
+      // Prima crea il Job nel DB, poi lancia il DAG
+      const jobRecord = await createJob({
+        url:    auction.url,
+        email:  process.env.ADMIN_REVIEW_EMAIL || 'a.simonevolution@gmail.com',
+        zonaDati: { valoreOMI: auction.basePrice || 2100 },
       });
+      await createAnalysisPipeline(jobRecord.id, jobRecord.payload, 'TIER_1_SCREENING_69');
       await prisma.discoveredAuction.update({
         where: { id: auction.id },
         data: { status: 'QUEUED', queuedAt: new Date() },
@@ -195,7 +198,7 @@ async function runCrawler(options = {}) {
   const { portals = PORTALS, maxPerPortal = 20, autoQueue = true } = options;
   const results = { discovered: 0, queued: 0, errors: [] };
 
-  console.log(`[CRAWLER] Avvio — ${new Date().toISOString()}`);
+  console.log(`[CRAWLER] Avvio â€” ${new Date().toISOString()}`);
 
   for (const portal of portals) {
     console.log(`[CRAWLER] Scansione: ${portal.name}`);
@@ -203,7 +206,7 @@ async function runCrawler(options = {}) {
     const limited = auctions.slice(0, maxPerPortal);
     const { saved, skipped } = await saveDiscoveredAuctions(limited, portal.id);
     results.discovered += saved;
-    console.log(`[CRAWLER] ${portal.name}: ${saved} nuove, ${skipped} già presenti`);
+    console.log(`[CRAWLER] ${portal.name}: ${saved} nuove, ${skipped} giÃ  presenti`);
     await new Promise(r => setTimeout(r, portal.rateLimit));
   }
 

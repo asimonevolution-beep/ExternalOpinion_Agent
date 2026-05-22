@@ -1,5 +1,5 @@
-/**
- * EXTERNAL OPINION — SERVER V18.3
+﻿/**
+ * EXTERNAL OPINION â€” SERVER V18.3
  * Direzione Tecnica: Geometra Simone Azzali
  * 
  * Express server con:
@@ -97,7 +97,7 @@ metricsMiddleware(app);
 
 healthCheckEndpoints(app);
 
-// Versione deploy — per diagnostica
+// Versione deploy â€” per diagnostica
 app.get('/api/version', (req, res) => res.json({ version: '1a3a310', built: new Date().toISOString() }));
 
 // ============================================================================
@@ -107,7 +107,7 @@ app.get('/api/version', (req, res) => res.json({ version: '1a3a310', built: new 
 const apiRouter = express.Router();
 
 /**
- * POST /api/analyze — Create analysis job (non-blocking with DAG)
+ * POST /api/analyze â€” Create analysis job (non-blocking with DAG)
  */
 apiRouter.post(
   '/analyze',
@@ -120,7 +120,7 @@ apiRouter.post(
       if (!urlAsta) {
         return res.status(400).json({
           success: false,
-          error: 'urlAsta è obbligatorio',
+          error: 'urlAsta Ã¨ obbligatorio',
         });
       }
 
@@ -170,7 +170,7 @@ apiRouter.post(
 );
 
 /**
- * GET /api/jobs/:jobId — Poll job status
+ * GET /api/jobs/:jobId â€” Poll job status
  */
 apiRouter.get('/jobs/:jobId', async (req, res) => {
   const { jobId } = req.params;
@@ -231,7 +231,7 @@ apiRouter.get('/jobs/:jobId', async (req, res) => {
 });
 
 /**
- * POST /api/jobs/:jobId/checkout — Initiate Stripe payment
+ * POST /api/jobs/:jobId/checkout â€” Initiate Stripe payment
  */
 apiRouter.post(
   '/jobs/:jobId/checkout',
@@ -243,6 +243,8 @@ apiRouter.post(
     try {
       // Validazione tier
       const validTiers = [
+        'TIER_1_SCREENING_69',
+        'TIER_1_SCREENING_69',
         'TIER_1_ENTRY_89',
         'TIER_2_ADVISORY_150',
         'TIER_3_PREMIUM_690',
@@ -286,7 +288,7 @@ apiRouter.post(
 );
 
 /**
- * GET /api/checkout/:sessionId — Get payment status
+ * GET /api/checkout/:sessionId â€” Get payment status
  */
 apiRouter.get('/checkout/:sessionId', async (req, res) => {
   const { sessionId } = req.params;
@@ -315,7 +317,7 @@ app.use('/api', apiRouter);
 app.use('/api/stripe', stripeRouter);
 
 // ============================================================================
-// ADMIN ROUTES — Pannello revisione per Simone
+// ADMIN ROUTES â€” Pannello revisione per Simone
 // ============================================================================
 
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'ext-opinion-admin-2025';
@@ -326,7 +328,7 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// GET /admin/review — lista report in attesa
+// GET /admin/review â€” lista report in attesa
 app.get('/admin/review', requireAdmin, async (req, res) => {
   try {
     const { getPendingReviews } = require('./review-queue');
@@ -337,7 +339,7 @@ app.get('/admin/review', requireAdmin, async (req, res) => {
   }
 });
 
-// GET /admin/review/:jobId — singolo report
+// GET /admin/review/:jobId â€” singolo report
 app.get('/admin/review/:jobId', requireAdmin, async (req, res) => {
   try {
     const { getReviewByJobId } = require('./review-queue');
@@ -348,7 +350,7 @@ app.get('/admin/review/:jobId', requireAdmin, async (req, res) => {
     const aiReport = JSON.parse(review.aiReport || '{}');
     res.send(`<!DOCTYPE html>
 <html lang="it"><head><meta charset="UTF-8">
-<title>Revisione Report — ${req.params.jobId}</title>
+<title>Revisione Report â€” ${req.params.jobId}</title>
 <style>
   body { font-family: monospace; background: #f5f0e8; color: #1a1612; padding: 2rem; max-width: 900px; margin: 0 auto; }
   h1 { border-bottom: 2px solid #1a1612; padding-bottom: 0.5rem; }
@@ -360,7 +362,7 @@ app.get('/admin/review/:jobId', requireAdmin, async (req, res) => {
   .status { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; }
   .PENDING { background: #f0ad4e; } .APPROVED { background: #1e8449; color:#fff; } .REJECTED { background: #c0392b; color:#fff; }
 </style></head><body>
-<h1>📋 Revisione Report</h1>
+<h1>ðŸ“‹ Revisione Report</h1>
 <p><strong>Job ID:</strong> ${review.jobId}</p>
 <p><strong>Stato:</strong> <span class="status ${review.status}">${review.status}</span></p>
 <p><strong>Creato:</strong> ${new Date(review.createdAt).toLocaleString('it-IT')}</p>
@@ -370,8 +372,8 @@ app.get('/admin/review/:jobId', requireAdmin, async (req, res) => {
   <label><strong>Note revisione (opzionale):</strong></label>
   <textarea id="notes" placeholder="Aggiungi note professionali, correzioni, osservazioni...">${review.reviewerNotes || ''}</textarea>
   <div style="margin-top:1rem;">
-    <button type="button" class="btn approve" onclick="submitReview('approve')">✅ Approva e invia al cliente</button>
-    <button type="button" class="btn reject" onclick="submitReview('reject')">❌ Rifiuta</button>
+    <button type="button" class="btn approve" onclick="submitReview('approve')">âœ… Approva e invia al cliente</button>
+    <button type="button" class="btn reject" onclick="submitReview('reject')">âŒ Rifiuta</button>
   </div>
 </form>
 <script>
@@ -414,7 +416,7 @@ app.post('/admin/review/:jobId/reject', requireAdmin, async (req, res) => {
   }
 });
 
-// POST /admin/crawler/run — lancia crawler manuale
+// POST /admin/crawler/run â€” lancia crawler manuale
 app.post('/admin/crawler/run', requireAdmin, async (req, res) => {
   res.json({ success: true, message: 'Crawler avviato in background' });
   const { runCrawler } = require('./portal-crawler');
@@ -423,7 +425,7 @@ app.post('/admin/crawler/run', requireAdmin, async (req, res) => {
     .catch(e => console.error('[ADMIN] Crawler error:', e.message));
 });
 
-// GET /admin/crawler/status — aste scoperte
+// GET /admin/crawler/status â€” aste scoperte
 app.get('/admin/crawler/status', requireAdmin, async (req, res) => {
   try {
     const prismaClient = require('./db');
@@ -437,7 +439,7 @@ app.get('/admin/crawler/status', requireAdmin, async (req, res) => {
   }
 });
 
-// SPA fallback — serve index.html per qualsiasi route non-API
+// SPA fallback â€” serve index.html per qualsiasi route non-API
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -466,17 +468,17 @@ async function start() {
   try {
     app.listen(PORT, () => {
       console.log(`
-╔════════════════════════════════════════╗
-║   EXTERNAL OPINION — V18.3             ║
-║   Distributed Risk Intelligence        ║
-║════════════════════════════════════════╝
-║ Server running on port: ${PORT}              │
-║ Environment: ${process.env.NODE_ENV || 'development'}        │
-║ DAG Orchestrator: ACTIVE               │
-║ Portal Crawler: SCHEDULED (02:00 UTC)  │
-║ Security: Hardened                    │
-║ Observability: Prometheus/Sentry       │
-╚════════════════════════════════════════╝
+â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
+â•‘   EXTERNAL OPINION â€” V18.3             â•‘
+â•‘   Distributed Risk Intelligence        â•‘
+â•‘â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+â•‘ Server running on port: ${PORT}              â”‚
+â•‘ Environment: ${process.env.NODE_ENV || 'development'}        â”‚
+â•‘ DAG Orchestrator: ACTIVE               â”‚
+â•‘ Portal Crawler: SCHEDULED (02:00 UTC)  â”‚
+â•‘ Security: Hardened                    â”‚
+â•‘ Observability: Prometheus/Sentry       â”‚
+â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       `);
     });
 
@@ -493,7 +495,7 @@ async function start() {
           console.error('[CRON] Crawler error:', err.message);
         }
       });
-      console.log('[CRON] Scheduler crawler attivo — esecuzione alle 02:00 UTC ogni notte');
+      console.log('[CRON] Scheduler crawler attivo â€” esecuzione alle 02:00 UTC ogni notte');
     } catch (err) {
       console.warn('[CRON] node-cron non disponibile:', err.message);
     }

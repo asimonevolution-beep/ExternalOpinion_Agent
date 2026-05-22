@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pagamento completato — External Opinion</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  body{background:#F5F0E8;color:#1A1612;font-family:sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+  .card{background:#fff;border:1px solid rgba(26,22,18,.12);max-width:520px;width:100%;padding:3rem;text-align:center}
+  .icon{font-size:3rem;margin-bottom:1.5rem}
+  h1{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:300;margin-bottom:1rem}
+  p{font-size:.95rem;line-height:1.7;color:#5A5249;margin-bottom:1rem}
+  .ref{font-family:'DM Mono',monospace;font-size:.7rem;background:#F5F0E8;padding:.5rem 1rem;border-radius:2px;color:#8C8279;margin:1rem 0;word-break:break-all}
+  .btn{display:inline-block;margin-top:1.5rem;padding:.9rem 2rem;background:#1A1612;color:#F5F0E8;text-decoration:none;font-size:.85rem;font-weight:500;border-radius:2px}
+  .btn:hover{background:#C8A96E}
+  .note{font-size:.78rem;color:#8C8279;margin-top:1.5rem}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">&#10003;</div>
+  <h1>Pagamento completato</h1>
+  <p>Il pagamento e stato ricevuto.<br>Il report e in validazione finale da parte di Simone Azzali.</p>
+  <p>Riceverai il documento via <strong>email entro 48 ore</strong>.</p>
+  <div class="ref" id="ref">Caricamento...</div>
+  <a href="/" class="btn">Torna alla home</a>
+  <p class="note">Domande? <a href="mailto:info@externalopinion.it">info@externalopinion.it</a></p>
+</div>
+<script>
+  const p=new URLSearchParams(window.location.search);
+  document.getElementById('ref').textContent='Riferimento: '+(p.get('jobId')||p.get('sessionId')||'N/D');
+</script>
+</body>
+</html>

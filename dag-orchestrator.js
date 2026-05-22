@@ -1,11 +1,11 @@
-/**
- * EXTERNAL OPINION — DAG ORCHESTRATOR V18.3
+﻿/**
+ * EXTERNAL OPINION â€” DAG ORCHESTRATOR V18.3
  * Direzione Tecnica: Geometra Simone Azzali
  * 
  * Orchestrazione distribuita con BullMQ FlowProducer
  * 
  * Pipeline:
- * SCRAPE → OCR → LLM_EXTRACTION → VALIDATION → SCORING → REPORT → NOTIFY
+ * SCRAPE â†’ OCR â†’ LLM_EXTRACTION â†’ VALIDATION â†’ SCORING â†’ REPORT â†’ NOTIFY
  * 
  * Features:
  * - Dependency-aware execution
@@ -35,11 +35,12 @@ const redisConnection = {
 
 // Priority mapping
 const PRIORITY_MAP = {
-  TIER_1_ENTRY_89: 1,
-  TIER_2_ADVISORY_150: 5,
-  TIER_3_PREMIUM_690: 10,
+  TIER_1_SCREENING_69:  1,
+  TIER_1_ENTRY_89:      2,
+  TIER_2_ADVISORY_150:  5,
+  TIER_3_PREMIUM_690:   10,
   TIER_4_ENTERPRISE_API: 50,
-};
+};;
 
 // ============================================================================
 // CIRCUIT BREAKER
@@ -166,6 +167,9 @@ const reportRenderQueue = new Queue('reportRenderQueue', {
 const notificationQueue = new Queue('notificationQueue', {
   connection: redisConnection,
 });
+const reviewQueue = new Queue('reviewQueue', {
+  connection: redisConnection,
+});
 
 // ============================================================================
 // DAG CREATION WITH FLOWPRODUCER
@@ -176,123 +180,89 @@ const flowProducer = new FlowProducer({ connection: redisConnection });
 async function createAnalysisPipeline(jobId, payload, tier = 'TIER_2_ADVISORY_150') {
   const priority = PRIORITY_MAP[tier] || 1;
 
-  console.log(
-    `[DAG] Creating pipeline for ${jobId} with priority ${priority}`
-  );
+  // Normalizza payload (puÃ² arrivare come stringa JSON da createJob)
+  const payloadObj = typeof payload === 'string' ? JSON.parse(payload) : payload;
+  const url = payloadObj.url || payloadObj.urlAsta || '';
+  const email = payloadObj.email || null;
+
+  console.log(`[DAG] Creating pipeline for ${jobId} tier=${tier} priority=${priority}`);
 
   // Determina task da eseguire basato sul tier
-  const includeReport = tier !== 'TIER_1_ENTRY_89'; // Solo Entry salta report
-  const includeNotify = tier !== 'TIER_1_ENTRY_89';
+  const includeReport = tier !== 'TIER_1_ENTRY_89' && tier !== 'TIER_1_SCREENING_69';
+  const includeNotify  = includeReport;
+  const includeReview  = includeReport; // Tutti i report passano per revisione umana
 
-  const children = [];
+  // ============================================================
+  // Costruzione bottom-up: foglie prima, radice alla fine
+  // FlowProducer in BullMQ vuole children come dipendenze del padre
+  // La radice viene processata DOPO che tutti i children completano
+  // ============================================================
 
-  // ===== STEP 1: SCRAPE =====
-  const scrapeChild = {
-    name: 'scrapeJob',
-    data: {
-      jobId,
-      url: payload.url,
-    },
-    opts: {
-      priority,
-      attempts: 2,
-      backoff: {
-        type: 'exponential',
-        delay: 5000,
-      },
-    },
-    children: [],
+  // ===== FOGLIA FINALE: NOTIFY =====
+  const notifyStep = {
+    name: 'notifyJob',
+    queueName: 'notificationQueue',
+    data: { jobId, email, tier },
+    opts: { priority, attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
+  };
+
+  // ===== STEP 6: REVIEW QUEUE (human-in-the-loop) =====
+  const reviewStep = {
+    name: 'reviewJob',
+    queueName: 'reviewQueue',
+    data: { jobId, tier },
+    opts: { priority, attempts: 1 },
+    children: includeNotify ? [notifyStep] : [],
+  };
+
+  // ===== STEP 5: REPORT =====
+  const reportStep = {
+    name: 'reportJob',
+    queueName: 'reportRenderQueue',
+    data: { jobId, tier },
+    opts: { priority, attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
+    children: includeReview ? [reviewStep] : (includeNotify ? [notifyStep] : []),
+  };
+
+  // ===== STEP 4: SCORING =====
+  const scoringStep = {
+    name: 'scoringJob',
+    queueName: 'deterministicScoringQueue',
+    data: { jobId },
+    opts: { priority, attempts: 1 },
+    children: includeReport ? [reportStep] : [],
+  };
+
+  // ===== STEP 3: LLM =====
+  const llmStep = {
+    name: 'llmExtractionJob',
+    queueName: 'llmExtractionQueue',
+    data: { jobId },
+    opts: { priority, attempts: 3, backoff: { type: 'exponential', delay: 10000 } },
+    children: [scoringStep],
   };
 
   // ===== STEP 2: OCR =====
-  const ocrChild = {
+  const ocrStep = {
     name: 'ocrJob',
+    queueName: 'ocrQueue',
     data: { jobId },
-    opts: {
-      priority,
-      attempts: 2,
-      backoff: {
-        type: 'exponential',
-        delay: 3000,
-      },
-    },
-    children: [],
+    opts: { priority, attempts: 2, backoff: { type: 'exponential', delay: 3000 } },
+    children: [llmStep],
   };
 
-  // ===== STEP 3: LLM EXTRACTION =====
-  const llmChild = {
-    name: 'llmExtractionJob',
-    data: { jobId },
-    opts: {
-      priority,
-      attempts: 3, // LLM ha fallback
-      backoff: {
-        type: 'exponential',
-        delay: 10000,
-      },
-    },
-    children: [],
-  };
-
-  // ===== STEP 4: DETERMINISTIC SCORING =====
-  const scoringChild = {
-    name: 'scoringJob',
-    data: { jobId },
-    opts: {
-      priority,
-      attempts: 1, // Scoring non fallisce
-    },
-    children: [],
-  };
-
-  // ===== STEP 5: REPORT RENDERING (conditionale) =====
-  if (includeReport) {
-    const reportChild = {
-      name: 'reportJob',
-      data: { jobId },
-      opts: {
-        priority,
-        attempts: 2,
-      },
-      children: [],
-    };
-
-    // ===== STEP 6: NOTIFICATION (conditionale) =====
-    if (includeNotify) {
-      const notifyChild = {
-        name: 'notifyJob',
-        data: { jobId },
-        opts: {
-          priority,
-          attempts: 2,
-        },
-      };
-
-      reportChild.children.push(notifyChild);
-    }
-
-    scoringChild.children.push(reportChild);
-  }
-
-  // Chain: SCRAPE → OCR → LLM → SCORING → [REPORT → NOTIFY]
-  scrapeChild.children.push(ocrChild);
-  ocrChild.children.push(llmChild);
-  llmChild.children.push(scoringChild);
-
-  // Crea flow
+  // ===== STEP 1: SCRAPE (radice del DAG) =====
   const flow = await flowProducer.add({
-    name: `analysis-${jobId}`,
+    name: `scrapeJob-${jobId}`,
     queueName: 'scrapeQueue',
-    data: { jobId, url: payload.url },
-    opts: { priority },
-    children: [ocrChild, llmChild, scoringChild, ...(includeReport ? [scoringChild] : [])],
+    data: { jobId, url },
+    opts: { priority, attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
+    children: [ocrStep],
   });
 
-  console.log(
-    `[DAG] Pipeline created for ${jobId}, root job ID: ${flow.job.id}`
-  );
+  console.log(`[DAG] Pipeline created for ${jobId}, BullMQ root id: ${flow.job.id}`);
 
-  await recordJobEvent(jobId, 'DAG_CREATED', { tier, priority }, 'orchestrator');
+  await recordJobEvent(jobId, 'DAG_CREATED', { tier, priority, url }, 'orchestrator');
 
   return flow;
 }
@@ -310,6 +280,7 @@ module.exports = {
   deterministicScoringQueue,
   reportRenderQueue,
   notificationQueue,
+  reviewQueue,
   CircuitBreaker,
   circuitBreakers,
   getOrCreateIdempotencyKey,
