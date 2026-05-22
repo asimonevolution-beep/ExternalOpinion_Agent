@@ -60,6 +60,14 @@ const {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Global handlers per evitare crash da eccezioni non gestite
+process.on('uncaughtException', (err) => {
+  console.error('[UNCAUGHT EXCEPTION]', err.message, err.stack);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[UNHANDLED REJECTION]', reason);
+});
+
 // ============================================================================
 // MIDDLEWARE SETUP
 // ============================================================================

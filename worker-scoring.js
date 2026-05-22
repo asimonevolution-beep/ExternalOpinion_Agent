@@ -172,6 +172,7 @@ const worker = new Worker('deterministicScoringQueue', async (job) => {
   concurrency: 8,
 });
 
+worker.on('error', (err) => console.error('[WORKER ERROR] worker-scoring.js:', err.message));
 worker.on('completed', (job) => console.log(`[SCORING ${WORKER_ID}] Completed: ${job.id}`));
 worker.on('failed',    (job, err) => console.error(`[SCORING ${WORKER_ID}] Failed (${job.attemptsMade}): ${job.id} — ${err.message}`));
 

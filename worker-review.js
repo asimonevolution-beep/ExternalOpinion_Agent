@@ -80,6 +80,7 @@ const worker = new Worker('reviewQueue', async (job) => {
   concurrency: 4,
 });
 
+worker.on('error', (err) => console.error('[WORKER ERROR] worker-review.js:', err.message));
 worker.on('completed', (job) => console.log(`[REVIEW ${WORKER_ID}] Completed: ${job.id}`));
 worker.on('failed',    (job, err) => console.error(`[REVIEW ${WORKER_ID}] Failed (${job.attemptsMade}): ${job.id} — ${err.message}`));
 

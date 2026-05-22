@@ -69,6 +69,7 @@ const worker = new Worker('ocrQueue', async (job) => {
   concurrency: 4,
 });
 
+worker.on('error', (err) => console.error('[WORKER ERROR] worker-ocr.js:', err.message));
 worker.on('completed', (job) => {
   console.log(`[OCR ${WORKER_ID}] ✓ Completed: ${job.id}`);
 });

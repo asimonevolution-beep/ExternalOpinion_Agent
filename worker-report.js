@@ -287,6 +287,7 @@ const worker = new Worker('reportRenderQueue', async (job) => {
   concurrency: 4,
 });
 
+worker.on('error', (err) => console.error('[WORKER ERROR] worker-report.js:', err.message));
 worker.on('completed', (job) => console.log(`[REPORT ${WORKER_ID}] Completed: ${job.id}`));
 worker.on('failed',    (job, err) => console.error(`[REPORT ${WORKER_ID}] Failed (${job.attemptsMade}): ${job.id} — ${err.message}`));
 

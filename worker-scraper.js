@@ -116,6 +116,7 @@ const worker = new Worker('scrapeQueue', async (job) => {
   concurrency: 2,
 });
 
+worker.on('error', (err) => console.error('[WORKER ERROR] worker-scraper.js:', err.message));
 worker.on('completed', (job) => {
   console.log(`[SCRAPER ${WORKER_ID}] ✓ Completed: ${job.id}`);
 });

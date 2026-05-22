@@ -116,6 +116,7 @@ const worker = new Worker('llmExtractionQueue', async (job) => {
   concurrency: 2, // LLM è pesante
 });
 
+worker.on('error', (err) => console.error('[WORKER ERROR] worker-llm.js:', err.message));
 worker.on('completed', (job) => {
   console.log(`[LLM ${WORKER_ID}] ✓ Completed: ${job.id}`);
 });

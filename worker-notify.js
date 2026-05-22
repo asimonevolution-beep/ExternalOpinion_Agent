@@ -238,6 +238,7 @@ const worker = new Worker('notificationQueue', async (job) => {
   concurrency: 8,
 });
 
+worker.on('error', (err) => console.error('[WORKER ERROR] worker-notify.js:', err.message));
 worker.on('completed', (job) => console.log(`[NOTIFY ${WORKER_ID}] Completed: ${job.id}`));
 worker.on('failed',    (job, err) => console.error(`[NOTIFY ${WORKER_ID}] Failed (${job.attemptsMade}): ${job.id} — ${err.message}`));
 
