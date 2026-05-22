@@ -11,7 +11,7 @@ sudo -u postgres psql <<'SQL'
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'eouser') THEN
-    CREATE USER eouser WITH ENCRYPTED PASSWORD 'zIpiPNLeNAErUKlBRp11';
+    CREATE USER eouser WITH ENCRYPTED PASSWORD 'Q7mR2vT9kL4pX8nS6dF1';
   END IF;
 END
 $$;
@@ -53,7 +53,7 @@ echo "[5/6] UFW OK"
 echo "[6/6] Directory progetto e .env..."
 mkdir -p /root/ExternalOpinion_Agent/OUTPUT_REPORT
 cat > /root/ExternalOpinion_Agent/.env <<'ENV'
-DATABASE_URL=postgresql://eouser:zIpiPNLeNAErUKlBRp11@localhost:5432/externalopinion
+DATABASE_URL=postgresql://eouser:Q7mR2vT9kL4pX8nS6dF1@localhost:5432/externalopinion
 REDIS_URL=redis://127.0.0.1:6379
 NODE_ENV=production
 PORT=3000
