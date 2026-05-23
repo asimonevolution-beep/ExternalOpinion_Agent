@@ -140,6 +140,7 @@ async function createJob({ url, email, token, service, zonaDati = {} }) {
           url,
           status: 'PENDING',
           payload: JSON.stringify({
+            url,
             email: email || null,
             clientToken: token || null,
             service: service || null,
