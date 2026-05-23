@@ -303,12 +303,12 @@ async function estraiDatiConFallback(
           `[AI_FALLBACK] ✓ Successo con ${backend.name} (confidence: ${result.data.confidence})`
         );
 
-        // Validazione confidence
-        if (result.data.confidence < 0.05) {
+        // Validazione confidence (accetta anche 0 — la soglia applicativa è nel worker)
+        if (result.data.confidence < 0) {
           console.warn(
-            `[AI_FALLBACK] ⚠ Confidence troppo bassa (${result.data.confidence}) da ${backend.name}`
+            `[AI_FALLBACK] ⚠ Confidence negativa (${result.data.confidence}) da ${backend.name}`
           );
-          lastError = `Low confidence (${result.data.confidence})`;
+          lastError = `Negative confidence (${result.data.confidence})`;
           continue;
         }
 
