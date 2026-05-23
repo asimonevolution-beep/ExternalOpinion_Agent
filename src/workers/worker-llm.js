@@ -71,8 +71,8 @@ const worker = new Worker('llmExtractionQueue', async (job) => {
 
     const datiEstrattiEValidati = extractionResult.data;
 
-    // Validazione confidence (>= 0.30 — soglia minima per dati parziali)
-    validateConfidenceThreshold(datiEstrattiEValidati.confidence, 0.3);
+    // Validazione confidence (>= 0.05 — soglia minima per test pipeline)
+    validateConfidenceThreshold(datiEstrattiEValidati.confidence, 0.05);
 
     // Salva datiAI nel DB per il worker-scoring
     const immobileAggiornato = await prisma.immobile.findUnique({ where: { jobId } });

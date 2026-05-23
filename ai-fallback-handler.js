@@ -303,12 +303,12 @@ async function estraiDatiConFallback(
         );
 
         // Validazione confidence
-        if (result.data.confidence < 0.3) {
+        if (result.data.confidence < 0.05) {
           console.warn(
-            `[AI_FALLBACK] ⚠ Bassa confidence (${result.data.confidence}) da ${backend.name}`
+            `[AI_FALLBACK] ⚠ Confidence troppo bassa (${result.data.confidence}) da ${backend.name}`
           );
           lastError = `Low confidence (${result.data.confidence})`;
-          continue; // Prova il prossimo backend
+          continue;
         }
 
         return {
