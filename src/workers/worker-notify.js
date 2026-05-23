@@ -103,8 +103,9 @@ async function sendEmailCliente(jobId, email, immobile, pdfPath) {
     });
   }
 
+  const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER;
   const info = await mailer.sendMail({
-    from:    `"External Opinion" <${process.env.SMTP_USER}>`,
+    from:    `"External Opinion" <${fromAddress}>`,
     to:       email,
     subject: `${semaforoEmoji} Il tuo report External Opinion e pronto — ${immobile.status}`,
     html:     htmlBody,
