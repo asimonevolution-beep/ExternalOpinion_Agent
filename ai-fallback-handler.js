@@ -191,9 +191,11 @@ async function tryClaude(testoGrezzo, timeoutMs = 45000) {
     const costUsd = (inputTokenEstimate * 0.00000025) + (outputTokens * 0.00000125);
     console.log(`[AI-COST] Claude Haiku: ~${inputTokenEstimate} in + ${outputTokens} out = $${costUsd.toFixed(5)}`);
 
-    // Strappa markdown code blocks se presenti (```json ... ```)
+    // Estrai JSON dalla risposta (gestisce markdown code blocks e testo libero)
     let rawText = response.content[0].text.trim();
-    rawText = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Nessun JSON trovato nella risposta Claude');
+    rawText = jsonMatch[0];
 
     const jsonGrezzo = JSON.parse(rawText);
     const validated = SchemaEstrazioneAI.parse(jsonGrezzo);
