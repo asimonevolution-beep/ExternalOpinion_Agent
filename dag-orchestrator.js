@@ -190,72 +190,79 @@ async function createAnalysisPipeline(jobId, payload, tier = 'TIER_2_ADVISORY_15
   const includeReview  = includeReport; // Tutti i report passano per revisione umana
 
   // ============================================================
-  // Costruzione bottom-up: foglie prima, radice alla fine
-  // FlowProducer in BullMQ vuole children come dipendenze del padre
-  // La radice viene processata DOPO che tutti i children completano
+  // BullMQ FlowProducer: i children corrono PRIMA del padre.
+  // SCRAPE = foglia (no children, parte subito)
+  // NOTIFY = root (parte per ultimo, dopo tutta la catena)
+  // Ordine esecuzione: SCRAPE → OCR → LLM → SCORING → REPORT → REVIEW → NOTIFY
   // ============================================================
 
-  // ===== FOGLIA FINALE: NOTIFY =====
-  const notifyStep = {
-    name: 'notifyJob',
-    queueName: 'notificationQueue',
-    data: { jobId, email, tier },
+  // ===== FOGLIA: SCRAPE (parte per prima, nessun figlio) =====
+  const scrapeStep = {
+    name: `scrapeJob-${jobId}`,
+    queueName: 'scrapeQueue',
+    data: { jobId, url },
     opts: { priority, attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
   };
 
-  // ===== STEP 6: REVIEW QUEUE (human-in-the-loop) =====
-  const reviewStep = {
-    name: 'reviewJob',
-    queueName: 'reviewQueue',
-    data: { jobId, tier },
-    opts: { priority, attempts: 1 },
-    children: includeNotify ? [notifyStep] : [],
-  };
-
-  // ===== STEP 5: REPORT =====
-  const reportStep = {
-    name: 'reportJob',
-    queueName: 'reportRenderQueue',
-    data: { jobId, tier },
-    opts: { priority, attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
-    children: includeReview ? [reviewStep] : (includeNotify ? [notifyStep] : []),
-  };
-
-  // ===== STEP 4: SCORING =====
-  const scoringStep = {
-    name: 'scoringJob',
-    queueName: 'deterministicScoringQueue',
-    data: { jobId },
-    opts: { priority, attempts: 1 },
-    children: includeReport ? [reportStep] : [],
-  };
-
-  // ===== STEP 3: LLM =====
-  const llmStep = {
-    name: 'llmExtractionJob',
-    queueName: 'llmExtractionQueue',
-    data: { jobId },
-    opts: { priority, attempts: 3, backoff: { type: 'exponential', delay: 10000 } },
-    children: [scoringStep],
-  };
-
-  // ===== STEP 2: OCR =====
+  // ===== STEP 2: OCR (dipende da SCRAPE) =====
   const ocrStep = {
     name: 'ocrJob',
     queueName: 'ocrQueue',
     data: { jobId },
     opts: { priority, attempts: 2, backoff: { type: 'exponential', delay: 3000 } },
+    children: [scrapeStep],
+  };
+
+  // ===== STEP 3: LLM (dipende da OCR) =====
+  const llmStep = {
+    name: 'llmExtractionJob',
+    queueName: 'llmExtractionQueue',
+    data: { jobId },
+    opts: { priority, attempts: 3, backoff: { type: 'exponential', delay: 10000 } },
+    children: [ocrStep],
+  };
+
+  // ===== STEP 4: SCORING (dipende da LLM) =====
+  const scoringStep = {
+    name: 'scoringJob',
+    queueName: 'deterministicScoringQueue',
+    data: { jobId },
+    opts: { priority, attempts: 1 },
     children: [llmStep],
   };
 
-  // ===== STEP 1: SCRAPE (radice del DAG) =====
-  const flow = await flowProducer.add({
-    name: `scrapeJob-${jobId}`,
-    queueName: 'scrapeQueue',
-    data: { jobId, url },
-    opts: { priority, attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
-    children: [ocrStep],
-  });
+  let flow;
+  if (!includeReport) {
+    // TIER_1: root = SCORING (ultimo step)
+    flow = await flowProducer.add(scoringStep);
+  } else {
+    // ===== STEP 5: REPORT (dipende da SCORING) =====
+    const reportStep = {
+      name: 'reportJob',
+      queueName: 'reportRenderQueue',
+      data: { jobId, tier },
+      opts: { priority, attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
+      children: [scoringStep],
+    };
+
+    // ===== STEP 6: REVIEW (dipende da REPORT) =====
+    const reviewStep = {
+      name: 'reviewJob',
+      queueName: 'reviewQueue',
+      data: { jobId, tier },
+      opts: { priority, attempts: 1 },
+      children: [reportStep],
+    };
+
+    // ===== ROOT: NOTIFY (parte per ultimo) =====
+    flow = await flowProducer.add({
+      name: 'notifyJob',
+      queueName: 'notificationQueue',
+      data: { jobId, email, tier },
+      opts: { priority, attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
+      children: [reviewStep],
+    });
+  }
 
   console.log(`[DAG] Pipeline created for ${jobId}, BullMQ root id: ${flow.job.id}`);
 
