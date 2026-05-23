@@ -23,25 +23,25 @@ const { z } = require('zod');
 // ============================================================================
 
 const SchemaEstrazioneAI = z.object({
-  costiSanatoria: z.number().int().nonnegative(),
-  costiRipristino: z.number().int().nonnegative(),
+  costiSanatoria: z.number().int().nonnegative().catch(0),
+  costiRipristino: z.number().int().nonnegative().catch(0),
   statoImmobile: z.enum([
     'STATO_OTTIMO',
     'STATO_BUONO',
     'STATO_MEDIO',
     'STATO_CRITICO',
-  ]),
+  ]).catch('STATO_MEDIO'),
   difformita: z.object({
-    strutturale: z.boolean(),
-    urbanistica: z.boolean(),
-    catastale: z.boolean(),
-  }),
-  confidence: z.number().min(0).max(1),
+    strutturale: z.boolean().catch(false),
+    urbanistica: z.boolean().catch(false),
+    catastale: z.boolean().catch(false),
+  }).catch({ strutturale: false, urbanistica: false, catastale: false }),
+  confidence: z.number().min(0).max(1).catch(0.05),
   source: z.object({
-    document: z.string(),
-    page: z.number().int(),
-    paragraph: z.number().int(),
-  }),
+    document: z.string().catch('unknown'),
+    page: z.number().int().catch(0),
+    paragraph: z.number().int().catch(0),
+  }).catch({ document: 'unknown', page: 0, paragraph: 0 }),
 });
 
 // ============================================================================
