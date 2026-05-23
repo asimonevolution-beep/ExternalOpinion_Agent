@@ -75,6 +75,9 @@ process.on('unhandledRejection', (reason) => {
 // Sentry early init
 initSentry(app);
 
+// Trust proxy (Nginx in front of Express)
+app.set('trust proxy', 1);
+
 // Security hardening
 securityMiddleware(app);
 
@@ -265,9 +268,8 @@ apiRouter.get('/jobs/:jobId/report', async (req, res) => {
       return res.status(404).json({ success: false, error: 'File PDF non trovato su disco' });
     }
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=”ExternalOpinion_${jobId.substring(0,8)}.pdf”`);
-    return res.sendFile(pdfPath);
+    const filename = `ExternalOpinion_${jobId.substring(0, 8)}.pdf`;
+    return res.download(pdfPath, filename);
   } catch (err) {
     console.error('[API] Error serving report:', err.message);
     return res.status(500).json({ success: false, error: 'Errore nel recupero del report' });
