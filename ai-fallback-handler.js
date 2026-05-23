@@ -208,6 +208,7 @@ async function tryClaude(testoGrezzo, timeoutMs = 45000) {
       timestamp: new Date().toISOString(),
     };
   } catch (err) {
+    console.error(`[CLAUDE-ERROR] ${err.message}`);
     return {
       success: false,
       error: `Claude failed: ${err.message}`,
