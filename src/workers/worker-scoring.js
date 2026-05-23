@@ -14,7 +14,7 @@ const { Worker } = require('bullmq');
 const crypto = require('crypto');
 const prisma = require('../../db');
 const { recordJobEvent, safeRoiCalculation } = require('../../orchestrator');
-const { generaRelazioneCompletaSpiegata } = require('./explainability-engine');
+const { generaRelazioneCompletaSpiegata } = require('../../explainability-engine');
 
 const WORKER_ID = `scoring-${crypto.randomBytes(4).toString('hex')}`;
 

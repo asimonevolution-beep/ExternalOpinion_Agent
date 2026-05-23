@@ -14,7 +14,7 @@ const { Worker, Queue } = require('bullmq');
 const crypto            = require('crypto');
 const prisma            = require('../../db');
 const { recordJobEvent } = require('../../orchestrator');
-const { addToReviewQueue } = require('./review-queue');
+const { addToReviewQueue } = require('../../review-queue');
 
 const WORKER_ID = `review-${crypto.randomBytes(4).toString('hex')}`;
 
