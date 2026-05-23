@@ -191,7 +191,11 @@ async function tryClaude(testoGrezzo, timeoutMs = 45000) {
     const costUsd = (inputTokenEstimate * 0.00000025) + (outputTokens * 0.00000125);
     console.log(`[AI-COST] Claude Haiku: ~${inputTokenEstimate} in + ${outputTokens} out = $${costUsd.toFixed(5)}`);
 
-    const jsonGrezzo = JSON.parse(response.content[0].text);
+    // Strappa markdown code blocks se presenti (```json ... ```)
+    let rawText = response.content[0].text.trim();
+    rawText = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+
+    const jsonGrezzo = JSON.parse(rawText);
     const validated = SchemaEstrazioneAI.parse(jsonGrezzo);
 
     return {
@@ -262,8 +266,8 @@ async function estraiDatiConFallback(
   opzioniPersonalizzate = {}
 ) {
   const opzioni = {
-    primario: 'ollama',
-    fallbacks: ['openai', 'claude', 'gemini'],
+    primario: 'claude',
+    fallbacks: ['ollama', 'openai', 'gemini'],
     ...opzioniPersonalizzate,
   };
 
@@ -297,7 +301,7 @@ async function estraiDatiConFallback(
         );
 
         // Validazione confidence
-        if (result.data.confidence < 0.8) {
+        if (result.data.confidence < 0.3) {
           console.warn(
             `[AI_FALLBACK] ⚠ Bassa confidence (${result.data.confidence}) da ${backend.name}`
           );
