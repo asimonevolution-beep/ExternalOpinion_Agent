@@ -248,6 +248,33 @@ apiRouter.get('/jobs/:jobId', async (req, res) => {
 });
 
 /**
+ * GET /api/jobs/:jobId/report — Download PDF report
+ * Accesso libero se job COMPLETED; in produzione aggiungere gate pagamento
+ */
+apiRouter.get('/jobs/:jobId/report', async (req, res) => {
+  const { jobId } = req.params;
+  try {
+    const jobRecord = await getJob(jobId);
+    if (!jobRecord) return res.status(404).json({ success: false, error: 'Job non trovato' });
+    if (jobRecord.status !== 'COMPLETED' && jobRecord.status !== 'REPORT_READY') {
+      return res.status(202).json({ success: false, error: 'Report non ancora pronto', status: jobRecord.status });
+    }
+
+    const pdfPath = path.join(__dirname, 'src', 'workers', 'OUTPUT_REPORT', `report_${jobId}.pdf`);
+    if (!require('fs').existsSync(pdfPath)) {
+      return res.status(404).json({ success: false, error: 'File PDF non trovato su disco' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=”ExternalOpinion_${jobId.substring(0,8)}.pdf”`);
+    return res.sendFile(pdfPath);
+  } catch (err) {
+    console.error('[API] Error serving report:', err.message);
+    return res.status(500).json({ success: false, error: 'Errore nel recupero del report' });
+  }
+});
+
+/**
  * POST /api/jobs/:jobId/checkout â€” Initiate Stripe payment
  */
 apiRouter.post(
