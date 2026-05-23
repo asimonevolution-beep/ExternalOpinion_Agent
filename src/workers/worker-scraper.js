@@ -29,13 +29,13 @@ async function scrapeWithAxios(url) {
     headers: HTTP_HEADERS,
     timeout: 20000,
     maxRedirects: 5,
+    validateStatus: () => true, // non lancia su 4xx/5xx, estrae comunque HTML
   });
-  const $ = cheerio.load(resp.data);
-  // Rimuove script, stili e tag non utili
+  const $ = cheerio.load(resp.data || '');
   $('script, style, nav, footer, header, aside').remove();
   const testoGrezzo = $('body').text().replace(/\s+/g, ' ').trim();
   const title = $('title').text().trim();
-  return { testoGrezzo, title };
+  return { testoGrezzo, title, httpStatus: resp.status };
 }
 
 const worker = new Worker('scrapeQueue', async (job) => {
@@ -55,6 +55,7 @@ const worker = new Worker('scrapeQueue', async (job) => {
       const result = await scrapeWithAxios(url);
       testoGrezzo = result.testoGrezzo;
       metadata.title = result.title;
+      metadata.httpStatus = result.httpStatus;
     } catch (axiosErr) {
       console.warn(`[SCRAPER ${WORKER_ID}] axios failed: ${axiosErr.message}, tentativo Puppeteer...`);
 
