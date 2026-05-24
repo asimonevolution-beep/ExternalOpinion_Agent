@@ -4,9 +4,9 @@
   "description": "Production-ready External Opinion platform for PDF processing, cash flow analysis, WhatsApp notifications, and REST API integration.",
   "main": "server.js",
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "node server.js",
     "worker": "node worker.js",
-    "build": "tsc --skipLibCheck",
+    "build": "prisma generate",
     "postinstall": "prisma generate --no-hints || true",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init"
