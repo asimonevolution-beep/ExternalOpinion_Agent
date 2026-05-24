@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "worker": "node worker.js",
-    "build": "prisma generate",
+    "build": "prisma generate && echo 'Build complete'",
     "postinstall": "prisma generate --no-hints || true",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init"
