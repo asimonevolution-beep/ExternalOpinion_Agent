@@ -1,6 +1,13 @@
 /**
  * Helper: connessione Redis compatibile con Railway (REDIS_URL) e configurazione manuale.
  * BullMQ v2 richiede opzioni ioredis (host/port/password), NON { url: "..." }.
+ *
+ * getRedisConnection() → opzioni plain per Worker BullMQ (ogni Worker ha bisogno di
+ *   connessioni proprie, non condivisibili).
+ *
+ * getSharedRedis() → istanza IORedis singleton da riutilizzare per le Queue e FlowProducer:
+ *   tutte le Queue che ricevono la stessa istanza condividono una sola connessione TCP,
+ *   risolvendo il problema "ERR max number of clients reached" su piani Redis Cloud free.
  */
 
 function getRedisConnection() {
@@ -29,4 +36,17 @@ function getRedisConnection() {
   return conn;
 }
 
-module.exports = { getRedisConnection };
+// Singleton IORedis condiviso tra tutte le Queue e FlowProducer
+let _sharedRedis = null;
+function getSharedRedis() {
+  if (!_sharedRedis) {
+    const IORedis = require('ioredis');
+    _sharedRedis = new IORedis(getRedisConnection());
+    _sharedRedis.on('error', (err) => {
+      console.error('[REDIS SHARED] Errore connessione:', err.message);
+    });
+  }
+  return _sharedRedis;
+}
+
+module.exports = { getRedisConnection, getSharedRedis };

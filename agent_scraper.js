@@ -1,7 +1,13 @@
 const puppeteerExtra = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-const { fileTypeFromBuffer } = require('file-type');
 const { URL } = require('url');
+
+// PDF magic bytes: %PDF — evita dipendenza da file-type (ESM-only)
+function isPdfBuffer(buf) {
+  return buf && buf.length >= 4 &&
+    buf[0] === 0x25 && buf[1] === 0x50 &&
+    buf[2] === 0x44 && buf[3] === 0x46;
+}
 
 puppeteerExtra.use(StealthPlugin());
 
@@ -99,8 +105,7 @@ async function scrapeUrl(url) {
     throw new Error('Impossibile scaricare un PDF valido dalla pagina.');
   }
 
-  const fileType = await fileTypeFromBuffer(buffer);
-  if (!fileType || fileType.mime !== 'application/pdf' || buffer.length < 20480) {
+  if (!isPdfBuffer(buffer) || buffer.length < 20480) {
     throw new Error('Contenuto non valido o file troppo piccolo.');
   }
 

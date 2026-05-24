@@ -27,8 +27,8 @@ const {
 // CONFIGURAZIONE
 // ============================================================================
 
-const { getRedisConnection } = require('./redis-connection');
-const redisConnection = getRedisConnection();
+const { getSharedRedis } = require('./redis-connection');
+const redisConnection = getSharedRedis();
 
 // Priority mapping
 const PRIORITY_MAP = {

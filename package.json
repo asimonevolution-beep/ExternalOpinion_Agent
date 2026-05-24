@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "worker": "node worker.js",
-    "postinstall": "echo 'skipping prisma generate at build time'",
+    "build": "prisma generate",
+    "postinstall": "prisma generate --no-hints || true",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init"
   },
@@ -26,7 +27,6 @@
     "dotenv": "^16.3.1",
     "express": "^4.22.2",
     "express-rate-limit": "^6.7.0",
-    "file-type": "^22.0.1",
     "helmet": "^7.0.0",
     "ioredis": "^5.10.1",
     "morgan": "^1.10.1",
@@ -36,6 +36,7 @@
     "pdfkit": "^0.15.0",
     "pino": "^8.16.0",
     "prom-client": "^15.1.3",
+    "prisma": "^5.22.0",
     "redis": "^5.12.1",
     "sharp": "^0.33.5",
     "stripe": "^22.1.1",
@@ -47,7 +48,5 @@
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "twilio": "^6.0.2"
   },
-  "devDependencies": {
-    "prisma": "^5.7.0"
-  }
+  "devDependencies": {}
 }

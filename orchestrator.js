@@ -19,8 +19,8 @@ const prisma = require('./db');
 // CONFIGURAZIONE REDIS E QUEUE
 // ============================================================================
 
-const { getRedisConnection } = require('./redis-connection');
-const redisConnection = getRedisConnection();
+const { getSharedRedis } = require('./redis-connection');
+const redisConnection = getSharedRedis();
 
 const analysisQueue = new Queue('analysisQueue', {
   connection: redisConnection,
