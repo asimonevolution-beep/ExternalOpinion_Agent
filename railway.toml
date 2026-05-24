@@ -3,6 +3,6 @@ builder = "nixpacks"
 buildCommand = "npm install && npx prisma generate && npm run build"
 
 [deploy]
-startCommand = "npx prisma migrate deploy && node server.js"
+startCommand = "npx prisma migrate deploy && node dist/server.js"
 healthcheckPath = "/health"
 healthcheckTimeout = 30
