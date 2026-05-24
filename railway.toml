@@ -3,6 +3,8 @@ builder = "nixpacks"
 buildCommand = "npm install && npx prisma generate"
 
 [deploy]
-startCommand = "npx prisma migrate deploy && node server.js"
-healthcheckPath = "/health"
-healthcheckTimeout = 30
+startCommand = "export DATABASE_URL=${DATABASE_URL:-${POSTGRES_URL:-${DATABASE_PRIVATE_URL}}}; npx prisma db push --accept-data-loss && node server.js"
+healthcheckPath = "/health/live"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
