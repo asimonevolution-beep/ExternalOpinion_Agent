@@ -1,9 +1,11 @@
 ﻿/**
- * EXTERNAL OPINION — WORKER SCRAPER V18.3
+ * EXTERNAL OPINION — WORKER SCRAPER V18.4
  * Direzione Tecnica: Geometra Simone Azzali
  *
- * Strategia: axios/cheerio come primario (no Chrome richiesto),
- * Puppeteer come fallback opzionale se disponibile.
+ * Strategia:
+ * 1. Se URL è PDF → pdf-parse (testo completo perizia, confidence 0.85+)
+ * 2. HTML primario: axios/cheerio (no Chrome richiesto)
+ * 3. HTML fallback: Puppeteer (se disponibile)
  */
 
 const { Worker } = require('bullmq');
@@ -24,18 +26,49 @@ const HTTP_HEADERS = {
   'Accept-Language': 'it-IT,it;q=0.9,en;q=0.5',
 };
 
+function isPdfUrl(url, contentType) {
+  if (contentType && contentType.includes('application/pdf')) return true;
+  try {
+    const pathname = new URL(url).pathname.toLowerCase();
+    return pathname.endsWith('.pdf');
+  } catch { return false; }
+}
+
+async function scrapeWithPdf(url) {
+  const pdfParse = require('pdf-parse');
+  const resp = await axios.get(url, {
+    headers: { ...HTTP_HEADERS, Accept: 'application/pdf,*/*' },
+    responseType: 'arraybuffer',
+    timeout: 30000,
+    maxRedirects: 5,
+  });
+  const data = await pdfParse(Buffer.from(resp.data));
+  const testoGrezzo = data.text.replace(/\s+/g, ' ').trim();
+  const numPages = data.numpages;
+  return { testoGrezzo, title: `Perizia PDF (${numPages} pagine)`, numPages, httpStatus: resp.status };
+}
+
 async function scrapeWithAxios(url) {
   const resp = await axios.get(url, {
     headers: HTTP_HEADERS,
     timeout: 20000,
     maxRedirects: 5,
-    validateStatus: () => true, // non lancia su 4xx/5xx, estrae comunque HTML
+    validateStatus: () => true,
+    responseType: 'arraybuffer',
   });
-  const $ = cheerio.load(resp.data || '');
+  const contentType = resp.headers['content-type'] || '';
+  if (isPdfUrl(url, contentType)) {
+    const pdfParse = require('pdf-parse');
+    const data = await pdfParse(Buffer.from(resp.data));
+    const testoGrezzo = data.text.replace(/\s+/g, ' ').trim();
+    return { testoGrezzo, title: `Perizia PDF (${data.numpages} pagine)`, numPages: data.numpages, httpStatus: resp.status, isPdf: true };
+  }
+  const html = Buffer.from(resp.data).toString('utf-8');
+  const $ = cheerio.load(html || '');
   $('script, style, nav, footer, header, aside').remove();
   const testoGrezzo = $('body').text().replace(/\s+/g, ' ').trim();
   const title = $('title').text().trim();
-  return { testoGrezzo, title, httpStatus: resp.status };
+  return { testoGrezzo, title, httpStatus: resp.status, isPdf: false };
 }
 
 const worker = new Worker('scrapeQueue', async (job) => {
@@ -50,16 +83,27 @@ const worker = new Worker('scrapeQueue', async (job) => {
     let metadata = { title: '', url, timestamp: new Date().toISOString() };
     let scraperUsed = 'axios';
 
-    // Primario: axios/cheerio (sempre disponibile su Railway)
+    // Rilevamento PDF da URL prima di fare la richiesta
+    const looksLikePdf = isPdfUrl(url, null);
+    if (looksLikePdf) {
+      console.log(`[SCRAPER ${WORKER_ID}] URL PDF rilevato — estrazione testo con pdf-parse`);
+    }
+
+    // Primario: axios (con rilevamento PDF interno)
     try {
       const result = await scrapeWithAxios(url);
       testoGrezzo = result.testoGrezzo;
       metadata.title = result.title;
       metadata.httpStatus = result.httpStatus;
+      if (result.isPdf || looksLikePdf) {
+        scraperUsed = 'pdf-parse';
+        metadata.numPages = result.numPages;
+        console.log(`[SCRAPER ${WORKER_ID}] PDF estratto: ${result.numPages} pagine, ${testoGrezzo.length} caratteri`);
+      }
     } catch (axiosErr) {
       console.warn(`[SCRAPER ${WORKER_ID}] axios failed: ${axiosErr.message}, tentativo Puppeteer...`);
 
-      // Fallback: Puppeteer (solo se disponibile)
+      // Fallback: Puppeteer (solo se disponibile, solo per HTML)
       try {
         const puppeteer = require('puppeteer');
         const browser = await puppeteer.launch({
