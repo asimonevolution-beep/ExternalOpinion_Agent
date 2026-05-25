@@ -53,11 +53,11 @@ async function sendEmailCliente(jobId, email, immobile, pdfPath) {
   const htmlBody = `
     <div style="font-family:Georgia,serif; max-width:600px; margin:0 auto; background:#F5F0E8; padding:30px;">
       <h2 style="color:#1A1612; border-bottom:2px solid #C8A96E; padding-bottom:10px;">
-        External Opinion — Il tuo report e pronto
+        External Opinion — Il tuo report è pronto
       </h2>
       <p style="font-size:14px; color:#3A3530;">Caro cliente,</p>
       <p style="font-size:14px; color:#3A3530;">
-        La nostra analisi tecnica indipendente e stata completata.<br>
+        La nostra analisi tecnica indipendente è stata completata.<br>
         Trovi il report completo in allegato a questa email.
       </p>
 
@@ -68,26 +68,26 @@ async function sendEmailCliente(jobId, email, immobile, pdfPath) {
         </p>
         <hr style="border:none; border-top:1px solid #eee; margin:15px 0;">
         <table style="width:100%; font-size:13px; color:#3A3530;">
-          <tr><td>Coherence Index</td><td style="text-align:right; font-weight:bold;">${immobile.coherenceIndex ?? 'N/D'}/100</td></tr>
+          <tr><td>Indice di coerenza</td><td style="text-align:right; font-weight:bold;">${immobile.coherenceIndex ?? 'N/D'}/100</td></tr>
           <tr><td>ROI stimato</td><td style="text-align:right; font-weight:bold;">${immobile.roi ?? 'N/D'}%</td></tr>
-          <tr><td>Investimento conveniente</td><td style="text-align:right; font-weight:bold;">${immobile.roiConveniente ? 'SI' : 'NO'}</td></tr>
+          <tr><td>Investimento conveniente</td><td style="text-align:right; font-weight:bold;">${immobile.roiConveniente ? 'Sì' : 'No'}</td></tr>
         </table>
       </div>
 
       <p style="font-size:13px; color:#888;">
         Report ID: <code>${jobId}</code><br>
-        Hash di integrita: <code style="word-break:break-all;">${immobile.hashReport || 'N/D'}</code>
+        Hash di integrità: <code style="word-break:break-all;">${immobile.hashReport || 'N/D'}</code>
       </p>
 
       <p style="font-size:12px; color:#aaa; margin-top:30px; border-top:1px solid #ddd; padding-top:15px;">
         External Opinion — Parere Tecnico Indipendente<br>
         Direzione Tecnica: Geometra Simone Azzali<br>
-        <em>Questo report e stato validato da un professionista prima della consegna.</em>
+        <em>Questo report è stato validato da un professionista prima della consegna.</em>
       </p>
     </div>
   `;
 
-  // Se il mailer non e configurato, logga e ritorna (dev mode)
+  // Se il mailer non è configurato, logga e ritorna (dev mode)
   if (!mailer) {
     console.log(`[EMAIL DEV] Simulazione invio a ${email} per job ${jobId}`);
     console.log(`[EMAIL DEV] Semaforo: ${immobile.status} | ROI: ${immobile.roi}%`);
@@ -107,7 +107,7 @@ async function sendEmailCliente(jobId, email, immobile, pdfPath) {
   const info = await mailer.sendMail({
     from:    `"External Opinion" <${fromAddress}>`,
     to:       email,
-    subject: `${semaforoEmoji} Il tuo report External Opinion e pronto — ${immobile.status}`,
+    subject: `${semaforoEmoji} Il tuo report External Opinion è pronto — ${immobile.status}`,
     html:     htmlBody,
     attachments,
   });

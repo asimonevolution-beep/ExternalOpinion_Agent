@@ -158,6 +158,7 @@ app.get('/api/setup', (req, res) => {
     { name: 'STRIPE_SECRET_KEY', ok: !!process.env.STRIPE_SECRET_KEY, fix: 'dashboard.stripe.com → Developers → API keys' },
     { name: 'STRIPE_WEBHOOK_SECRET', ok: !!process.env.STRIPE_WEBHOOK_SECRET, fix: 'Stripe → Webhooks → endpoint: /api/stripe/webhook → copia signing secret' },
     { name: 'ADMIN_TOKEN', ok: !!process.env.ADMIN_TOKEN, fix: 'Imposta una stringa casuale sicura (min 32 chars)' },
+    { name: 'SMTP_HOST', ok: !!process.env.SMTP_HOST, fix: 'Gmail: smtp.gmail.com | SMTP_PORT=587 | SMTP_USER=tua@gmail.com | SMTP_PASS=app-password (Google → Sicurezza → Password app)' },
   ];
   const allOk = checks.every(c => c.ok);
   res.status(allOk ? 200 : 503).json({
