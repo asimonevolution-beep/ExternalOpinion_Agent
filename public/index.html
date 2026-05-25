@@ -1196,21 +1196,28 @@
   // ── API CONFIG ──
   const API_BASE = '';
   let currentJobId = null;
+  let currentEmail = '';
 
   async function avviaAnalisi() {
     const urlAsta = document.getElementById('urlAsta').value.trim();
     const email = document.getElementById('emailInput').value.trim();
     if (!urlAsta || !email) { mostraErrore('Inserisci URL asta e email.'); return; }
-    if (!urlAsta.startsWith('http')) { mostraErrore('URL non valido. Deve iniziare con http://'); return; }
+    if (!urlAsta.startsWith('http')) { mostraErrore("URL non valido. Deve iniziare con https://"); return; }
+    if (!email.includes('@')) { mostraErrore('Email non valida.'); return; }
 
+    currentEmail = email;
     document.getElementById('btnAnalizza').disabled = true;
-    document.getElementById('btnAnalizza').textContent = 'Avvio analisi...';
+    document.getElementById('btnAnalizza').textContent = 'Avvio...';
     document.getElementById('form-box').style.display = 'none';
     document.getElementById('progress-box').style.display = 'block';
     document.getElementById('result-box').style.display = 'none';
     document.getElementById('error-box').style.display = 'none';
-
-    setTimeout(() => { document.getElementById('progress-bar').style.width = '70%'; }, 100);
+    // Reset steps
+    ['scrape','ocr','llm','scoring'].forEach(s => {
+      const el = document.getElementById('step-' + s);
+      if (el) { el.className = 'pipe-step'; el.querySelector('.step-icon').textContent = '○'; }
+    });
+    document.getElementById('progress-bar').style.width = '5%';
 
     try {
       const res = await fetch(`${API_BASE}/api/analyze`, {
@@ -1223,7 +1230,8 @@
       currentJobId = data.jobId;
       pollRisultato(currentJobId);
     } catch (err) {
-      mostraErrore('Errore di connessione: ' + err.message);
+      mostraErrore('Servizio temporaneamente non disponibile. Riprova tra pochi minuti.');
+      console.error(err.message);
       resetForm();
     }
   }
@@ -1325,7 +1333,7 @@
     document.getElementById('btnPaga').textContent = 'Reindirizzamento...';
     document.getElementById('btnPaga').disabled = true;
     try {
-      const emailVal = document.getElementById('emailInput').value.trim();
+      const emailVal = currentEmail || document.getElementById('emailInput').value.trim();
       const res = await fetch(`${API_BASE}/api/jobs/${currentJobId}/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1350,7 +1358,7 @@
   function resetForm() {
     document.getElementById('form-box').style.display = 'block';
     document.getElementById('btnAnalizza').disabled = false;
-    document.getElementById('btnAnalizza').textContent = 'Avvia Analisi Gratuita →';
+    document.getElementById('btnAnalizza').textContent = 'Avvia Screening → € 69';
     document.getElementById('progress-bar').style.width = '0';
   }
 </script>
