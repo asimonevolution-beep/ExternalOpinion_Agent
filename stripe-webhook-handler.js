@@ -14,6 +14,11 @@ const stripeKey = process.env.STRIPE_SECRET_KEY;
 const stripe   = stripeKey && stripeKey.startsWith('sk_') ? require('stripe')(stripeKey) : null;
 const prisma   = require('./db');
 
+// Import lazy per evitare problemi di init order con Redis/BullMQ
+function getFlowProducer() {
+  return require('./dag-orchestrator').flowProducer;
+}
+
 const router = express.Router();
 
 const TIER_MAPPING = {
@@ -97,6 +102,33 @@ async function handleCheckoutCompleted(session) {
   });
 
   console.log(`[STRIPE] Report ${reportId} sbloccato: ${tier} (EUR ${amountEuro})`);
+
+  // Recupera email dal record job se non nella sessione Stripe
+  const email = clientEmail || await (async () => {
+    try {
+      const j = await prisma.job.findUnique({ where: { id: reportId } });
+      return JSON.parse(j?.payload || '{}').email || null;
+    } catch { return null; }
+  })();
+
+  // Avvia generazione PDF + notifica email (flow report → notify)
+  try {
+    await getFlowProducer().add({
+      name: `notifyJob-paid-${reportId}`,
+      queueName: 'notificationQueue',
+      data: { jobId: reportId, email, tier },
+      opts: { attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
+      children: [{
+        name: `reportJob-paid-${reportId}`,
+        queueName: 'reportRenderQueue',
+        data: { jobId: reportId, tier },
+        opts: { attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
+      }],
+    });
+    console.log(`[STRIPE] Flow report→notify avviato per ${reportId}`);
+  } catch (err) {
+    console.error(`[STRIPE] Errore avvio report dopo pagamento per ${reportId}:`, err.message);
+  }
 }
 
 // ============================================================================

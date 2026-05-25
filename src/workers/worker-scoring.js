@@ -74,7 +74,7 @@ function eseguiMotoreDeterministico(datiAI, parametriMercato) {
 // ============================================================================
 
 const worker = new Worker('deterministicScoringQueue', async (job) => {
-  const { jobId } = job.data;
+  const { jobId, tier } = job.data;
   const startTime = Date.now();
 
   try {
@@ -144,10 +144,12 @@ const worker = new Worker('deterministicScoringQueue', async (job) => {
       },
     });
 
-    // Aggiorna status Job
+    // SCREENING termina qui: setta READY_FOR_PAYMENT per sbloccare il pagamento nel frontend
+    // Tier superiori proseguono con REPORT → REVIEW → NOTIFY (status SCORED)
+    const finalStatus = (tier === 'TIER_1_SCREENING_69') ? 'READY_FOR_PAYMENT' : 'SCORED';
     await prisma.job.update({
       where: { id: jobId },
-      data:  { status: 'SCORED', riskScore: calcoliScoring.coherenceIndex },
+      data:  { status: finalStatus, riskScore: calcoliScoring.coherenceIndex },
     });
 
     const durationMs = Date.now() - startTime;

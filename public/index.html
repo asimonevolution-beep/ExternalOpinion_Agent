@@ -1192,7 +1192,7 @@
       try {
         const res = await fetch(`${API_BASE}/api/jobs/${jobId}`);
         const data = await res.json();
-        if (data.job && (data.job.status === 'COMPLETED' || data.job.status === 'READY_FOR_PAYMENT')) {
+        if (data.job && (data.job.status === 'COMPLETED' || data.job.status === 'READY_FOR_PAYMENT' || data.job.status === 'SCORED')) {
           clearInterval(intervallo);
           document.getElementById('progress-bar').style.width = '100%';
           setTimeout(() => mostraRisultato(data.job), 500);
@@ -1221,10 +1221,11 @@
     document.getElementById('btnPaga').textContent = 'Reindirizzamento...';
     document.getElementById('btnPaga').disabled = true;
     try {
+      const emailVal = document.getElementById('emailInput').value.trim();
       const res = await fetch(`${API_BASE}/api/jobs/${currentJobId}/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier: 'TIER_1_SCREENING_69' })
+        body: JSON.stringify({ tier: 'TIER_1_SCREENING_69', email: emailVal })
       });
       const data = await res.json();
       if (data.checkoutUrl) { window.location.href = data.checkoutUrl; }

@@ -174,6 +174,15 @@ const reviewQueue = new Queue('reviewQueue', {
 
 const flowProducer = new FlowProducer({ connection: redisConnection });
 
+// Protegge flowProducer.add() da blocco infinito quando Redis non è disponibile
+function enqueueWithTimeout(addPromise, ms = 8000) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`Redis non disponibile — coda irraggiungibile dopo ${ms}ms`)), ms);
+  });
+  return Promise.race([addPromise, timeout]).finally(() => clearTimeout(timer));
+}
+
 async function createAnalysisPipeline(jobId, payload, tier = 'TIER_2_ADVISORY_150') {
   const priority = PRIORITY_MAP[tier] || 1;
 
@@ -226,15 +235,15 @@ async function createAnalysisPipeline(jobId, payload, tier = 'TIER_2_ADVISORY_15
   const scoringStep = {
     name: 'scoringJob',
     queueName: 'deterministicScoringQueue',
-    data: { jobId },
+    data: { jobId, tier, email },   // tier passato per gestire status finale corretto
     opts: { priority, attempts: 1 },
     children: [llmStep],
   };
 
   let flow;
   if (!includeReport) {
-    // TIER_1: root = SCORING (ultimo step)
-    flow = await flowProducer.add(scoringStep);
+    // TIER_1_SCREENING_69: root = SCORING, setta READY_FOR_PAYMENT al completamento
+    flow = await enqueueWithTimeout(flowProducer.add(scoringStep));
   } else {
     // ===== STEP 5: REPORT (dipende da SCORING) =====
     const reportStep = {
@@ -255,13 +264,13 @@ async function createAnalysisPipeline(jobId, payload, tier = 'TIER_2_ADVISORY_15
     };
 
     // ===== ROOT: NOTIFY (parte per ultimo) =====
-    flow = await flowProducer.add({
+    flow = await enqueueWithTimeout(flowProducer.add({
       name: 'notifyJob',
       queueName: 'notificationQueue',
       data: { jobId, email, tier },
       opts: { priority, attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
       children: [reviewStep],
-    });
+    }));
   }
 
   console.log(`[DAG] Pipeline created for ${jobId}, BullMQ root id: ${flow.job.id}`);
