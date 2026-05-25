@@ -232,18 +232,15 @@ function healthCheckEndpoints(app) {
       ok = false;
     }
 
-    // Check Redis via ioredis
+    // Check Redis — ping sul singleton condiviso (evita connessioni extra)
     try {
-      const Redis = require('ioredis');
-      const { getRedisConnection } = require('./redis-connection');
-      const conn = getRedisConnection();
-      const ioredis = conn.url
-        ? new Redis(conn.url, { lazyConnect: true, connectTimeout: 3000, maxRetriesPerRequest: 0, enableOfflineQueue: false })
-        : new Redis({ ...conn, lazyConnect: true, connectTimeout: 3000, maxRetriesPerRequest: 0, enableOfflineQueue: false });
-      await ioredis.connect();
-      await ioredis.ping();
-      await ioredis.quit();
-      result.redis = 'connected';
+      const { getSharedRedis, getRedisUrl } = require('./redis-connection');
+      if (!getRedisUrl()) {
+        result.redis = 'not_configured';
+      } else {
+        await getSharedRedis().ping();
+        result.redis = 'connected';
+      }
     } catch (err) {
       result.redis = `error: ${err.message.slice(0, 80)}`;
       ok = false;

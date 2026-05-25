@@ -10,13 +10,15 @@
  *   risolvendo il problema "ERR max number of clients reached" su piani Redis Cloud free.
  */
 
-function getRedisConnection() {
+function getRedisOptions() {
   if (process.env.REDIS_URL) {
     try {
       const u = new URL(process.env.REDIS_URL);
+      const rawPort = u.port;
+      const port = parseInt(rawPort, 10);
       const conn = {
         host: u.hostname,
-        port: parseInt(u.port, 10) || 6379,
+        port: Number.isFinite(port) && port > 0 ? port : 6379,
         maxRetriesPerRequest: null,
         enableReadyCheck: false,
       };
@@ -25,9 +27,12 @@ function getRedisConnection() {
       return conn;
     } catch (_) {}
   }
+
+  const rawPort = process.env.REDIS_PORT || process.env.REDISPORT || '6379';
+  const port = parseInt(rawPort, 10);
   const conn = {
     host: process.env.REDIS_HOST || process.env.REDISHOST || '127.0.0.1',
-    port: parseInt(process.env.REDIS_PORT || process.env.REDISPORT || '6379', 10),
+    port: Number.isFinite(port) && port > 0 ? port : 6379,
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
   };
@@ -36,17 +41,30 @@ function getRedisConnection() {
   return conn;
 }
 
+// Backward compat per Worker BullMQ
+function getRedisConnection() {
+  return getRedisOptions();
+}
+
 // Singleton IORedis condiviso tra tutte le Queue e FlowProducer
 let _sharedRedis = null;
 function getSharedRedis() {
   if (!_sharedRedis) {
     const IORedis = require('ioredis');
-    _sharedRedis = new IORedis(getRedisConnection());
+    _sharedRedis = new IORedis(getRedisOptions());
     _sharedRedis.on('error', (err) => {
-      console.error('[REDIS SHARED] Errore connessione:', err.message);
+      // Log silenzioso — BullMQ riprova automaticamente
+      if (!err.message.includes('ENOTFOUND') && !err.message.includes('ECONNREFUSED')) {
+        console.error('[REDIS SHARED] Errore:', err.message);
+      }
     });
   }
   return _sharedRedis;
 }
 
-module.exports = { getRedisConnection, getSharedRedis };
+// Restituisce la REDIS_URL raw se disponibile (per health check)
+function getRedisUrl() {
+  return process.env.REDIS_URL || null;
+}
+
+module.exports = { getRedisConnection, getSharedRedis, getRedisUrl };

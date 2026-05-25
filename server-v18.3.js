@@ -18,6 +18,24 @@ const path = require('path');
 require('dotenv').config();
 
 // ============================================================================
+// STARTUP ENV VALIDATION
+// ============================================================================
+
+(function checkEnv() {
+  const missing = [];
+  if (!process.env.DATABASE_URL && !process.env.POSTGRES_URL && !process.env.DATABASE_PRIVATE_URL)
+    missing.push('DATABASE_URL — Prisma non si connetterà al database PostgreSQL');
+  if (!process.env.REDIS_URL && !process.env.REDIS_HOST)
+    missing.push('REDIS_URL — BullMQ userà 127.0.0.1:6379 (solo sviluppo locale)');
+  if (!process.env.ANTHROPIC_API_KEY)
+    missing.push('ANTHROPIC_API_KEY — Le analisi AI falliranno con 401');
+  if (missing.length > 0) {
+    console.warn('[ENV] Variabili mancanti o non configurate in produzione:');
+    missing.forEach(v => console.warn('  WARN:', v));
+  }
+})();
+
+// ============================================================================
 // SECURITY & OBSERVABILITY IMPORTS
 // ============================================================================
 
