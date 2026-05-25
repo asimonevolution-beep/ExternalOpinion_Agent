@@ -828,7 +828,7 @@
     <a href="#come-funziona">Come funziona</a>
     <a href="#prodotti">Servizi</a>
     <a href="#chi-siamo">Chi siamo</a>
-    <a href="#contatto" class="nav-cta">Richiedi analisi</a>
+    <a href="#analisi-form" class="nav-cta" onclick="document.getElementById('analisi-form').scrollIntoView({behavior:'smooth'}); return false;">Richiedi analisi</a>
   </nav>
 </header>
 
@@ -1161,6 +1161,49 @@
   <p style="margin-top:1.5rem;">Non riceviamo provvigioni. Non abbiamo accordi con agenzie o venditori. Non siamo legati a nessun immobile che analizziamo. Ogni parere è prodotto nell'unico interesse di chi lo commissiona.</p>
 </section>
 
+<!-- FAQ -->
+<section class="reveal" style="padding:5rem 3rem; max-width:760px; margin:0 auto; border-bottom:1px solid var(--border);">
+  <p class="section-label">Domande frequenti</p>
+  <h2 class="section-title" style="margin-bottom:2.5rem;">Quello che i clienti<br>chiedono prima di partire.</h2>
+  <div style="display:flex; flex-direction:column; gap:0;">
+    <details style="border-top:1px solid var(--border); padding:1.2rem 0;">
+      <summary style="cursor:pointer; font-family:'Instrument Sans',sans-serif; font-size:0.9rem; font-weight:500; list-style:none; display:flex; justify-content:space-between; align-items:center;">
+        Come funziona lo screening automatico a € 69?
+        <span style="font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--accent-dark);">+</span>
+      </summary>
+      <p style="margin-top:0.8rem; font-size:0.87rem; line-height:1.7; color:var(--warm-gray);">Inserisci l'URL dell'annuncio di asta giudiziaria (es. astevendo.com, astegiudiziarie.it). Il sistema scarica automaticamente tutti i documenti allegati, li elabora con OCR e AI, calcola il punteggio di rischio e ti mostra il semaforo in tempo reale. <strong>Paghi solo dopo aver visto il risultato.</strong></p>
+    </details>
+    <details style="border-top:1px solid var(--border); padding:1.2rem 0;">
+      <summary style="cursor:pointer; font-family:'Instrument Sans',sans-serif; font-size:0.9rem; font-weight:500; list-style:none; display:flex; justify-content:space-between; align-items:center;">
+        Quali portali di aste sono supportati?
+        <span style="font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--accent-dark);">+</span>
+      </summary>
+      <p style="margin-top:0.8rem; font-size:0.87rem; line-height:1.7; color:var(--warm-gray);">Il sistema supporta i principali portali italiani: astevendo.com, astegiudiziarie.it, tribunale.it e portali dei tribunali locali. Se il tuo portale non è elencato, prova comunque — funziona con qualsiasi pagina pubblica che contenga allegati PDF.</p>
+    </details>
+    <details style="border-top:1px solid var(--border); padding:1.2rem 0;">
+      <summary style="cursor:pointer; font-family:'Instrument Sans',sans-serif; font-size:0.9rem; font-weight:500; list-style:none; display:flex; justify-content:space-between; align-items:center;">
+        Cosa contiene il report PDF completo?
+        <span style="font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--accent-dark);">+</span>
+      </summary>
+      <p style="margin-top:0.8rem; font-size:0.87rem; line-height:1.7; color:var(--warm-gray);">Il PDF include: dati estratti dall'asta (prezzo base, superficie, ubicazione), indice di coerenza documentale, stima ROI e valore di mercato, criticità normative identificate, costi nascosti stimati e raccomandazione finale. Validato e firmato personalmente da Simone Azzali prima della consegna.</p>
+    </details>
+    <details style="border-top:1px solid var(--border); padding:1.2rem 0;">
+      <summary style="cursor:pointer; font-family:'Instrument Sans',sans-serif; font-size:0.9rem; font-weight:500; list-style:none; display:flex; justify-content:space-between; align-items:center;">
+        Quanto tempo ci vuole per ricevere il report?
+        <span style="font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--accent-dark);">+</span>
+      </summary>
+      <p style="margin-top:0.8rem; font-size:0.87rem; line-height:1.7; color:var(--warm-gray);">Lo screening AI con semaforo è disponibile in 5–15 minuti. Il PDF completo validato da Simone viene consegnato entro 24–48 ore via email. In caso di asta imminente, contattaci per urgenza: <a href="mailto:info@externalopinion.it" style="color:var(--accent-dark);">info@externalopinion.it</a>.</p>
+    </details>
+    <details style="border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:1.2rem 0;">
+      <summary style="cursor:pointer; font-family:'Instrument Sans',sans-serif; font-size:0.9rem; font-weight:500; list-style:none; display:flex; justify-content:space-between; align-items:center;">
+        Cosa succede se il semaforo è Rosso? Vale comunque la pena pagare?
+        <span style="font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--accent-dark);">+</span>
+      </summary>
+      <p style="margin-top:0.8rem; font-size:0.87rem; line-height:1.7; color:var(--warm-gray);">Sì — il semaforo Rosso è spesso il risultato più prezioso. Ti dice esattamente perché quell'asta è rischiosa e cosa potrebbe costarti dopo la firma. € 69 per scoprire un problema da € 30.000 è un'ottima protezione. Il report dettagliato spiega ogni criticità nel concreto.</p>
+    </details>
+  </div>
+</section>
+
 <!-- FINAL CTA -->
 <section class="final-cta reveal" id="contatto">
   <p class="section-label">Prossimo passo</p>
@@ -1171,8 +1214,8 @@
       Due Diligence Completa
       <span class="price-tag">€ 690</span>
     </a>
-    <a href="mailto:info@externalopinion.it?subject=Analisi%20Asta" class="btn-secondary" style="max-width:none;">
-      Analisi Asta
+    <a href="#analisi-form" class="btn-secondary" style="max-width:none;" onclick="document.getElementById('analisi-form').scrollIntoView({behavior:'smooth'}); return false;">
+      Screening Asta Automatico
       <span class="price-tag">€ 69</span>
     </a>
   </div>
