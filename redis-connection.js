@@ -51,7 +51,9 @@ let _sharedRedis = null;
 function getSharedRedis() {
   if (!_sharedRedis) {
     const IORedis = require('ioredis');
-    _sharedRedis = new IORedis(getRedisOptions());
+    // skipVersionCheck: BullMQ legge questa proprietà da instance.options per bypassare
+    // il controllo Redis >= 5.0 (utile con Redis 3.x locale in sviluppo)
+    _sharedRedis = new IORedis({ ...getRedisOptions(), skipVersionCheck: true });
     _sharedRedis.on('error', (err) => {
       // Log silenzioso — BullMQ riprova automaticamente
       if (!err.message.includes('ENOTFOUND') && !err.message.includes('ECONNREFUSED')) {

@@ -22,8 +22,8 @@ const { recordJobEvent } = require('../../orchestrator');
 const WORKER_ID  = `notify-${crypto.randomBytes(4).toString('hex')}`;
 const OUTPUT_DIR = path.join(__dirname, 'OUTPUT_REPORT');
 
-const { getRedisConnection } = require('../../redis-connection');
-const redisConnection = getRedisConnection();
+const { getSharedRedis } = require('../../redis-connection');
+const redisConnection = getSharedRedis();
 
 // ============================================================================
 // MAILER — Nodemailer (SMTP env vars oppure log in dev)

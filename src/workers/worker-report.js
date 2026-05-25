@@ -24,8 +24,8 @@ const OUTPUT_DIR = path.join(__dirname, 'OUTPUT_REPORT');
 // Assicura che la directory di output esista
 if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
-const { getRedisConnection } = require('../../redis-connection');
-const redisConnection = getRedisConnection();
+const { getSharedRedis } = require('../../redis-connection');
+const redisConnection = getSharedRedis();
 
 // ============================================================================
 // HELPER — formatta euro

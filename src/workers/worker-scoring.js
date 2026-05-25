@@ -18,8 +18,8 @@ const { generaRelazioneCompletaSpiegata } = require('../../explainability-engine
 
 const WORKER_ID = `scoring-${crypto.randomBytes(4).toString('hex')}`;
 
-const { getRedisConnection } = require('../../redis-connection');
-const redisConnection = getRedisConnection();
+const { getSharedRedis } = require('../../redis-connection');
+const redisConnection = getSharedRedis();
 
 const COEFFICIENTI_DEGRADO = {
   STATO_OTTIMO:   1.0,

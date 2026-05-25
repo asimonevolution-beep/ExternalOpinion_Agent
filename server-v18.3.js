@@ -541,7 +541,9 @@ async function start() {
     // ============================================================
     // AVVIO WORKER BULLMQ (in-process, single Railway dyno)
     // ============================================================
-    const workerModules = [
+    // WORKER_SUBSET=scraper,ocr,llm,scoring limita i worker caricati
+    // (utile su Redis Cloud free tier con max 8 connessioni)
+    const allWorkerModules = [
       './src/workers/worker-scraper',
       './src/workers/worker-ocr',
       './src/workers/worker-llm',
@@ -550,6 +552,11 @@ async function start() {
       './src/workers/worker-notify',
       './src/workers/worker-review',
     ];
+    const subset = process.env.WORKER_SUBSET;
+    const workerModules = subset
+      ? allWorkerModules.filter(m => subset.split(',').some(s => m.includes(s.trim())))
+      : allWorkerModules;
+    if (subset) console.log(`[WORKERS] Subset attivo: ${subset}`);
     for (const mod of workerModules) {
       try {
         require(mod);

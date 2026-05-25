@@ -16,8 +16,8 @@ const { recordJobEvent } = require('../../orchestrator');
 
 const WORKER_ID = `ocr-${crypto.randomBytes(4).toString('hex')}`;
 
-const { getRedisConnection } = require('../../redis-connection');
-const redisConnection = getRedisConnection();
+const { getSharedRedis } = require('../../redis-connection');
+const redisConnection = getSharedRedis();
 
 const worker = new Worker('ocrQueue', async (job) => {
   const { jobId } = job.data;

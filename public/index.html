@@ -985,29 +985,74 @@
       <input id="emailInput" type="email" placeholder="tua@email.it" style="width:100%; padding:0.8rem 1rem; border:1px solid var(--border); background:var(--cream); font-size:0.9rem; outline:none;" required>
     </div>
     <button id="btnAnalizza" onclick="avviaAnalisi()" style="width:100%; padding:1rem; background:var(--ink); color:#fff; border:none; cursor:pointer; font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase;">
-      Avvia Analisi Gratuita →
+      Avvia Screening → € 69
     </button>
-    <p style="font-size:0.72rem; color:var(--warm-gray); margin-top:0.8rem; text-align:center;">Analisi preliminare gratuita · Report completo € 69 · 24h</p>
+    <p style="font-size:0.72rem; color:var(--warm-gray); margin-top:0.8rem; text-align:center;">Analisi AI + semaforo di rischio · Report PDF completo in 24h · Pagamento solo dopo preview</p>
   </div>
 
   <!-- Progress -->
-  <div id="progress-box" style="display:none; margin-top:1.5rem; padding:1.5rem; background:#fff; border:1px solid var(--border); text-align:center;">
-    <div style="width:100%; height:2px; background:var(--border); overflow:hidden; margin-bottom:1rem;">
-      <div id="progress-bar" style="height:100%; background:var(--accent-dark); width:0; transition:width 8s ease;"></div>
+  <div id="progress-box" style="display:none; margin-top:1.5rem; padding:1.5rem 2rem; background:#fff; border:1px solid var(--border);">
+    <div style="width:100%; height:2px; background:var(--border); overflow:hidden; margin-bottom:1.5rem;">
+      <div id="progress-bar" style="height:100%; background:var(--accent-dark); width:0; transition:width 1s ease;"></div>
     </div>
-    <p id="progress-label" style="font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--warm-gray);">Analisi in corso...</p>
+    <div id="pipeline-steps" style="display:flex; flex-direction:column; gap:0.5rem;">
+      <div class="pipe-step" id="step-scrape">
+        <span class="step-icon">○</span>
+        <span style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--warm-gray);">Acquisizione dati asta</span>
+      </div>
+      <div class="pipe-step" id="step-ocr">
+        <span class="step-icon">○</span>
+        <span style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--warm-gray);">Estrazione testo e documenti</span>
+      </div>
+      <div class="pipe-step" id="step-llm">
+        <span class="step-icon">○</span>
+        <span style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--warm-gray);">Analisi AI (Claude)</span>
+      </div>
+      <div class="pipe-step" id="step-scoring">
+        <span class="step-icon">○</span>
+        <span style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--warm-gray);">Scoring deterministico e ROI</span>
+      </div>
+    </div>
   </div>
+  <style>
+    .pipe-step { display:flex; align-items:center; gap:0.75rem; }
+    .step-icon { font-size:0.9rem; width:1rem; text-align:center; transition:all 0.3s; }
+    .pipe-step.active .step-icon { color:var(--accent-dark); }
+    .pipe-step.done .step-icon { color:var(--green); }
+    .pipe-step.active span:last-child { color:var(--ink) !important; font-weight:500; }
+    .pipe-step.done span:last-child { color:var(--green) !important; }
+  </style>
 
   <!-- Result -->
-  <div id="result-box" style="display:none; margin-top:1.5rem; padding:2rem; background:var(--ink); color:#fff;">
-    <p style="font-family:'DM Mono',monospace; font-size:0.5rem; letter-spacing:0.18em; text-transform:uppercase; color:rgba(245,240,232,0.35); margin-bottom:0.8rem;">Risultato Analisi</p>
-    <div id="result-score" style="font-family:'Cormorant Garamond',serif; font-size:5rem; font-weight:300; line-height:1; margin-bottom:0.5rem;">—</div>
-    <div id="result-verdict" style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-style:italic; color:rgba(245,240,232,0.6); margin-bottom:1.5rem;">In elaborazione</div>
-    <div id="result-summary" style="font-size:0.85rem; line-height:1.7; color:rgba(245,240,232,0.75); margin-bottom:1.5rem;"></div>
-    <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:1.5rem;">
-      <p style="font-family:'DM Mono',monospace; font-size:0.52rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin-bottom:1rem;">Report completo con rischi dettagliati e raccomandazione finale</p>
+  <div id="result-box" style="display:none; margin-top:1.5rem;">
+    <!-- Semaforo banner -->
+    <div id="semaforo-banner" style="padding:1.5rem 2rem; margin-bottom:1px; text-align:center;">
+      <p style="font-family:'DM Mono',monospace; font-size:0.5rem; letter-spacing:0.18em; text-transform:uppercase; margin-bottom:0.6rem; opacity:0.6;">Esito Screening</p>
+      <div id="semaforo-dot" style="width:3rem; height:3rem; border-radius:50%; margin:0 auto 0.8rem; background:#888;"></div>
+      <div id="semaforo-label" style="font-family:'Cormorant Garamond',serif; font-size:2.2rem; font-weight:300; line-height:1.2; margin-bottom:0.3rem;">—</div>
+      <div id="semaforo-desc" style="font-size:0.82rem; opacity:0.7; max-width:360px; margin:0 auto;"></div>
+    </div>
+    <!-- Metriche -->
+    <div id="metrics-row" style="display:grid; grid-template-columns:1fr 1fr 1fr; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:1.5rem;">
+      <div style="padding:1rem; text-align:center; border-right:1px solid var(--border);">
+        <div id="m-coerenza" style="font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:300;">—</div>
+        <div style="font-family:'DM Mono',monospace; font-size:0.5rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--warm-gray); margin-top:0.3rem;">Coerenza</div>
+      </div>
+      <div style="padding:1rem; text-align:center; border-right:1px solid var(--border);">
+        <div id="m-roi" style="font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:300;">—</div>
+        <div style="font-family:'DM Mono',monospace; font-size:0.5rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--warm-gray); margin-top:0.3rem;">ROI Stimato</div>
+      </div>
+      <div style="padding:1rem; text-align:center;">
+        <div id="m-valore" style="font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:300;">—</div>
+        <div style="font-family:'DM Mono',monospace; font-size:0.5rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--warm-gray); margin-top:0.3rem;">Valore Attuale</div>
+      </div>
+    </div>
+    <!-- CTA pagamento -->
+    <div style="padding:1.5rem 2rem; background:var(--ink); color:#fff;">
+      <p style="font-family:'DM Mono',monospace; font-size:0.5rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin-bottom:0.5rem;">Report completo</p>
+      <p style="font-size:0.85rem; line-height:1.6; color:rgba(245,240,232,0.7); margin-bottom:1.2rem;">Il PDF include: tutti i rischi dettagliati, criticità normative, stima costi nascosti, ROI completo e raccomandazione finale firmata da Simone Azzali.</p>
       <button id="btnPaga" onclick="avviaPagamento()" style="width:100%; padding:1rem; background:var(--accent-dark); color:#fff; border:none; cursor:pointer; font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase;">
-        Sblocca Report Completo — € 69 →
+        Sblocca Report PDF Completo — € 69 →
       </button>
     </div>
   </div>
@@ -1183,36 +1228,92 @@
     }
   }
 
+  // Mappa status pipeline → step UI
+  const STATUS_STEP = {
+    'PENDING': null,
+    'SCRAPING': 'scrape', 'SCRAPE_DONE': 'scrape',
+    'OCR_DONE': 'ocr',
+    'LLM_DONE': 'llm', 'EXTRACTION_DONE': 'llm',
+    'SCORED': 'scoring', 'READY_FOR_PAYMENT': 'scoring', 'COMPLETED': 'scoring',
+  };
+  const STEP_ORDER = ['scrape','ocr','llm','scoring'];
+  const STEP_PROGRESS = { scrape: 20, ocr: 45, llm: 75, scoring: 100 };
+
+  function aggiornaSteps(status) {
+    const currentStep = STATUS_STEP[status];
+    if (!currentStep) return;
+    const idx = STEP_ORDER.indexOf(currentStep);
+    STEP_ORDER.forEach((s, i) => {
+      const el = document.getElementById('step-' + s);
+      if (!el) return;
+      const icon = el.querySelector('.step-icon');
+      if (i < idx) { el.className = 'pipe-step done'; icon.textContent = '✓'; }
+      else if (i === idx) { el.className = 'pipe-step active'; icon.textContent = '●'; }
+      else { el.className = 'pipe-step'; icon.textContent = '○'; }
+    });
+    const pct = STEP_PROGRESS[currentStep] || 0;
+    document.getElementById('progress-bar').style.width = pct + '%';
+  }
+
   async function pollRisultato(jobId) {
-    document.getElementById('progress-label').textContent = 'Analisi AI in corso...';
     let tentativi = 0;
     const intervallo = setInterval(async () => {
       tentativi++;
-      if (tentativi > 60) { clearInterval(intervallo); mostraErrore('Timeout analisi. Riprova.'); resetForm(); return; }
+      if (tentativi > 80) { clearInterval(intervallo); mostraErrore('Timeout analisi. Riprova più tardi.'); resetForm(); return; }
       try {
         const res = await fetch(`${API_BASE}/api/jobs/${jobId}`);
         const data = await res.json();
-        if (data.job && (data.job.status === 'COMPLETED' || data.job.status === 'READY_FOR_PAYMENT' || data.job.status === 'SCORED')) {
-          clearInterval(intervallo);
-          document.getElementById('progress-bar').style.width = '100%';
-          setTimeout(() => mostraRisultato(data.job), 500);
-        } else if (data.job && data.job.status === 'FAILED') {
-          clearInterval(intervallo);
-          mostraErrore('Analisi fallita: ' + (data.job.error || 'errore sconosciuto'));
-          resetForm();
+        if (data.job) {
+          aggiornaSteps(data.job.status);
+          if (data.job.status === 'COMPLETED' || data.job.status === 'READY_FOR_PAYMENT' || data.job.status === 'SCORED') {
+            clearInterval(intervallo);
+            document.getElementById('progress-bar').style.width = '100%';
+            setTimeout(() => mostraRisultato(data.job, data.immobile), 600);
+          } else if (data.job.status === 'FAILED') {
+            clearInterval(intervallo);
+            mostraErrore('Analisi non completata: ' + (data.job.error || 'errore sconosciuto'));
+            resetForm();
+          }
         }
       } catch (_) {}
     }, 3000);
   }
 
-  function mostraRisultato(job) {
+  function mostraRisultato(job, immobile) {
     document.getElementById('progress-box').style.display = 'none';
     document.getElementById('result-box').style.display = 'block';
-    const score = job.riskScore ? Math.round(job.riskScore) : '—';
-    document.getElementById('result-score').textContent = score;
-    const verdict = job.riskScore > 70 ? 'Rischio Elevato' : job.riskScore > 40 ? 'Rischio Moderato' : 'Rischio Contenuto';
-    document.getElementById('result-verdict').textContent = verdict;
-    document.getElementById('result-summary').textContent = 'Analisi preliminare completata. Sblocca il report completo per vedere tutti i rischi dettagliati, le criticità normative e la raccomandazione finale.';
+
+    // Semaforo
+    const status = (immobile && immobile.status) || 'GIALLO';
+    const colorMap = { VERDE: '#1E8449', GIALLO: '#D4AC0D', ROSSO: '#C0392B' };
+    const labelMap = {
+      VERDE: 'Verde — Coerente',
+      GIALLO: 'Giallo — Attenzione',
+      ROSSO: 'Rosso — Criticità Elevata'
+    };
+    const descMap = {
+      VERDE: "L'immobile non presenta criticità rilevanti. Puoi procedere con consapevolezza.",
+      GIALLO: "Alcune anomalie rilevate. Il report completo indica cosa verificare prima di firmare.",
+      ROSSO: "Rischi tecnici o normativi significativi. Fortemente consigliato approfondire prima di procedere."
+    };
+    const bannerBg = status === 'VERDE' ? '#f0faf3' : status === 'ROSSO' ? '#fdf2f0' : '#fefce8';
+    document.getElementById('semaforo-banner').style.background = bannerBg;
+    document.getElementById('semaforo-dot').style.background = colorMap[status] || colorMap.GIALLO;
+    document.getElementById('semaforo-label').textContent = labelMap[status] || status;
+    document.getElementById('semaforo-desc').textContent = descMap[status] || '';
+
+    // Metriche
+    const coerenza = immobile && immobile.coherenceIndex != null
+      ? Math.round(immobile.coherenceIndex * 100) + '%' : '—';
+    const roi = immobile && immobile.roi != null
+      ? (immobile.roi * 100).toFixed(1) + '%' : '—';
+    const valore = immobile && immobile.valoreAttuale
+      ? '€ ' + Math.round(immobile.valoreAttuale / 1000) + 'k' : '—';
+
+    document.getElementById('m-coerenza').textContent = coerenza;
+    document.getElementById('m-roi').textContent = roi;
+    document.getElementById('m-valore').textContent = valore;
+
     document.getElementById('result-box').scrollIntoView({ behavior: 'smooth' });
   }
 

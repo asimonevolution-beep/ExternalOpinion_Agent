@@ -18,8 +18,8 @@ const { addToReviewQueue } = require('../../review-queue');
 
 const WORKER_ID = `review-${crypto.randomBytes(4).toString('hex')}`;
 
-const { getRedisConnection } = require('../../redis-connection');
-const redisConnection = getRedisConnection();
+const { getSharedRedis } = require('../../redis-connection');
+const redisConnection = getSharedRedis();
 
 const notificationQueue = new Queue('notificationQueue', { connection: redisConnection });
 

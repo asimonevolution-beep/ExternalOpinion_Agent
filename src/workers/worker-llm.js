@@ -19,8 +19,8 @@ const { estraiDatiConFallback } = require('../../ai-fallback-handler');
 
 const WORKER_ID = `llm-${crypto.randomBytes(4).toString('hex')}`;
 
-const { getRedisConnection } = require('../../redis-connection');
-const redisConnection = getRedisConnection();
+const { getSharedRedis } = require('../../redis-connection');
+const redisConnection = getSharedRedis();
 
 // Schema validazione
 const SchemaEstrazioneAI = z.object({
