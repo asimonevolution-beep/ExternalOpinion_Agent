@@ -136,7 +136,18 @@ metricsMiddleware(app);
 healthCheckEndpoints(app);
 
 // Versione deploy â€” per diagnostica
-app.get('/api/version', (req, res) => res.json({ version: '1a3a310', built: new Date().toISOString() }));
+// Versione dinamica da git HEAD o variabile Railway
+const { execSync } = require('child_process');
+const GIT_HASH = (() => { try { return execSync('git rev-parse --short HEAD', { stdio: 'pipe' }).toString().trim(); } catch(_) { return process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0,7) || 'unknown'; } })();
+const BUILD_TIME = new Date().toISOString();
+app.get('/api/version', (req, res) => res.json({
+  version: GIT_HASH,
+  built: BUILD_TIME,
+  node: process.version,
+  env: process.env.NODE_ENV || 'development',
+  db: process.env.DATABASE_URL ? 'configured' : 'MISSING — aggiungi PostgreSQL su Railway',
+  redis: process.env.REDIS_URL ? 'configured' : 'local 127.0.0.1',
+}));
 
 // ============================================================================
 // API ROUTES
