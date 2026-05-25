@@ -1303,12 +1303,15 @@
     document.getElementById('semaforo-desc').textContent = descMap[status] || '';
 
     // Metriche
+    // coherenceIndex è già 0-100 (non 0-1), roi è decimale (0.18 = 18%)
     const coerenza = immobile && immobile.coherenceIndex != null
-      ? Math.round(immobile.coherenceIndex * 100) + '%' : '—';
+      ? Math.round(immobile.coherenceIndex) + '%' : '—';
     const roi = immobile && immobile.roi != null
       ? (immobile.roi * 100).toFixed(1) + '%' : '—';
     const valore = immobile && immobile.valoreAttuale
-      ? '€ ' + Math.round(immobile.valoreAttuale / 1000) + 'k' : '—';
+      ? '€ ' + (immobile.valoreAttuale >= 1000
+          ? Math.round(immobile.valoreAttuale / 1000) + 'k'
+          : Math.round(immobile.valoreAttuale)) : '—';
 
     document.getElementById('m-coerenza').textContent = coerenza;
     document.getElementById('m-roi').textContent = roi;

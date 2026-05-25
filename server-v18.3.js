@@ -149,6 +149,24 @@ app.get('/api/version', (req, res) => res.json({
   redis: process.env.REDIS_URL ? 'configured' : 'local 127.0.0.1',
 }));
 
+// Setup checker — mostra cosa manca per far funzionare la produzione
+app.get('/api/setup', (req, res) => {
+  const checks = [
+    { name: 'DATABASE_URL', ok: !!process.env.DATABASE_URL, fix: 'Railway dashboard → Add PostgreSQL service → viene impostata automaticamente' },
+    { name: 'REDIS_URL', ok: !!process.env.REDIS_URL, fix: 'Railway dashboard → Add Redis service → viene impostata automaticamente' },
+    { name: 'ANTHROPIC_API_KEY', ok: !!process.env.ANTHROPIC_API_KEY, fix: 'console.anthropic.com → API Keys → copia chiave' },
+    { name: 'STRIPE_SECRET_KEY', ok: !!process.env.STRIPE_SECRET_KEY, fix: 'dashboard.stripe.com → Developers → API keys' },
+    { name: 'STRIPE_WEBHOOK_SECRET', ok: !!process.env.STRIPE_WEBHOOK_SECRET, fix: 'Stripe → Webhooks → endpoint: /api/stripe/webhook → copia signing secret' },
+    { name: 'ADMIN_TOKEN', ok: !!process.env.ADMIN_TOKEN, fix: 'Imposta una stringa casuale sicura (min 32 chars)' },
+  ];
+  const allOk = checks.every(c => c.ok);
+  res.status(allOk ? 200 : 503).json({
+    ready: allOk,
+    checks: checks.map(c => ({ name: c.name, status: c.ok ? '✅ OK' : '❌ MANCANTE', fix: c.ok ? null : c.fix })),
+    hint: allOk ? 'Produzione pronta!' : 'Imposta le variabili mancanti su Railway → Settings → Variables',
+  });
+});
+
 // ============================================================================
 // API ROUTES
 // ============================================================================
