@@ -53,7 +53,16 @@ function getSharedRedis() {
     const IORedis = require('ioredis');
     // skipVersionCheck: BullMQ legge questa proprietà da instance.options per bypassare
     // il controllo Redis >= 5.0 (utile con Redis 3.x locale in sviluppo)
-    _sharedRedis = new IORedis({ ...getRedisOptions(), skipVersionCheck: true });
+    _sharedRedis = new IORedis({
+      ...getRedisOptions(),
+      skipVersionCheck: true,
+      // Keepalive 30s — permette al server Redis di rilevare connessioni morte
+      // anche dopo un kill -9 (che non invia FIN TCP)
+      keepAlive: 30000,
+      // Auto-disconnect dopo 60s idle — libera connessioni zombie su Redis Cloud
+      connectTimeout: 10000,
+      lazyConnect: false,
+    });
     _sharedRedis.on('error', (err) => {
       // Log silenzioso — BullMQ riprova automaticamente
       if (!err.message.includes('ENOTFOUND') && !err.message.includes('ECONNREFUSED')) {

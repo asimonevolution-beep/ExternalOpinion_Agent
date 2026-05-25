@@ -637,4 +637,27 @@ async function start() {
 
 start();
 
+// ============================================================================
+// GRACEFUL SHUTDOWN — chiude connessioni Redis prima di uscire
+// evita zombie connections su Redis Cloud che causano "max clients reached"
+// ============================================================================
+async function shutdown(signal) {
+  console.log(`[SHUTDOWN] ${signal} ricevuto — chiusura connessioni in corso...`);
+  try {
+    const { getSharedRedis } = require('./redis-connection');
+    await getSharedRedis().quit();
+    console.log('[SHUTDOWN] Redis condiviso chiuso.');
+  } catch (_) {}
+  try {
+    const prisma = require('./db');
+    await prisma.$disconnect();
+    console.log('[SHUTDOWN] Prisma disconnesso.');
+  } catch (_) {}
+  console.log('[SHUTDOWN] Uscita pulita.');
+  process.exit(0);
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT',  () => shutdown('SIGINT'));
+
 module.exports = app;
