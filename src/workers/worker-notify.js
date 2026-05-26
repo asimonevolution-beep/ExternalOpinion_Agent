@@ -206,6 +206,34 @@ const worker = new Worker('notificationQueue', async (job) => {
       results.webhook = await sendWebhook(jobId, process.env.NOTIFY_WEBHOOK_URL, immobile);
     }
 
+    // Notifica Simone — log della vendita (email se SMTP configurato)
+    const adminEmail = process.env.ADMIN_REVIEW_EMAIL || 'a.simonevolution@gmail.com';
+    const baseUrl = process.env.BASE_URL
+      || (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : null)
+      || 'https://externalopinionagent-production.up.railway.app';
+    const semaforoEmoji = immobile.status === 'VERDE' ? '🟢' : immobile.status === 'GIALLO' ? '🟡' : '🔴';
+    const adminMailer = getMailer();
+    if (adminMailer) {
+      adminMailer.sendMail({
+        from: `"External Opinion AI" <${process.env.SMTP_USER}>`,
+        to: adminEmail,
+        subject: `💰 Vendita completata ${semaforoEmoji} ${immobile.status} — ${tier} — ${recipientEmail}`,
+        html: `<div style="font-family:monospace;padding:20px;max-width:600px;">
+          <h2>✅ Report consegnato al cliente</h2>
+          <p><b>Tier:</b> ${tier}</p>
+          <p><b>Cliente:</b> ${recipientEmail}</p>
+          <p><b>Semaforo:</b> ${semaforoEmoji} ${immobile.status}</p>
+          <p><b>Coerenza:</b> ${immobile.coherenceIndex}/100</p>
+          <p><b>ROI:</b> ${immobile.roi}%</p>
+          <p><b>URL asta:</b> <a href="${jobRecord?.url}">${jobRecord?.url}</a></p>
+          <p><b>Job ID:</b> ${jobId}</p>
+          <p><a href="${baseUrl}/admin/review" style="background:#1A1612;color:#fff;padding:10px 20px;text-decoration:none;">Apri pannello admin →</a></p>
+        </div>`,
+      }).catch(e => console.error('[NOTIFY] Email admin fallita:', e.message));
+    } else {
+      console.log(`[NOTIFY] VENDITA — ${tier} | ${semaforoEmoji}${immobile.status} | ${recipientEmail} | job:${jobId}`);
+    }
+
     // Aggiorna Job -> COMPLETED
     await prisma.job.update({
       where: { id: jobId },
