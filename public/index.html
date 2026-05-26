@@ -1322,7 +1322,16 @@
             setTimeout(() => mostraRisultato(data.job, data.immobile), 600);
           } else if (data.job.status === 'FAILED') {
             clearInterval(intervallo);
-            mostraErrore('Analisi non completata: ' + (data.job.error || 'errore sconosciuto'));
+            const raw = data.job.error || '';
+            let msg = 'Analisi non completata. Riprova o contatta info@externalopinion.it.';
+            if (raw.includes('ENOTFOUND') || raw.includes('ECONNREFUSED') || raw.includes('Scraping fallito')) {
+              msg = 'Non riesco ad accedere all\'URL inserito. Verifica che il link sia corretto e pubblicamente accessibile, poi riprova.';
+            } else if (raw.includes('timeout') || raw.includes('ETIMEDOUT')) {
+              msg = 'Il sito dell\'asta ha risposto troppo lentamente. Riprova tra qualche minuto.';
+            } else if (raw.includes('confidence') || raw.includes('Confidence')) {
+              msg = 'Dati insufficienti nell\'annuncio per produrre un\'analisi affidabile. Prova con un URL che contenga la perizia estimativa allegata.';
+            }
+            mostraErrore(msg);
             resetForm();
           }
         }
