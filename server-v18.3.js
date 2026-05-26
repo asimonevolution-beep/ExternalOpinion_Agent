@@ -619,7 +619,7 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
 
     // Modelli AI usati (da metadata degli eventi)
     const aiModels = await prismaClient.jobEvent.findMany({
-      where: { eventType: 'LLM_PARSE_COMPLETED', createdAt: { gte: since30d } },
+      where: { eventType: 'LLM_PARSE_COMPLETED', timestamp: { gte: since30d } },
       select: { metadata: true },
       take: 500,
     });
