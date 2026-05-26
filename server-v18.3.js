@@ -619,7 +619,7 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
 
     // Modelli AI usati (da metadata degli eventi)
     const aiModels = await prismaClient.jobEvent.findMany({
-      where: { type: 'LLM_PARSE_COMPLETED', createdAt: { gte: since30d } },
+      where: { eventType: 'LLM_PARSE_COMPLETED', createdAt: { gte: since30d } },
       select: { metadata: true },
       take: 500,
     });
@@ -778,7 +778,7 @@ async function start() {
           // Pulizia log eventi vecchi di 90 giorni
           const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
           const deleted = await prismaClient.jobEvent.deleteMany({
-            where: { createdAt: { lt: cutoff } },
+            where: { timestamp: { lt: cutoff } },
           });
           console.log(`[CRON] Reset mensile completato — ${deleted.count} eventi vecchi rimossi`);
         } catch (err) {
