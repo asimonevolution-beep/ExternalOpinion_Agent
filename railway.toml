@@ -1,9 +1,7 @@
 [build]
-builder = "nixpacks"
-buildCommand = "npm install && npx prisma generate"
+builder = "dockerfile"
 
 [deploy]
-startCommand = "export DATABASE_URL=${DATABASE_URL:-${POSTGRES_URL:-${DATABASE_PRIVATE_URL}}}; npx prisma db push --accept-data-loss && node server.js"
 healthcheckPath = "/health/live"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
