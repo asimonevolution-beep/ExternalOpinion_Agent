@@ -541,6 +541,44 @@ app.get('/admin/crawler/status', requireAdmin, async (req, res) => {
   }
 });
 
+// POST /admin/simulate-payment/:jobId — solo in development, simula pagamento Stripe
+if (process.env.NODE_ENV !== 'production') {
+  app.post('/admin/simulate-payment/:jobId', requireAdmin, async (req, res) => {
+    try {
+      const { jobId } = req.params;
+      const prismaClient = require('./db');
+      const jobRecord = await prismaClient.job.findUnique({ where: { id: jobId } });
+      if (!jobRecord) return res.status(404).json({ error: 'Job non trovato' });
+      if (jobRecord.status !== 'READY_FOR_PAYMENT' && jobRecord.status !== 'SCORED') {
+        return res.status(400).json({ error: `Job in stato ${jobRecord.status} — deve essere READY_FOR_PAYMENT` });
+      }
+      const email = JSON.parse(jobRecord.payload || '{}').email || req.body.email || 'test@externalopinion.it';
+      const tier = req.body.tier || 'TIER_1_SCREENING_69';
+      await prismaClient.immobile.update({
+        where: { jobId },
+        data:  { pagato: true, livelloCommerciale: tier },
+      });
+      const { getFlowProducer } = require('./dag-orchestrator');
+      await getFlowProducer().add({
+        name: `notifyJob-sim-${jobId}`,
+        queueName: 'notificationQueue',
+        data: { jobId, email, tier },
+        opts: { attempts: 2, backoff: { type: 'exponential', delay: 3000 } },
+        children: [{
+          name: `reportJob-sim-${jobId}`,
+          queueName: 'reportRenderQueue',
+          data: { jobId, tier },
+          opts: { attempts: 2 },
+        }],
+      });
+      console.log(`[ADMIN] Pagamento simulato per ${jobId} — report+notify in coda`);
+      res.json({ success: true, jobId, email, tier, message: 'Pagamento simulato — report PDF in generazione, email in arrivo' });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+}
+
 // SPA fallback â€” serve index.html per qualsiasi route non-API
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
