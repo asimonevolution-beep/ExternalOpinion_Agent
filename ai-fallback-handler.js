@@ -218,44 +218,106 @@ async function tryClaude(testoGrezzo, timeoutMs = 45000) {
 }
 
 // ============================================================================
-// BACKEND 4: GEMINI (GOOGLE)
+// BACKEND 4: GEMINI (GOOGLE) — gemini-2.0-flash
 // ============================================================================
 
 async function tryGemini(testoGrezzo, timeoutMs = 45000) {
+  if (!process.env.GOOGLE_API_KEY) {
+    return { success: false, error: 'GOOGLE_API_KEY non configurata', model: 'gemini-2.0-flash' };
+  }
   try {
     const { GoogleGenerativeAI } = require('@google/generative-ai');
     const client = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-    const model = client.getGenerativeModel({ model: 'gemini-pro' });
+    const geminiModel = client.getGenerativeModel({
+      model: 'gemini-2.0-flash',
+      generationConfig: { temperature: 0, responseMimeType: 'application/json' },
+    });
+
+    const prompt = `${SYSTEM_PROMPT}\n\nTesto da analizzare:\n${testoGrezzo.slice(0, 8000)}`;
 
     const response = await Promise.race([
-      model.generateContent({
-        contents: [
-          { role: 'user', parts: [{ text: SYSTEM_PROMPT }] },
-          {
-            role: 'user',
-            parts: [{ text: `Testo da analizzare:\n${testoGrezzo}` }],
-          },
-        ],
-      }),
+      geminiModel.generateContent(prompt),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error('GEMINI_TIMEOUT')), timeoutMs)
       ),
     ]);
 
-    const jsonGrezzo = JSON.parse(response.response.text());
+    const rawText = response.response.text();
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Nessun JSON in risposta Gemini');
+    const jsonGrezzo = JSON.parse(jsonMatch[0]);
     const validated = SchemaEstrazioneAI.parse(jsonGrezzo);
+
+    const inputTokens = response.response.usageMetadata?.promptTokenCount || 0;
+    const outputTokens = response.response.usageMetadata?.candidatesTokenCount || 0;
+    const costUsd = (inputTokens * 0.000000075) + (outputTokens * 0.0000003);
+    console.log(`[AI-COST] Gemini Flash: ~${inputTokens} in + ${outputTokens} out = $${costUsd.toFixed(5)}`);
 
     return {
       success: true,
       data: validated,
-      model: 'google-gemini',
+      model: 'gemini-2.0-flash',
+      costUsd,
       timestamp: new Date().toISOString(),
     };
   } catch (err) {
     return {
       success: false,
       error: `Gemini failed: ${err.message}`,
-      model: 'google-gemini',
+      model: 'gemini-2.0-flash',
+    };
+  }
+}
+
+// ============================================================================
+// BACKEND 5: QWEN (ALIBABA DASHSCOPE — OpenAI-compatible)
+// ============================================================================
+
+async function tryQwen(testoGrezzo, timeoutMs = 45000) {
+  if (!process.env.DASHSCOPE_API_KEY) {
+    return { success: false, error: 'DASHSCOPE_API_KEY non configurata', model: 'qwen-plus' };
+  }
+  try {
+    const OpenAI = require('openai');
+    const client = new OpenAI({
+      apiKey: process.env.DASHSCOPE_API_KEY,
+      baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+      timeout: timeoutMs,
+    });
+
+    const response = await client.chat.completions.create({
+      model: 'qwen-plus',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: `Testo da analizzare:\n${testoGrezzo.slice(0, 8000)}` },
+      ],
+      temperature: 0,
+      response_format: { type: 'json_object' },
+    });
+
+    const rawText = response.choices[0].message.content;
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Nessun JSON in risposta Qwen');
+    const jsonGrezzo = JSON.parse(jsonMatch[0]);
+    const validated = SchemaEstrazioneAI.parse(jsonGrezzo);
+
+    const inputTokens = response.usage?.prompt_tokens || 0;
+    const outputTokens = response.usage?.completion_tokens || 0;
+    const costUsd = (inputTokens * 0.0000004) + (outputTokens * 0.0000012);
+    console.log(`[AI-COST] Qwen Plus: ~${inputTokens} in + ${outputTokens} out = $${costUsd.toFixed(5)}`);
+
+    return {
+      success: true,
+      data: validated,
+      model: 'qwen-plus',
+      costUsd,
+      timestamp: new Date().toISOString(),
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: `Qwen failed: ${err.message}`,
+      model: 'qwen-plus',
     };
   }
 }
@@ -268,20 +330,23 @@ async function estraiDatiConFallback(
   testoGrezzo,
   opzioniPersonalizzate = {}
 ) {
+  // Ordine di default: claude (economico, affidabile) → gemini (gratuito, veloce)
+  // → qwen (economico alternativo) → openai (costoso) → ollama (locale)
   const opzioni = {
     primario: 'claude',
-    fallbacks: ['ollama', 'openai', 'gemini'],
+    fallbacks: ['gemini', 'qwen', 'openai', 'ollama'],
     ...opzioniPersonalizzate,
   };
 
   console.log(`[AI_FALLBACK] Avvio pipeline di estrazione con primario: ${opzioni.primario}`);
 
-  // Ordine di tentativo
+  // Tutti i backend disponibili
   const backends = [
-    { name: 'ollama', fn: tryOllama },
-    { name: 'openai', fn: tryOpenAI },
-    { name: 'claude', fn: tryClaude },
-    { name: 'gemini', fn: tryGemini },
+    { name: 'claude',  fn: tryClaude  },
+    { name: 'gemini',  fn: tryGemini  },
+    { name: 'qwen',    fn: tryQwen    },
+    { name: 'openai',  fn: tryOpenAI  },
+    { name: 'ollama',  fn: tryOllama  },
   ];
 
   // Riordina per mettere il primario per primo
@@ -387,6 +452,7 @@ module.exports = {
   tryOpenAI,
   tryClaude,
   tryGemini,
+  tryQwen,
   SchemaEstrazioneAI,
   SYSTEM_PROMPT,
 };

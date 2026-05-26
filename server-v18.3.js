@@ -579,6 +579,107 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
+// ============================================================================
+// ADMIN STATS DASHBOARD
+// ============================================================================
+
+app.get('/api/admin/stats', requireAdmin, async (req, res) => {
+  try {
+    const prismaClient = require('./db');
+    const now = new Date();
+    const since24h = new Date(now - 24 * 60 * 60 * 1000);
+    const since30d = new Date(now - 30 * 24 * 60 * 60 * 1000);
+
+    const [
+      totalJobs,
+      jobsUltimi30g,
+      jobsUltime24h,
+      jobsPerStatus,
+      jobsPagati,
+      avgCoherence,
+      topUrls,
+    ] = await Promise.all([
+      prismaClient.job.count(),
+      prismaClient.job.count({ where: { createdAt: { gte: since30d } } }),
+      prismaClient.job.count({ where: { createdAt: { gte: since24h } } }),
+      prismaClient.job.groupBy({ by: ['status'], _count: true }),
+      prismaClient.immobile.count({ where: { pagato: true } }),
+      prismaClient.immobile.aggregate({ _avg: { coherenceIndex: true } }),
+      prismaClient.job.groupBy({
+        by: ['url'],
+        _count: true,
+        orderBy: { _count: { url: 'desc' } },
+        take: 5,
+      }),
+    ]);
+
+    const revenueStimata = jobsPagati * 69;
+    const statusMap = {};
+    jobsPerStatus.forEach(s => { statusMap[s.status] = s._count; });
+
+    // Modelli AI usati (da metadata degli eventi)
+    const aiModels = await prismaClient.jobEvent.findMany({
+      where: { type: 'LLM_PARSE_COMPLETED', createdAt: { gte: since30d } },
+      select: { metadata: true },
+      take: 500,
+    });
+    const modelStats = {};
+    aiModels.forEach(e => {
+      try {
+        const meta = JSON.parse(e.metadata || '{}');
+        const m = meta.model || 'unknown';
+        modelStats[m] = (modelStats[m] || 0) + 1;
+      } catch (_) {}
+    });
+
+    res.json({
+      timestamp: now.toISOString(),
+      pipeline: {
+        totale: totalJobs,
+        ultimi30giorni: jobsUltimi30g,
+        ultime24ore: jobsUltime24h,
+        perStatus: statusMap,
+        coherenceMedia: Math.round((avgCoherence._avg.coherenceIndex || 0) * 10) / 10,
+      },
+      monetizzazione: {
+        jobPagati: jobsPagati,
+        revenueStimata: `€${revenueStimata}`,
+        conversionRate: totalJobs > 0 ? `${Math.round((jobsPagati / totalJobs) * 100)}%` : '0%',
+      },
+      ai: {
+        modelsUsed: modelStats,
+        modelloPreferito: Object.entries(modelStats).sort((a,b) => b[1]-a[1])[0]?.[0] || 'claude-haiku',
+        fallbackChain: ['claude-haiku', 'gemini-2.0-flash', 'qwen-plus', 'gpt-4-turbo', 'ollama'],
+      },
+      topUrls: topUrls.map(u => ({ url: u.url.slice(0, 80), count: u._count })),
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/admin/ai-status — stato configurazione backend AI
+app.get('/api/admin/ai-status', requireAdmin, (req, res) => {
+  const backends = [
+    { nome: 'Claude (Anthropic)', key: 'ANTHROPIC_API_KEY',  modello: 'claude-haiku-4-5-20251001', costo: '$0.0013/analisi', primario: true  },
+    { nome: 'Gemini (Google)',    key: 'GOOGLE_API_KEY',      modello: 'gemini-2.0-flash',          costo: '$0.0001/analisi', primario: false },
+    { nome: 'Qwen (Alibaba)',     key: 'DASHSCOPE_API_KEY',   modello: 'qwen-plus',                 costo: '$0.0006/analisi', primario: false },
+    { nome: 'OpenAI (GPT-4)',     key: 'OPENAI_API_KEY',      modello: 'gpt-4-turbo',               costo: '$0.02/analisi',   primario: false },
+    { nome: 'Ollama (Locale)',    key: null,                   modello: process.env.OLLAMA_MODEL || 'llama3', costo: 'Gratuito', primario: false },
+  ];
+  const stato = backends.map(b => ({
+    nome: b.nome, modello: b.modello,
+    configurato: b.key ? !!process.env[b.key] : false,
+    primario: b.primario, costo: b.costo,
+  }));
+  const attivi = stato.filter(b => b.configurato || b.nome.includes('Ollama')).length;
+  res.json({
+    backends: stato,
+    attivi,
+    fallbackChain: stato.filter(b => b.configurato).map(b => b.modello),
+  });
+});
+
 // SPA fallback â€” serve index.html per qualsiasi route non-API
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -663,7 +764,29 @@ async function start() {
           console.error('[CRON] Crawler error:', err.message);
         }
       });
-      console.log('[CRON] Scheduler crawler attivo â€” esecuzione alle 02:00 UTC ogni notte');
+      console.log('[CRON] Scheduler crawler attivo — esecuzione alle 02:00 UTC ogni notte');
+
+      // Reset mensile statistiche: primo giorno del mese alle 03:00 UTC
+      cron.schedule('0 3 1 * *', async () => {
+        console.log('[CRON] Reset mensile statistiche...');
+        try {
+          const prismaClient = require('./db');
+          // Archivia snapshot mensile prima del reset
+          const snapshot = await prismaClient.job.groupBy({ by: ['status'], _count: true });
+          const totalPagati = await prismaClient.immobile.count({ where: { pagato: true } });
+          console.log(`[CRON] Snapshot mese: ${JSON.stringify(snapshot)} | Pagati: ${totalPagati}`);
+          // Pulizia log eventi vecchi di 90 giorni
+          const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+          const deleted = await prismaClient.jobEvent.deleteMany({
+            where: { createdAt: { lt: cutoff } },
+          });
+          console.log(`[CRON] Reset mensile completato — ${deleted.count} eventi vecchi rimossi`);
+        } catch (err) {
+          console.error('[CRON] Reset mensile error:', err.message);
+        }
+      });
+      console.log('[CRON] Reset mensile attivo — esecuzione il 1° del mese alle 03:00 UTC');
+
     } catch (err) {
       console.warn('[CRON] node-cron non disponibile:', err.message);
     }
