@@ -200,6 +200,7 @@ async function createCheckoutSession(reportId, tier, clientEmail = null) {
   if (!stripe) throw new Error('Stripe non configurato — imposta STRIPE_SECRET_KEY');
 
   const prices = {
+    TIER_1_CASCADE_79:    { amount: 7900,  label: 'Analisi Asta — Verdetto CASCADE (EUR 79)' },
     TIER_1_SCREENING_69:  { amount: 6900,  label: 'Screening Report (EUR 69)' },
     TIER_1_ENTRY_89:      { amount: 8900,  label: 'Entry Report (EUR 89)' },
     TIER_2_ADVISORY_150:  { amount: 15000, label: 'Advisory Report (EUR 150)' },

@@ -181,7 +181,7 @@ apiRouter.post(
   '/analyze',
   analyzeApiLimiter,
   async (req, res) => {
-    const { urlAsta, email, token, service, zonaDati = {}, tier = 'TIER_2_ADVISORY_150' } = req.body;
+    const { urlAsta, email, token, service, zonaDati = {}, tier = 'TIER_1_CASCADE_79' } = req.body;
 
     try {
       // Validazione
@@ -337,7 +337,7 @@ apiRouter.post(
     try {
       // Validazione tier
       const validTiers = [
-        'TIER_1_SCREENING_69',
+        'TIER_1_CASCADE_79',
         'TIER_1_SCREENING_69',
         'TIER_1_ENTRY_89',
         'TIER_2_ADVISORY_150',
@@ -613,7 +613,7 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
       }),
     ]);
 
-    const revenueStimata = jobsPagati * 69;
+    const revenueStimata = jobsPagati * 79;
     const statusMap = {};
     jobsPerStatus.forEach(s => { statusMap[s.status] = s._count; });
 
@@ -680,7 +680,142 @@ app.get('/api/admin/ai-status', requireAdmin, (req, res) => {
   });
 });
 
-// SPA fallback â€” serve index.html per qualsiasi route non-API
+// ============================================================================
+// CASCADE F7 ENGINE — Verdetto istantaneo per risposta DM
+// POST /api/verdict
+// Body: { damage: 0-1, docQuality: 0-1, marketStress: 0-1, prezzoBase?: €, superficieMq?: m² }
+// ============================================================================
+
+app.post('/api/verdict', (req, res) => {
+  const {
+    damage       = 0.5,
+    docQuality   = 0.5,
+    marketStress = 0.5,
+    prezzoBase   = 0,
+    superficieMq = 0,
+  } = req.body;
+
+  const d  = Math.min(1, Math.max(0, Number(damage)));
+  const dq = Math.min(1, Math.max(0, Number(docQuality)));
+  const ms = Math.min(1, Math.max(0, Number(marketStress)));
+
+  const risk     = (d * 0.3) + (dq * 0.3) + (ms * 0.4);
+  const riskPct  = Math.round(risk * 100);
+
+  let decision, colore, azione;
+  if (risk < 0.30) {
+    decision = 'PROCEDERE';  colore = 'VERDE';  azione = 'Acquisto consigliato con riserva tecnica';
+  } else if (risk < 0.60) {
+    decision = 'NEGOZIARE';  colore = 'GIALLO'; azione = 'Negoziare ribasso o chiedere garanzie';
+  } else {
+    decision = 'EVITARE';    colore = 'ROSSO';  azione = 'Rischio elevato — sconsigliato salvo analisi approfondita';
+  }
+
+  const edv = Math.round(79 - (20 + (risk * 30)));
+
+  const esposizioneBassa  = prezzoBase > 0 ? Math.round(prezzoBase * 0.05) : null;
+  const esposizioneAlta   = prezzoBase > 0 ? Math.round(prezzoBase * 0.15 + (d * prezzoBase * 0.10)) : null;
+  const prezzoMq          = (prezzoBase > 0 && superficieMq > 0) ? Math.round(prezzoBase / superficieMq) : null;
+
+  res.json({
+    success:  true,
+    verdict: {
+      decision,
+      colore,
+      riskScore:    riskPct,
+      azione,
+      edv,
+      esposizione:  esposizioneBassa ? { min: `€${esposizioneBassa}`, max: `€${esposizioneAlta}` } : null,
+      prezzoMq:     prezzoMq ? `€${prezzoMq}/m²` : null,
+      checkoutUrl:  '/api/analyze (invia URL asta per analisi completa)',
+    },
+    motore:   'F7 CASCADE v1.0',
+    tier:     'TIER_1_CASCADE_79',
+  });
+});
+
+// ============================================================================
+// ADMIN — Cleanup job stuck in OCR_DONE (LLM fallito)
+// POST /api/admin/jobs/cleanup-stuck
+// ============================================================================
+
+app.post('/api/admin/jobs/cleanup-stuck', requireAdmin, async (req, res) => {
+  try {
+    const prismaClient = require('./db');
+    const { action = 'list' } = req.body;
+
+    const stuckJobs = await prismaClient.job.findMany({
+      where:  { status: 'OCR_DONE' },
+      select: { id: true, url: true, createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    if (action === 'list') {
+      return res.json({ count: stuckJobs.length, jobs: stuckJobs });
+    }
+
+    if (action === 'reset') {
+      const updated = await prismaClient.job.updateMany({
+        where: { status: 'OCR_DONE' },
+        data:  { status: 'PENDING' },
+      });
+      return res.json({ success: true, reset: updated.count, message: `${updated.count} job rimessi in PENDING` });
+    }
+
+    if (action === 'delete') {
+      const ids = stuckJobs.map(j => j.id);
+      await prismaClient.jobEvent.deleteMany({ where: { jobId: { in: ids } } });
+      await prismaClient.job.deleteMany({ where: { status: 'OCR_DONE' } });
+      return res.json({ success: true, deleted: ids.length });
+    }
+
+    res.status(400).json({ error: 'action deve essere: list | reset | delete' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ============================================================================
+// ADMIN — Notifiche vendite recenti (fallback se email non configurata)
+// GET /api/admin/vendite
+// ============================================================================
+
+app.get('/api/admin/vendite', requireAdmin, async (req, res) => {
+  try {
+    const prismaClient = require('./db');
+    const vendite = await prismaClient.immobile.findMany({
+      where:   { pagato: true },
+      include: { job: { select: { id: true, url: true, status: true, createdAt: true } } },
+      orderBy: { job: { createdAt: 'desc' } },
+      take:    50,
+    });
+
+    const totale = vendite.length * 79;
+    res.json({
+      success:  true,
+      count:    vendite.length,
+      revenue:  `€${totale}`,
+      target:   '€1000 (13 vendite)',
+      progress: `${vendite.length}/13 (${Math.round((vendite.length/13)*100)}%)`,
+      vendite:  vendite.map(v => ({
+        jobId:          v.jobId,
+        url:            v.job?.url?.slice(0, 80),
+        status:         v.job?.status,
+        semaforo:       v.status,
+        coherence:      v.coherenceIndex,
+        roi:            v.roi,
+        data:           v.job?.createdAt,
+        reportUrl:      `/api/jobs/${v.jobId}/report`,
+      })),
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ============================================================================
+// SPA fallback — serve index.html per qualsiasi route non-API
+// ============================================================================
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

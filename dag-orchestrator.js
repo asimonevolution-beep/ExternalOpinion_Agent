@@ -32,6 +32,7 @@ const redisConnection = getSharedRedis();
 
 // Priority mapping
 const PRIORITY_MAP = {
+  TIER_1_CASCADE_79:    1,
   TIER_1_SCREENING_69:  1,
   TIER_1_ENTRY_89:      2,
   TIER_2_ADVISORY_150:  5,
