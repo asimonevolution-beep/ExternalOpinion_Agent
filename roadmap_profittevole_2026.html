@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExternalOpinion — Roadmap Profittevole 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg: #0c0e14;
+  --surface: #131620;
+  --surface2: #1a1e2e;
+  --border: #252a3e;
+  --border2: #2e3550;
+  --text: #e8eaf2;
+  --muted: #6b7194;
+  --dim: #3d4260;
+
+  --p0: #00e5a0;
+  --p1: #f59e0b;
+  --p2: #3b82f6;
+  --p3: #a855f7;
+  --p4: #ec4899;
+
+  --danger: #ef4444;
+  --success: #22c55e;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.hero {
+  padding: 56px 64px 0;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0,229,160,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--p0);
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-family: 'Bebas Neue', display;
+  font-size: 88px;
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+.hero h1 .dim { color: var(--dim); }
+.hero h1 .accent { color: var(--p0); }
+.hero-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 16px;
+  margin-bottom: 40px;
+}
+
+.mrr-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border: 1px solid var(--border);
+  margin: 0 64px;
+  background: var(--surface);
+}
+.mrr-cell {
+  padding: 20px 24px;
+  border-right: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition: background 0.2s;
+}
+.mrr-cell:last-child { border-right: none; }
+.mrr-cell::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+.mrr-cell.p0::before { background: var(--p0); }
+.mrr-cell.p1::before { background: var(--p1); }
+.mrr-cell.p2::before { background: var(--p2); }
+.mrr-cell.p3::before { background: var(--p3); }
+.mrr-cell.p4::before { background: var(--p4); }
+.mrr-cell:hover { background: var(--surface2); }
+.mrr-phase {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.mrr-cell.p0 .mrr-phase { color: var(--p0); }
+.mrr-cell.p1 .mrr-phase { color: var(--p1); }
+.mrr-cell.p2 .mrr-phase { color: var(--p2); }
+.mrr-cell.p3 .mrr-phase { color: var(--p3); }
+.mrr-cell.p4 .mrr-phase { color: var(--p4); }
+.mrr-amount {
+  font-family: 'Bebas Neue', display;
+  font-size: 36px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.mrr-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+}
+.mrr-time {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--dim);
+  margin-top: 6px;
+}
+
+.main { padding: 40px 64px 80px; }
+
+.sec { margin-bottom: 64px; }
+.sec-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.sec-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+}
+.sec-title {
+  font-family: 'Bebas Neue', display;
+  font-size: 32px;
+  letter-spacing: 0.05em;
+}
+.sec-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.phase {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.phase::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+}
+.phase.p0::before { background: var(--p0); }
+.phase.p1::before { background: var(--p1); }
+.phase.p2::before { background: var(--p2); }
+.phase.p3::before { background: var(--p3); }
+.phase.p4::before { background: var(--p4); }
+
+.phase-header {
+  display: grid;
+  grid-template-columns: 280px 1fr auto;
+  align-items: center;
+  padding: 24px 28px;
+  cursor: pointer;
+  user-select: none;
+  gap: 24px;
+}
+.phase-header:hover { background: rgba(255,255,255,0.02); }
+.phase-name-row { display: flex; align-items: center; gap: 12px; }
+.phase-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  padding: 3px 10px;
+  border: 1px solid;
+  text-transform: uppercase;
+}
+.p0 .phase-badge { color: var(--p0); border-color: rgba(0,229,160,0.3); background: rgba(0,229,160,0.05); }
+.p1 .phase-badge { color: var(--p1); border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.05); }
+.p2 .phase-badge { color: var(--p2); border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.05); }
+.p3 .phase-badge { color: var(--p3); border-color: rgba(168,85,247,0.3); background: rgba(168,85,247,0.05); }
+.p4 .phase-badge { color: var(--p4); border-color: rgba(236,72,153,0.3); background: rgba(236,72,153,0.05); }
+.phase-name {
+  font-family: 'Bebas Neue', display;
+  font-size: 22px;
+  letter-spacing: 0.05em;
+}
+.phase-timeline {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+}
+.phase-kpis {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+.kpi { text-align: center; }
+.kpi-val {
+  font-family: 'Bebas Neue', display;
+  font-size: 24px;
+  line-height: 1;
+}
+.kpi-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+.phase-toggle {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 16px;
+  color: var(--dim);
+  transition: transform 0.3s;
+  flex-shrink: 0;
+}
+.phase.open .phase-toggle { transform: rotate(90deg); }
+
+.phase-body {
+  display: none;
+  border-top: 1px solid var(--border);
+  padding: 28px;
+  gap: 24px;
+}
+.phase.open .phase-body { display: grid; grid-template-columns: 1fr 1fr; }
+
+.col-block { display: flex; flex-direction: column; gap: 16px; }
+
+.task-section-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.task {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  position: relative;
+}
+.task-prio {
+  width: 4px;
+  align-self: stretch;
+  flex-shrink: 0;
+  margin: -10px -12px -10px 0;
+  margin-right: 8px;
+}
+.prio-critical { background: var(--danger); }
+.prio-high { background: var(--p1); }
+.prio-med { background: var(--p2); }
+.prio-low { background: var(--dim); }
+.task-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.task-content { flex: 1; }
+.task-title {
+  font-weight: 600;
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+.task-desc {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.task-tags {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  padding: 1px 6px;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+.tag.stack { border-color: rgba(59,130,246,0.4); color: #7ab8f5; }
+.tag.revenue { border-color: rgba(0,229,160,0.4); color: var(--p0); }
+.tag.blocker { border-color: rgba(239,68,68,0.4); color: #f87171; }
+.tag.time { border-color: rgba(168,85,247,0.3); color: #c084fc; }
+
+.rev-block {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+.rev-block-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.rev-stream {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.rev-stream:last-child { border-bottom: none; padding-bottom: 0; }
+.rev-stream-name { font-size: 12px; font-weight: 500; }
+.rev-stream-model {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.rev-stream-val {
+  font-family: 'Bebas Neue', display;
+  font-size: 20px;
+  white-space: nowrap;
+}
+.rev-stream-val.green { color: var(--p0); }
+.rev-stream-val.amber { color: var(--p1); }
+.rev-stream-val.blue { color: var(--p2); }
+.rev-stream-val.purple { color: var(--p3); }
+
+.risk-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  background: rgba(239,68,68,0.04);
+  border: 1px solid rgba(239,68,68,0.15);
+  margin-bottom: 8px;
+}
+.risk-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--danger); margin-top: 5px; flex-shrink: 0; }
+.risk-text { font-size: 11px; color: var(--muted); }
+.risk-mit { font-size: 10px; color: var(--p0); margin-top: 4px; }
+
+.tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 40px; }
+.tech-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+.tech-card-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.tech-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.tech-row:last-child { border-bottom: none; }
+.tech-key { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 10px; }
+.tech-val { font-weight: 500; text-align: right; }
+.tech-val.code { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--p0); }
+
+.north-star {
+  border: 1px solid rgba(0,229,160,0.2);
+  background: rgba(0,229,160,0.03);
+  padding: 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 32px;
+  margin-bottom: 40px;
+}
+.ns-item { text-align: center; }
+.ns-val {
+  font-family: 'Bebas Neue', display;
+  font-size: 56px;
+  color: var(--p0);
+  line-height: 1;
+}
+.ns-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+.ns-note {
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: 6px;
+}
+
+.decision-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  margin-bottom: 40px;
+}
+.decision-cell {
+  background: var(--surface);
+  padding: 20px;
+}
+.decision-q {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.decision-a {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.decision-next {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--p0);
+}
+
+.sprint-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+.sprint-table th {
+  background: var(--surface2);
+  padding: 8px 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.sprint-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  vertical-align: top;
+}
+.sprint-table tr:last-child td { border-bottom: none; }
+.sprint-table tr:hover td { background: rgba(255,255,255,0.01); }
+.sprint-wk {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+.sprint-rev { color: var(--p0); font-weight: 600; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+
+.cost-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.cost-row:last-child { border-bottom: none; }
+.cost-name { color: var(--muted); }
+.cost-amt { font-family: 'IBM Plex Mono', monospace; font-weight: 500; }
+.cost-total { display: flex; justify-content: space-between; align-items: center; padding: 12px 0 0; margin-top: 8px; border-top: 1px solid var(--border2); }
+.cost-total-label { font-weight: 600; }
+.cost-total-amt { font-family: 'Bebas Neue', display; font-size: 24px; color: var(--p0); }
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 64px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--dim);
+}
+footer .logo { color: var(--p0); font-weight: 600; }
+
+.inline-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.inline-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.metric-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 16px;
+}
+.metric-val { font-family: 'Bebas Neue', display; font-size: 28px; line-height: 1; margin-bottom: 4px; }
+.metric-val.g { color: var(--p0); }
+.metric-val.a { color: var(--p1); }
+.metric-val.b { color: var(--p2); }
+.metric-val.p { color: var(--p3); }
+.metric-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.1em; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+.hero, .mrr-strip { animation: fadeUp 0.6s ease both; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-label">// ExternalOpinion · Roadmap Profittevole · Ottimizzata su Analisi Competitiva 2026</div>
+  <h1><span class="dim">DA</span> €0<br><span class="accent">A €50K</span><br><span class="dim">MRR</span></h1>
+  <div class="hero-sub">
+    5 fasi · 18 mesi · Stack esistente · Zero funding esterno richiesto<br>
+    Priorità: aste/CTU → SaaS B2B → API → white-label → portfolio NPL
+  </div>
+</div>
+
+<div class="mrr-strip">
+  <div class="mrr-cell p0">
+    <div class="mrr-phase">⚡ Fase 0 · Quick Win</div>
+    <div class="mrr-amount" style="color:var(--p0)">€2K</div>
+    <div class="mrr-label">MRR obiettivo</div>
+    <div class="mrr-time">Settimane 1–6</div>
+  </div>
+  <div class="mrr-cell p1">
+    <div class="mrr-phase">🏗 Fase 1 · MVP</div>
+    <div class="mrr-amount" style="color:var(--p1)">€8K</div>
+    <div class="mrr-label">MRR obiettivo</div>
+    <div class="mrr-time">Mesi 2–4</div>
+  </div>
+  <div class="mrr-cell p2">
+    <div class="mrr-phase">📈 Fase 2 · Growth</div>
+    <div class="mrr-amount" style="color:var(--p2)">€20K</div>
+    <div class="mrr-label">MRR obiettivo</div>
+    <div class="mrr-time">Mesi 5–9</div>
+  </div>
+  <div class="mrr-cell p3">
+    <div class="mrr-phase">🔌 Fase 3 · API & Scale</div>
+    <div class="mrr-amount" style="color:var(--p3)">€35K</div>
+    <div class="mrr-label">MRR obiettivo</div>
+    <div class="mrr-time">Mesi 10–14</div>
+  </div>
+  <div class="mrr-cell p4">
+    <div class="mrr-phase">🏦 Fase 4 · Enterprise</div>
+    <div class="mrr-amount" style="color:var(--p4)">€50K+</div>
+    <div class="mrr-label">MRR obiettivo</div>
+    <div class="mrr-time">Mesi 15–18</div>
+  </div>
+</div>
+
+<div class="main">
+  <!-- NOTA: documento ricevuto parzialmente (troncato a 50.000 caratteri nel trasferimento) -->
+  <!-- Il contenuto completo dal Sprint Plan in poi è mancante -->
+  <div style="border:1px solid var(--border);padding:24px;background:var(--surface);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;">
+    ⚠️ DOCUMENTO PARZIALE — Il file originale è stato troncato durante il trasferimento (limite 50K caratteri).<br>
+    Le sezioni complete disponibili: Hero, MRR Strip, North Star, Fasi 0–4 con task e revenue model.<br>
+    Sezioni mancanti: Sprint Plan settimane 1–8, Cost Table, Technical Spec, Decision Tree, Footer.
+  </div>
+</div>
+
+<footer>
+  <div><span class="logo">ExternalOpinion.it</span> · Roadmap Profittevole 2026 · Riservato</div>
+  <div>Documento parziale — integrare con sprint plan completo</div>
+</footer>
+
+<script>
+function togglePhase(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+</script>
+</body>
+</html>

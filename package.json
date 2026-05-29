@@ -9,7 +9,8 @@
     "build": "prisma generate",
     "postinstall": "prisma generate --no-hints || true",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev --name init"
+    "prisma:migrate": "prisma migrate dev --name init",
+    "deploy": "node scripts/fs-gatekeeper.js && netlify deploy --prod"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -99,6 +99,12 @@ async function recordJobEvent(jobId, eventType, metadata = {}, workerId = null, 
         metadata: JSON.stringify(metadata),
       },
     });
+
+    // Broadcast real-time a tutti i portali/dispositivi connessi via SSE
+    try {
+      const { publishJobEvent } = require('./realtime-hub');
+      publishJobEvent(jobId, eventType, { workerId, aiModel, ...metadata }).catch(() => {});
+    } catch (_) {}
   } catch (err) {
     console.error(`[EVENTO FALLITO] ${eventType} per Job ${jobId}:`, err.message);
   }

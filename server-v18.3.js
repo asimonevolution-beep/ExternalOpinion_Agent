@@ -71,6 +71,11 @@ const {
   router: stripeRouter,
 } = require('./stripe-webhook-handler');
 
+const {
+  startSubscriber,
+  getSSERouter,
+} = require('./realtime-hub');
+
 // ============================================================================
 // APP INITIALIZATION
 // ============================================================================
@@ -409,6 +414,9 @@ app.use('/api', apiRouter);
 
 // Mount Stripe webhook
 app.use('/api/stripe', stripeRouter);
+
+// Mount SSE real-time hub — stream aggiornamenti verso portali e dispositivi
+app.use('/api', getSSERouter());
 
 // ============================================================================
 // ADMIN ROUTES â€” Pannello revisione per Simone
