@@ -18,6 +18,7 @@ const fs          = require('fs');
 const path        = require('path');
 const prisma      = require('../../db');
 const { recordJobEvent } = require('../../orchestrator');
+const { sendEmailViaResend } = require('../email/resend-client');
 
 const WORKER_ID  = `notify-${crypto.randomBytes(4).toString('hex')}`;
 const OUTPUT_DIR = path.join(__dirname, 'OUTPUT_REPORT');
@@ -47,7 +48,7 @@ function getMailer() {
 async function sendEmailCliente(jobId, email, immobile, pdfPath) {
   const mailer    = getMailer();
   const semaforoEmoji = immobile.status === 'VERDE' ? '🟢' : immobile.status === 'GIALLO' ? '🟡' : '🔴';
-  const baseUrl   = process.env.BASE_URL || 'https://externalopinionagent-production.up.railway.app';
+  const baseUrl   = process.env.BASE_URL || 'https://externalopinionagent-production-1f66.up.railway.app';
   const downloadUrl = `${baseUrl}/api/jobs/${jobId}/report`;
 
   const htmlBody = `
@@ -92,13 +93,6 @@ async function sendEmailCliente(jobId, email, immobile, pdfPath) {
     </div>
   `;
 
-  // Se il mailer non è configurato, logga e ritorna (dev mode)
-  if (!mailer) {
-    console.log(`[EMAIL DEV] Simulazione invio a ${email} per job ${jobId}`);
-    console.log(`[EMAIL DEV] Semaforo: ${immobile.status} | ROI: ${immobile.roi}%`);
-    return { simulated: true };
-  }
-
   const attachments = [];
   if (pdfPath && fs.existsSync(pdfPath)) {
     attachments.push({
@@ -108,17 +102,35 @@ async function sendEmailCliente(jobId, email, immobile, pdfPath) {
     });
   }
 
-  const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER;
-  const info = await mailer.sendMail({
-    from:    `"External Opinion" <${fromAddress}>`,
-    to:       email,
-    subject: `${semaforoEmoji} Il tuo report External Opinion è pronto — ${immobile.status}`,
-    html:     htmlBody,
-    attachments,
-  });
+  // SMTP configurato → usa Nodemailer
+  if (mailer) {
+    const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER;
+    const info = await mailer.sendMail({
+      from:    `"External Opinion" <${fromAddress}>`,
+      to:       email,
+      subject: `${semaforoEmoji} Il tuo report External Opinion è pronto — ${immobile.status}`,
+      html:     htmlBody,
+      attachments,
+    });
+    console.log(`[EMAIL SMTP] Inviata a ${email} — messageId: ${info.messageId}`);
+    return { messageId: info.messageId, provider: 'smtp' };
+  }
 
-  console.log(`[EMAIL] Inviata a ${email} — messageId: ${info.messageId}`);
-  return { messageId: info.messageId };
+  // Resend fallback (se RESEND_API_KEY configurata)
+  if (process.env.RESEND_API_KEY) {
+    const result = await sendEmailViaResend({
+      to:          email,
+      subject:     `${semaforoEmoji} Il tuo report External Opinion è pronto — ${immobile.status}`,
+      html:        htmlBody,
+      attachments,
+    });
+    return result;
+  }
+
+  // Dev mode — nessun provider configurato
+  console.log(`[EMAIL DEV] Simulazione invio a ${email} per job ${jobId}`);
+  console.log(`[EMAIL DEV] Semaforo: ${immobile.status} | ROI: ${immobile.roi}%`);
+  return { simulated: true };
 }
 
 // ============================================================================
@@ -215,15 +227,10 @@ const worker = new Worker('notificationQueue', async (job) => {
     const adminEmail = process.env.ADMIN_REVIEW_EMAIL || 'a.simonevolution@gmail.com';
     const baseUrl = process.env.BASE_URL
       || (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : null)
-      || 'https://externalopinionagent-production.up.railway.app';
+      || 'https://externalopinionagent-production-1f66.up.railway.app';
     const semaforoEmoji = immobile.status === 'VERDE' ? '🟢' : immobile.status === 'GIALLO' ? '🟡' : '🔴';
-    const adminMailer = getMailer();
-    if (adminMailer) {
-      adminMailer.sendMail({
-        from: `"External Opinion AI" <${process.env.SMTP_USER}>`,
-        to: adminEmail,
-        subject: `💰 Vendita completata ${semaforoEmoji} ${immobile.status} — ${tier} — ${recipientEmail}`,
-        html: `<div style="font-family:monospace;padding:20px;max-width:600px;">
+    const adminSubject = `💰 Vendita completata ${semaforoEmoji} ${immobile.status} — ${tier} — ${recipientEmail}`;
+    const adminHtml = `<div style="font-family:monospace;padding:20px;max-width:600px;">
           <h2>✅ Report consegnato al cliente</h2>
           <p><b>Tier:</b> ${tier}</p>
           <p><b>Cliente:</b> ${recipientEmail}</p>
@@ -233,8 +240,18 @@ const worker = new Worker('notificationQueue', async (job) => {
           <p><b>URL asta:</b> <a href="${jobRecord?.url}">${jobRecord?.url}</a></p>
           <p><b>Job ID:</b> ${jobId}</p>
           <p><a href="${baseUrl}/admin/review" style="background:#1A1612;color:#fff;padding:10px 20px;text-decoration:none;">Apri pannello admin →</a></p>
-        </div>`,
-      }).catch(e => console.error('[NOTIFY] Email admin fallita:', e.message));
+        </div>`;
+    const adminMailer = getMailer();
+    if (adminMailer) {
+      adminMailer.sendMail({
+        from: `"External Opinion AI" <${process.env.SMTP_USER}>`,
+        to: adminEmail,
+        subject: adminSubject,
+        html: adminHtml,
+      }).catch(e => console.error('[NOTIFY] Email admin SMTP fallita:', e.message));
+    } else if (process.env.RESEND_API_KEY) {
+      sendEmailViaResend({ to: adminEmail, subject: adminSubject, html: adminHtml })
+        .catch(e => console.error('[NOTIFY] Email admin Resend fallita:', e.message));
     } else {
       console.log(`[NOTIFY] VENDITA — ${tier} | ${semaforoEmoji}${immobile.status} | ${recipientEmail} | job:${jobId}`);
     }
