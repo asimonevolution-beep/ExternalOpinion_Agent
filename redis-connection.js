@@ -78,4 +78,4 @@ function getRedisUrl() {
   return process.env.REDIS_URL || null;
 }
 
-module.exports = { getRedisConnection, getSharedRedis, getRedisUrl };
+module.exports = { getRedisConnection, getRedisOptions, getSharedRedis, getRedisUrl };

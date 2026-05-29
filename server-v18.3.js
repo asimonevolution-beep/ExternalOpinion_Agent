@@ -231,6 +231,7 @@ apiRouter.post(
         createdAt: jobRecord.createdAt,
         pollingUrl: `/api/jobs/${jobRecord.id}`,
         checkoutUrl: `/api/jobs/${jobRecord.id}/checkout`,
+        streamUrl: `/api/stream/${jobRecord.id}`,
       });
     } catch (err) {
       console.error(`[API] Error creating job:`, err.message);
@@ -879,6 +880,8 @@ async function start() {
     }
 
     app.listen(PORT, () => {
+      // Avvia il subscriber Redis per il broadcast SSE real-time
+      startSubscriber();
       console.log(`
 â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
 â•‘   EXTERNAL OPINION â€” V18.3             â•‘

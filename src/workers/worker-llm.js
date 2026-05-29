@@ -16,6 +16,7 @@ const crypto = require('crypto');
 const prisma = require('../../db');
 const { recordJobEvent, validateConfidenceThreshold } = require('../../orchestrator');
 const { estraiDatiConFallback } = require('../../ai-fallback-handler');
+const { runFastConsensus, runFullConsensus } = require('../../ai-consensus-hub');
 
 const WORKER_ID = `llm-${crypto.randomBytes(4).toString('hex')}`;
 
@@ -62,8 +63,24 @@ const worker = new Worker('llmExtractionQueue', async (job) => {
 
     if (!testoOCR) throw new Error('testoOCR non trovato nel DB — OCR non completato?');
 
-    // Estrai con fallback (Ollama → OpenAI → Claude)
-    const extractionResult = await estraiDatiConFallback(testoOCR);
+    // Estrai — consensus multi-AI in parallelo se AI_CONSENSUS_MODE è attivo
+    let extractionResult;
+    if (process.env.AI_CONSENSUS_MODE === 'true') {
+      // Leggi il tier dal DB per scegliere la profondità del consensus
+      const tierJob = await prisma.job.findUnique({ where: { id: jobId }, select: { payload: true } });
+      const tierPayload = tierJob?.payload ? JSON.parse(tierJob.payload) : {};
+      const tier = tierPayload.tier || '';
+      const isPremium = tier.includes('ADVISORY') || tier.includes('PREMIUM') || tier.includes('ENTERPRISE');
+      const fn = isPremium ? runFullConsensus : runFastConsensus;
+      const consensusRes = await fn(testoOCR, jobId);
+      extractionResult = {
+        success: consensusRes.success,
+        data: consensusRes.data,
+        model: `consensus:${(consensusRes.consensus?.modelsUsed || []).join('+')}`,
+      };
+    } else {
+      extractionResult = await estraiDatiConFallback(testoOCR);
+    }
 
     if (!extractionResult.success) {
       throw new Error('EXTRACTION_FAILED_ALL_BACKENDS');
@@ -85,6 +102,7 @@ const worker = new Worker('llmExtractionQueue', async (job) => {
           ...datiAggiornati,
           datiAI: datiEstrattiEValidati,
           aiModel: extractionResult.model,
+          aiConsensus: extractionResult.consensus || null,
         }),
       },
     });
