@@ -1,0 +1,16 @@
+node_modules
+src/node_modules
+.env
+.env.*
+env.production
+*.log
+logs/
+.git
+.gitignore
+*.zip
+*.md
+REPORT_FINALI/
+CARICO_ASTE/
+.vscode/
+.claude/
+prisma/migrations/

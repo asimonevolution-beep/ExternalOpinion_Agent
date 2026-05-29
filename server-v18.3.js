@@ -1,22 +1,10 @@
-﻿/**
- * EXTERNAL OPINION â€” SERVER V18.3
- * Direzione Tecnica: Geometra Simone Azzali
- * 
- * Express server con:
- * - DAG orchestrator (BullMQ FlowProducer)
- * - Security hardening (Helmet, CSP, rate limiting)
- * - Observability stack (Prometheus, Sentry)
- * - Healthcheck endpoints
- * - API endpoints aggiornati per V18.3
- */
-
-const express = require('express');
-const cors = require('cors');
-const compression = require('compression');
-const morgan = require('morgan');
-const path = require('path');
+﻿'use strict';
 require('dotenv').config();
-
+const express     = require('express');
+const path        = require('path');
+const cors        = require('cors');
+const compression = require('compression');
+const morgan      = require('morgan');
 // ============================================================================
 // STARTUP ENV VALIDATION
 // ============================================================================

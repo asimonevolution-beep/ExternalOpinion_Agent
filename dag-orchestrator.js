@@ -38,7 +38,7 @@ const PRIORITY_MAP = {
   TIER_2_ADVISORY_150:  5,
   TIER_3_PREMIUM_690:   10,
   TIER_4_ENTERPRISE_API: 50,
-};;
+};
 
 // ============================================================================
 // CIRCUIT BREAKER
@@ -285,9 +285,14 @@ async function createAnalysisPipeline(jobId, payload, tier = 'TIER_2_ADVISORY_15
 // EXPORTS
 // ============================================================================
 
+function getFlowProducer() {
+  return flowProducer;
+}
+
 module.exports = {
   createAnalysisPipeline,
   flowProducer,
+  getFlowProducer,
   scrapeQueue,
   ocrQueue,
   llmExtractionQueue,
