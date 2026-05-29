@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm audit)",
+      "Bash(npm audit *)",
+      "Bash(redis-cli CLIENT LIST *)",
+      "Bash(redis-cli ping *)",
+      "Bash(redis-cli info *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git push)",
+      "Bash(npm install)",
+      "Bash(npm install *)",
+      "Bash(npm ci)",
+      "Bash(curl -s --max-time * https://externalopinionagent-production*)",
+      "Bash(curl -s --max-time * http://localhost:3000*)",
+      "Bash(npx prisma *)",
+      "Bash(node --check *)"
+    ]
+  }
+}
