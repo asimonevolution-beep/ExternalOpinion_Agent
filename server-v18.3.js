@@ -782,7 +782,7 @@ app.post('/api/verdict', (req, res) => {
 });
 
 // ============================================================================
-// ADMIN — Cleanup job stuck in OCR_DONE (LLM fallito)
+// ADMIN — Cleanup job stuck in OCR_DONE (LLM fallito) [legacy]
 // POST /api/admin/jobs/cleanup-stuck
 // ============================================================================
 
@@ -817,6 +817,68 @@ app.post('/api/admin/jobs/cleanup-stuck', requireAdmin, async (req, res) => {
     }
 
     res.status(400).json({ error: 'action deve essere: list | reset | delete' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ============================================================================
+// ADMIN — Watchdog: rileva e riavvia TUTTI i job bloccati
+// GET  /api/admin/watchdog        — snapshot senza modifiche
+// POST /api/admin/watchdog        — esegue restart { dryRun?: bool }
+// ============================================================================
+
+app.get('/api/admin/watchdog', requireAdmin, async (req, res) => {
+  try {
+    const { getStuckJobsSnapshot, STUCK_THRESHOLDS } = require('./job-watchdog');
+    const snapshot = await getStuckJobsSnapshot();
+    const total = Object.values(snapshot).reduce((s, arr) => s + arr.length, 0);
+    res.json({ stuck: total, byStatus: snapshot, thresholds: STUCK_THRESHOLDS, ts: new Date().toISOString() });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/admin/watchdog', requireAdmin, async (req, res) => {
+  try {
+    const { runWatchdog } = require('./job-watchdog');
+    const { dryRun = false, maxRetry = 3 } = req.body;
+    const report = await runWatchdog({ dryRun, maxRetry });
+    res.json({ success: true, report });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ============================================================================
+// ADMIN — Test AI consensus in tempo reale
+// POST /api/admin/ai-test
+// Body: { testo?: string, models?: ['claude','gemini',...] }
+// ============================================================================
+
+app.post('/api/admin/ai-test', requireAdmin, async (req, res) => {
+  try {
+    const { runConsensus } = require('./ai-consensus-hub');
+    const {
+      testo = 'Perizia immobile di test. Stato: buono. Nessuna difformità rilevata. Valore stimato 250000 euro. Confidence alta.',
+      models,
+    } = req.body;
+
+    const startMs = Date.now();
+    const result = await runConsensus(testo, {
+      jobId:    null,
+      models:   models || ['claude', 'gemini', 'qwen'],
+      minModels: 1,
+      streaming: false,
+    });
+
+    res.json({
+      success:     true,
+      durationMs:  Date.now() - startMs,
+      consensus:   result.consensus,
+      data:        result.data,
+      ts:          result.timestamp,
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -970,6 +1032,20 @@ async function start() {
         }
       });
       console.log('[CRON] Reset mensile attivo — esecuzione il 1° del mese alle 03:00 UTC');
+
+      // Watchdog job bloccati — ogni 10 minuti
+      cron.schedule('*/10 * * * *', async () => {
+        try {
+          const { runWatchdog } = require('./job-watchdog');
+          const report = await runWatchdog({ dryRun: false, maxRetry: 3 });
+          if (report.restarted > 0) {
+            console.log(`[CRON WATCHDOG] ${report.restarted} job riavviati, ${report.stuck} bloccati trovati`);
+          }
+        } catch (err) {
+          console.error('[CRON WATCHDOG] Error:', err.message);
+        }
+      });
+      console.log('[CRON] Watchdog attivo — scansione job bloccati ogni 10 minuti');
 
     } catch (err) {
       console.warn('[CRON] node-cron non disponibile:', err.message);
