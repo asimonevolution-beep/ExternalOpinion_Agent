@@ -690,6 +690,44 @@ app.get('/api/admin/ai-status', requireAdmin, (req, res) => {
 });
 
 // ============================================================================
+// AI REGISTRY — stato live di tutte le AI e percorsi del progetto
+// GET /api/ai-registry (pubblico — nessun dato sensibile)
+// ============================================================================
+
+app.get('/api/ai-registry', (req, res) => {
+  try {
+    const { getSummary, getLiveStatus, PIPELINES, PROJECT_PATHS, EXTERNAL_CONNECTIONS } = require('./ai-paths-registry');
+    const summary = getSummary();
+    const live    = getLiveStatus();
+
+    const models = Object.values(live).map(m => ({
+      id:           m.id,
+      label:        m.label,
+      provider:     m.provider,
+      model:        m.model,
+      role:         m.role,
+      active:       m.active,
+      configStatus: m.configStatus,
+      costUsdPer1k: m.costUsdPer1k,
+      avgLatencyMs: m.avgLatencyMs,
+      tiers:        m.tiers,
+      description:  m.description,
+    }));
+
+    res.json({
+      summary,
+      models,
+      pipelines:   PIPELINES,
+      projectPaths: PROJECT_PATHS,
+      connections:  EXTERNAL_CONNECTIONS,
+      ts: new Date().toISOString(),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================================================
 // CASCADE F7 ENGINE — Verdetto istantaneo per risposta DM
 // POST /api/verdict
 // Body: { damage: 0-1, docQuality: 0-1, marketStress: 0-1, prezzoBase?: €, superficieMq?: m² }

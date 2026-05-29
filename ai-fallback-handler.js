@@ -178,18 +178,33 @@ async function tryClaude(testoGrezzo, timeoutMs = 45000) {
     const response = await client.messages.create({
       model,
       max_tokens: 1024,
+      // Prompt caching: il SYSTEM_PROMPT è fisso → cache hit rate ~95% → risparmio 90% sui token input
+      system: [
+        {
+          type: 'text',
+          text: SYSTEM_PROMPT,
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
       messages: [
         {
           role: 'user',
-          content: `${SYSTEM_PROMPT}\n\nTesto da analizzare:\n${testoGrezzo.slice(0, 8000)}`,
+          content: `Testo da analizzare:\n${testoGrezzo.slice(0, 8000)}`,
         },
       ],
     });
 
-    // Cost tracking
+    // Cost tracking (con cache: input cached = $0.025/Mtok invece di $0.25/Mtok)
     const outputTokens = response.usage?.output_tokens || 0;
-    const costUsd = (inputTokenEstimate * 0.00000025) + (outputTokens * 0.00000125);
-    console.log(`[AI-COST] Claude Haiku: ~${inputTokenEstimate} in + ${outputTokens} out = $${costUsd.toFixed(5)}`);
+    const cacheRead    = response.usage?.cache_read_input_tokens || 0;
+    const cacheWrite   = response.usage?.cache_creation_input_tokens || 0;
+    const normalIn     = (inputTokenEstimate - cacheRead - cacheWrite);
+    const costUsd = (normalIn    * 0.00000025)
+                  + (cacheWrite  * 0.0000003)
+                  + (cacheRead   * 0.000000025)
+                  + (outputTokens * 0.00000125);
+    const cacheLabel = cacheRead > 0 ? ` [cache_hit:${cacheRead}tok]` : '';
+    console.log(`[AI-COST] Claude Haiku: ~${inputTokenEstimate} in + ${outputTokens} out = $${costUsd.toFixed(5)}${cacheLabel}`);
 
     // Estrai JSON dalla risposta (gestisce markdown code blocks e testo libero)
     let rawText = response.content[0].text.trim();

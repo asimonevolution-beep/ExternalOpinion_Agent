@@ -79,6 +79,11 @@ async function sendEmailCliente(jobId, email, immobile, pdfPath) {
         Hash di integrità: <code style="word-break:break-all;">${immobile.hashReport || 'N/D'}</code>
       </p>
 
+      <p style="font-size:12px; color:#aaa; margin-top:10px;">
+        Vuoi richiedere una nuova analisi? Puoi seguire l'avanzamento in tempo reale:<br>
+        <a href="${baseUrl}/api/stream/${jobId}" style="color:#C8A96E;">→ Live stream aggiornamenti (SSE)</a>
+      </p>
+
       <p style="font-size:12px; color:#aaa; margin-top:30px; border-top:1px solid #ddd; padding-top:15px;">
         External Opinion — Parere Tecnico Indipendente<br>
         Direzione Tecnica: Geometra Simone Azzali<br>
