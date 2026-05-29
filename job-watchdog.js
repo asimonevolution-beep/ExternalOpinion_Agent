@@ -75,6 +75,15 @@ async function runWatchdog(opts = {}) {
 
     for (const job of stuckJobs) {
       const ageMin = Math.round((now - new Date(job.updatedAt)) / 60000);
+
+      // Verifica se il job è già attivo in BullMQ (evita doppio insert)
+      const isAlreadyActive = await checkBullMQActive(job.id, RESUME_QUEUE[status]);
+      if (isAlreadyActive) {
+        console.log(`[WATCHDOG] Job ${job.id} già in BullMQ — skip`);
+        report.skipped++;
+        continue;
+      }
+
       console.log(`[WATCHDOG] Job bloccato: ${job.id} | status=${status} | età=${ageMin}min`);
       report.stuck++;
 
@@ -114,6 +123,25 @@ async function runWatchdog(opts = {}) {
 
   console.log(`[WATCHDOG] Completato: ${report.checked} job controllati, ${report.stuck} bloccati, ${report.restarted} riavviati`);
   return report;
+}
+
+// ============================================================================
+// CHECK BULLMQ — verifica se un job è già in coda attiva
+// ============================================================================
+
+async function checkBullMQActive(jobId, queueName) {
+  try {
+    const { getSharedRedis } = require('./redis-connection');
+    const { Queue } = require('bullmq');
+    const redisConnection = getSharedRedis();
+    const queue = new Queue(queueName, { connection: redisConnection });
+    // Cerca job con questo jobId nei dati della coda
+    const waiting = await queue.getJobs(['waiting', 'active', 'delayed'], 0, 20);
+    const found = waiting.some(j => j.data?.jobId === jobId);
+    return found;
+  } catch (_) {
+    return false; // Se non riesce a verificare, procede con il restart
+  }
 }
 
 // ============================================================================
