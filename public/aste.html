@@ -333,7 +333,7 @@ input::placeholder { color: var(--warm-gray); }
       const analyzeRes = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, email }),
+        body: JSON.stringify({ urlAsta: url, email }),
       });
       if (!analyzeRes.ok) {
         const err = await analyzeRes.json().catch(() => ({}));
