@@ -44,8 +44,8 @@ router.post('/analyze-auction', async (req, res) => {
     success: true,
     mock: true,
     preview: {
-      // Sezione libera
       coherenceIndex: 74,
+      riskScore: 38,
       verdetto: 'GIALLO',
       prezzoBase: '€ 118.000',
       valutazioneCTU: '€ 148.500',
@@ -57,6 +57,11 @@ router.post('/analyze-auction', async (req, res) => {
       occupazione: 'Libero al rilascio',
       speseArretrate: '€ 2.340',
       zonaOMI: 'B2 — €1.650/mq',
+      segnali: [
+        { label: 'Difformità urbanistica', stato: 'attenzione', nota: 'Sanabile art. 37' },
+        { label: 'Libero al rilascio',     stato: 'ok',         nota: 'Accesso immediato' },
+        { label: 'Spese insolute',         stato: 'attenzione', nota: '€ 2.340' },
+      ],
       rischi: [
         {
           livello: 'Medio',
