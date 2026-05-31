@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Richiedi Analisi — External Opinion</title>
-<meta name="description" content="Inserisci l'URL dell'asta giudiziaria e ricevi un'analisi indipendente con Coherence Index, ROI e profilo rischio entro 48 ore.">
+<title>Analisi Asta Giudiziaria — External Opinion</title>
+<meta name="description" content="Inserisci l'URL dell'asta: ottieni subito Coherence Index e rischi principali gratis. Sblocca ROI, cash flow e massimale d'offerta per € 69.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
@@ -15,12 +15,15 @@
   --accent: #C8A96E;
   --accent-dark: #9E7E45;
   --border: rgba(26,22,18,0.12);
+  --yellow: #D4AC0D;
+  --green: #1E8449;
   --red: #C0392B;
 }
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { background: var(--cream); color: var(--ink); font-family: 'Instrument Sans', sans-serif; min-height: 100vh; }
+body { background: var(--cream); color: var(--ink); font-family: 'Instrument Sans', sans-serif; font-size: 15px; line-height: 1.6; }
 
+/* NAV */
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   display: flex; justify-content: space-between; align-items: center;
@@ -32,10 +35,10 @@ nav {
 .nav-back { font-size: 0.82rem; color: var(--warm-gray); text-decoration: none; letter-spacing: 0.04em; }
 .nav-back:hover { color: var(--ink); }
 
-main {
-  max-width: 680px; margin: 0 auto;
-  padding: 8rem 2rem 5rem;
-}
+.container { max-width: 680px; margin: 0 auto; padding: 7rem 2rem 5rem; }
+
+/* ── FASE 1: HERO + FORM DEMO ── */
+#fase-form { }
 
 .tag {
   font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
@@ -44,125 +47,184 @@ main {
 }
 .tag::before { content: ''; display: block; width: 32px; height: 1px; background: var(--accent); }
 
-h1 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(2.2rem, 5vw, 3.4rem);
-  font-weight: 300; line-height: 1.15; margin-bottom: 1.2rem;
-}
+h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 300; line-height: 1.15; margin-bottom: 1.2rem; }
 h1 em { font-style: italic; color: var(--accent-dark); }
 
-.subtitle {
-  font-size: 0.95rem; color: var(--warm-gray); line-height: 1.7;
-  margin-bottom: 3rem; max-width: 520px;
-}
+.subtitle { font-size: 0.92rem; color: var(--warm-gray); line-height: 1.7; margin-bottom: 2.5rem; max-width: 520px; }
 
-/* FORM */
-.form-card {
-  background: #fff; border: 1px solid var(--border); padding: 2.5rem;
-  margin-bottom: 2rem;
-}
-
-.field { margin-bottom: 1.6rem; }
-label {
-  display: block; font-size: 0.78rem; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--warm-gray); margin-bottom: 0.55rem;
-}
-input[type="url"], input[type="email"] {
-  width: 100%; padding: 0.85rem 1rem;
+.form-card { background: #fff; border: 1px solid var(--border); padding: 2rem 2.5rem; margin-bottom: 2rem; }
+.form-label { display: block; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 0.5rem; }
+.url-row { display: flex; gap: 0.75rem; }
+.url-input {
+  flex: 1; padding: 0.85rem 1rem;
   border: 1px solid var(--border); background: var(--cream);
   font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--ink);
   outline: none; transition: border-color 0.2s;
 }
-input[type="url"]:focus, input[type="email"]:focus {
-  border-color: var(--accent);
+.url-input:focus { border-color: var(--accent); }
+.url-input::placeholder { color: var(--warm-gray); }
+.btn-demo {
+  background: var(--ink); color: var(--cream); border: none; cursor: pointer;
+  padding: 0.85rem 1.6rem; font-family: 'Instrument Sans', sans-serif;
+  font-size: 0.88rem; font-weight: 600; letter-spacing: 0.04em;
+  transition: background 0.2s; white-space: nowrap;
 }
-input::placeholder { color: var(--warm-gray); }
+.btn-demo:hover { background: #2c2520; }
+.btn-demo:disabled { background: var(--warm-gray); cursor: wait; }
+.form-hint { font-size: 0.74rem; color: var(--warm-gray); margin-top: 0.6rem; }
 
-/* TIER SELECTOR */
-.tier-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-.tier-option { position: relative; }
-.tier-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
-.tier-label {
-  display: block; padding: 1rem 1.1rem; border: 1px solid var(--border);
+.trust-notes { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+.trust-item { flex: 1; min-width: 130px; }
+.trust-item strong { display: block; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.3rem; }
+.trust-item span { font-size: 0.8rem; color: var(--warm-gray); line-height: 1.5; }
+
+/* ── FASE 2: PROCESSING ── */
+#fase-processing { display: none; }
+#fase-processing.visible { display: block; }
+
+.processing-card { background: #fff; border: 1px solid var(--border); padding: 2.5rem; text-align: center; }
+.proc-title { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; margin-bottom: 0.4rem; }
+.spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 1rem auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.proc-steps { text-align: left; max-width: 300px; margin: 1.2rem auto 0; }
+.proc-step { font-size: 0.8rem; color: var(--warm-gray); padding: 0.3rem 0; display: flex; align-items: center; gap: 0.6rem; transition: color 0.3s; }
+.proc-step.done { color: var(--green); }
+.proc-step-icon { width: 14px; text-align: center; }
+
+/* ── FASE 3: ANTEPRIMA ── */
+#fase-anteprima { display: none; }
+#fase-anteprima.visible { display: block; }
+
+.report-header {
+  border-bottom: 2px solid var(--ink); padding-bottom: 1.5rem; margin-bottom: 2rem;
+  display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;
+}
+.report-meta { flex: 1; }
+.report-tag { font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 0.4rem; }
+.report-title { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; font-weight: 300; line-height: 1.2; margin-bottom: 0.3rem; }
+.report-sub { font-size: 0.8rem; color: var(--warm-gray); font-family: 'DM Mono', monospace; word-break: break-all; }
+.semaforo {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: #fff; border: 1px solid var(--border); padding: 1rem 1.5rem; min-width: 140px;
+}
+.semaforo-light { font-size: 2.4rem; margin-bottom: 0.3rem; }
+.semaforo-label { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-gray); }
+.semaforo-verdict { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; }
+
+.section { margin-bottom: 1.8rem; }
+.section-title {
+  font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--warm-gray); border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.badge-free { font-size: 0.6rem; background: #1E8449; color: #fff; padding: 0.15rem 0.5rem; border-radius: 1px; letter-spacing: 0.1em; }
+.badge-locked { font-size: 0.6rem; background: var(--accent); color: #fff; padding: 0.15rem 0.5rem; border-radius: 1px; letter-spacing: 0.1em; }
+
+.coherence-bar-wrap { background: #fff; border: 1px solid var(--border); padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+.coherence-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+.coherence-score { font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; font-weight: 300; }
+.coherence-label { font-size: 0.75rem; color: var(--warm-gray); }
+.bar-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; background: linear-gradient(90deg, #1E8449, #D4AC0D); border-radius: 4px; transition: width 1s; }
+.bar-legend { display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--warm-gray); margin-top: 0.3rem; letter-spacing: 0.06em; }
+
+.data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px,1fr)); gap: 0.75rem; }
+.data-cell { background: #fff; border: 1px solid var(--border); padding: 0.9rem 1rem; }
+.data-cell label { display: block; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 0.2rem; }
+.data-cell span { font-family: 'DM Mono', monospace; font-size: 0.88rem; }
+
+.risk-item {
+  border: 1px solid var(--border); background: #fff; padding: 0.9rem 1rem;
+  display: flex; gap: 0.9rem; align-items: flex-start; margin-bottom: 0.6rem;
+}
+.risk-badge { font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.55rem; border-radius: 2px; white-space: nowrap; margin-top: 0.1rem; }
+.risk-badge.medio { background: #F0AD4E22; color: #B7770D; border: 1px solid #F0AD4E; }
+.risk-badge.basso { background: #1E844922; color: #1E8449; border: 1px solid #1E8449; }
+.risk-badge.alto  { background: #C0392B22; color: #C0392B; border: 1px solid #C0392B; }
+.risk-title { font-size: 0.88rem; font-weight: 500; margin-bottom: 0.15rem; }
+.risk-desc  { font-size: 0.78rem; color: var(--warm-gray); }
+.risk-cost  { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--ink); margin-top: 0.25rem; }
+
+/* PAYWALL */
+.paywall-section {
+  position: relative; border: 1px solid var(--border); background: #fff; border-radius: 2px;
+  overflow: hidden; margin-bottom: 1.8rem;
+}
+.paywall-blur { padding: 1.5rem; filter: blur(4px); user-select: none; pointer-events: none; }
+.paywall-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(245,240,232,0) 0%, rgba(245,240,232,.65) 25%, rgba(245,240,232,.97) 55%, var(--cream) 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  padding: 1.5rem 1.5rem 2rem;
+}
+.lock-icon { font-size: 2rem; margin-bottom: 0.6rem; }
+.paywall-title { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 400; margin-bottom: 0.3rem; text-align: center; }
+.paywall-desc { font-size: 0.82rem; color: var(--warm-gray); text-align: center; margin-bottom: 1.4rem; max-width: 380px; line-height: 1.6; }
+
+.blur-row { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; }
+.blur-cell { flex: 1; background: var(--cream); border: 1px solid var(--border); padding: 0.8rem; }
+.blur-cell label { display: block; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 0.2rem; }
+.blur-cell span { font-family: 'DM Mono', monospace; font-size: 0.95rem; color: #aaa; }
+
+/* FORM PAGAMENTO (dentro paywall overlay) */
+.pay-form { width: 100%; max-width: 460px; }
+.pay-field { margin-bottom: 0.9rem; }
+.pay-label { display: block; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 0.4rem; }
+.pay-input {
+  width: 100%; padding: 0.8rem 1rem;
+  border: 1px solid var(--border); background: var(--cream);
+  font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--ink);
+  outline: none; transition: border-color 0.2s;
+}
+.pay-input:focus { border-color: var(--accent); }
+.pay-input::placeholder { color: var(--warm-gray); }
+.tier-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
+.tier-opt { position: relative; }
+.tier-opt input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.tier-lbl {
+  display: block; padding: 0.7rem 0.8rem; border: 1px solid var(--border);
   background: var(--cream); cursor: pointer; transition: border-color 0.15s, background 0.15s;
+  text-align: center;
 }
-.tier-option input:checked + .tier-label {
-  border-color: var(--ink); background: #fff;
+.tier-opt input:checked + .tier-lbl { border-color: var(--ink); background: #fff; }
+.tier-lbl:hover { border-color: var(--accent); }
+.tier-lbl-name { display: block; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 0.15rem; }
+.tier-lbl-price { display: block; font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 300; }
+.btn-pay {
+  width: 100%; padding: 1rem 2rem; background: var(--ink); color: var(--cream);
+  border: none; cursor: pointer; font-family: 'Instrument Sans', sans-serif;
+  font-size: 0.9rem; font-weight: 600; letter-spacing: 0.04em; transition: background 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
 }
-.tier-label:hover { border-color: var(--accent); }
-.tier-name {
-  display: block; font-size: 0.78rem; letter-spacing: 0.06em;
-  text-transform: uppercase; font-weight: 600; margin-bottom: 0.3rem;
-}
-.tier-price {
-  display: block; font-family: 'Cormorant Garamond', serif;
-  font-size: 1.6rem; font-weight: 300; line-height: 1;
-}
-.tier-desc { display: block; font-size: 0.72rem; color: var(--warm-gray); margin-top: 0.4rem; line-height: 1.4; }
-.tier-badge {
-  display: inline-block; font-size: 0.62rem; letter-spacing: 0.1em;
-  text-transform: uppercase; background: var(--accent); color: #fff;
-  padding: 0.15rem 0.5rem; border-radius: 1px; margin-top: 0.4rem;
-}
+.btn-pay:hover:not(:disabled) { background: #2c2520; }
+.btn-pay:disabled { background: var(--warm-gray); cursor: wait; }
+.pay-hint { font-size: 0.72rem; color: var(--warm-gray); text-align: center; margin-top: 0.6rem; }
 
-.divider { height: 1px; background: var(--border); margin: 1.8rem 0; }
-
-.consent {
-  font-size: 0.78rem; color: var(--warm-gray); line-height: 1.6;
-  margin-bottom: 1.8rem;
+.pay-status {
+  display: none; padding: 0.7rem 1rem; margin-top: 0.6rem;
+  border-left: 3px solid var(--red); background: #fff;
+  font-size: 0.82rem; color: var(--red);
 }
-.consent a { color: var(--warm-gray); }
+.pay-status.visible { display: block; }
 
-.btn-submit {
-  width: 100%; padding: 1.05rem 2rem;
-  background: var(--ink); color: var(--cream);
-  border: none; cursor: pointer;
-  font-family: 'Instrument Sans', sans-serif;
-  font-size: 0.9rem; font-weight: 500; letter-spacing: 0.05em;
-  transition: background 0.2s; position: relative;
-}
-.btn-submit:hover:not(:disabled) { background: #2c2520; }
-.btn-submit:disabled { background: var(--warm-gray); cursor: not-allowed; }
+.nota-demo { background: #fff; border-left: 3px solid var(--accent); padding: 0.9rem 1.1rem; font-size: 0.82rem; color: var(--warm-gray); line-height: 1.6; margin-bottom: 1.8rem; }
+.firma { display: flex; gap: 1rem; align-items: center; border-top: 1px solid var(--border); padding-top: 1.4rem; margin-top: 2rem; }
+.firma-avatar { width: 44px; height: 44px; background: var(--ink); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cream); font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 600; flex-shrink: 0; }
+.firma-info { font-size: 0.78rem; }
+.firma-name { font-weight: 600; font-size: 0.88rem; margin-bottom: 0.1rem; }
+.firma-role { color: var(--warm-gray); }
 
-.spinner {
-  display: none; width: 16px; height: 16px;
-  border: 2px solid rgba(245,240,232,0.4); border-top-color: var(--cream);
-  border-radius: 50%; animation: spin 0.7s linear infinite;
-  position: absolute; right: 1.4rem; top: 50%; transform: translateY(-50%);
-}
-.btn-submit.loading .spinner { display: block; }
-
-@keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
-
-/* STATUS */
-.status-box {
-  display: none; padding: 1rem 1.2rem;
-  border-left: 3px solid var(--accent); background: #fff;
-  font-size: 0.85rem; line-height: 1.6; margin-top: 1rem;
-}
-.status-box.error { border-color: var(--red); }
-.status-box.visible { display: block; }
-.status-step { color: var(--warm-gray); }
-.status-step.done { color: var(--ink); }
-.status-step.done::before { content: '✓ '; color: #1E8449; }
-
-/* NOTE FINALI */
-.trust-notes {
-  display: flex; gap: 2rem; flex-wrap: wrap;
-  margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);
-}
-.trust-item { flex: 1; min-width: 140px; }
-.trust-item strong {
-  display: block; font-size: 0.72rem; letter-spacing: 0.1em;
-  text-transform: uppercase; margin-bottom: 0.3rem;
-}
-.trust-item span { font-size: 0.82rem; color: var(--warm-gray); line-height: 1.5; }
+.error-global { display: none; padding: 0.8rem 1rem; border-left: 3px solid var(--red); background: #fff; font-size: 0.84rem; color: var(--red); margin-bottom: 1rem; }
+.error-global.visible { display: block; }
 
 @media (max-width: 540px) {
   nav { padding: 1rem 1.2rem; }
-  main { padding: 6rem 1.2rem 4rem; }
-  .form-card { padding: 1.5rem; }
-  .tier-grid { grid-template-columns: 1fr; }
+  .container { padding: 6rem 1.2rem 4rem; }
+  .url-row { flex-direction: column; }
+  .data-grid { grid-template-columns: 1fr 1fr; }
+  .report-header { flex-direction: column; }
+  .blur-row { flex-direction: column; }
+  .tier-mini { grid-template-columns: 1fr 1fr; }
 }
 </style>
 </head>
@@ -170,199 +232,403 @@ input::placeholder { color: var(--warm-gray); }
 
 <nav>
   <a href="/" class="nav-logo">External Opinion</a>
-  <a href="/" class="nav-back">← Torna alla home</a>
+  <a href="/" class="nav-back">← Home</a>
 </nav>
 
-<main>
-  <div class="tag">Richiedi analisi</div>
-  <h1>Conosci il rischio <em>prima</em><br>di fare un'offerta</h1>
-  <p class="subtitle">
-    Inserisci l'URL dell'asta e la tua email. L'analisi AI parte immediatamente
-    dopo il pagamento — il report PDF validato da Simone Azzali arriva entro 48 ore.
-  </p>
+<div class="container">
 
-  <div class="form-card">
-    <form id="aste-form" novalidate>
+  <!-- ── FASE 1: FORM DEMO ── -->
+  <div id="fase-form">
+    <div class="tag">Anteprima gratuita</div>
+    <h1>Conosci il rischio <em>prima</em><br>di fare un'offerta</h1>
+    <p class="subtitle">
+      Inserisci l'URL dell'asta giudiziaria: ottieni subito Coherence Index, dati immobile e rischi principali — <strong>gratis</strong>. Per sbloccare ROI, cash flow e massimale d'offerta il costo è di € 69.
+    </p>
 
-      <div class="field">
-        <label for="url-asta">URL dell'asta giudiziaria</label>
+    <div class="form-card">
+      <label class="form-label" for="urlAsta">URL annuncio asta giudiziaria</label>
+      <div class="url-row">
         <input
-          type="url" id="url-asta" name="url" required
-          placeholder="https://www.astegiudiziarie.it/aste/..."
-          autocomplete="off"
+          type="url" id="urlAsta" class="url-input"
+          placeholder="https://pvp.giustizia.it/pvp/it/detail_aste.page?id=..."
+          autocomplete="off" spellcheck="false"
         >
+        <button class="btn-demo" id="btnDemo" onclick="avviaDemo()">Analizza gratis</button>
       </div>
+      <p class="form-hint">Supportati: PVP, Astegiudiziarie.it, Tribunali.it, Portaleaste.it</p>
+    </div>
 
-      <div class="field">
-        <label for="email">La tua email</label>
-        <input
-          type="email" id="email" name="email" required
-          placeholder="nome@email.it"
-          autocomplete="email"
-        >
+    <div class="error-global" id="errGlobal"></div>
+
+    <div class="trust-notes">
+      <div class="trust-item">
+        <strong>Anteprima gratis</strong>
+        <span>Coherence Index e rischi principali senza registrazione</span>
       </div>
+      <div class="trust-item">
+        <strong>Report in 48h</strong>
+        <span>PDF validato da Simone Azzali, Geometra</span>
+      </div>
+      <div class="trust-item">
+        <strong>Pagamento sicuro</strong>
+        <span>Stripe — nessun dato carta conservato</span>
+      </div>
+    </div>
+  </div>
 
-      <div class="field">
-        <label>Scegli il piano</label>
-        <div class="tier-grid">
+  <!-- ── FASE 2: PROCESSING ── -->
+  <div id="fase-processing">
+    <div class="processing-card">
+      <div class="proc-title">Analisi in corso…</div>
+      <div class="spinner"></div>
+      <p style="font-size:.82rem;color:var(--warm-gray);">Estrazione dati perizia e calcolo Coherence Index</p>
+      <div class="proc-steps">
+        <div class="proc-step" id="ps1"><span class="proc-step-icon">○</span> Recupero documento perizia</div>
+        <div class="proc-step" id="ps2"><span class="proc-step-icon">○</span> Estrazione dati catastali</div>
+        <div class="proc-step" id="ps3"><span class="proc-step-icon">○</span> Calcolo Coherence Index</div>
+        <div class="proc-step" id="ps4"><span class="proc-step-icon">○</span> Identificazione rischi</div>
+        <div class="proc-step" id="ps5"><span class="proc-step-icon">○</span> Composizione anteprima</div>
+      </div>
+    </div>
+  </div>
 
-          <div class="tier-option">
-            <input type="radio" name="tier" id="t1" value="TIER_1_SCREENING_69" checked>
-            <label class="tier-label" for="t1">
-              <span class="tier-name">Screening</span>
-              <span class="tier-price">€ 69</span>
-              <span class="tier-desc">Verdetto rapido: conviene o no. Coherence Index + rischi principali.</span>
-            </label>
+  <!-- ── FASE 3: ANTEPRIMA REPORT ── -->
+  <div id="fase-anteprima">
+
+    <div class="report-header">
+      <div class="report-meta">
+        <div class="report-tag" id="rTag">Parere tecnico indipendente · Demo</div>
+        <h1 class="report-title" id="rTitle">Immobile in analisi</h1>
+        <div class="report-sub" id="rSub">External Opinion · Anteprima gratuita</div>
+      </div>
+      <div class="semaforo">
+        <div class="semaforo-light" id="semLight">🟡</div>
+        <div class="semaforo-label">Verdetto</div>
+        <div class="semaforo-verdict" id="semVerdict" style="color:#D4AC0D">GIALLO</div>
+      </div>
+    </div>
+
+    <!-- Coherence Index -->
+    <div class="section">
+      <div class="section-title">Coherence Index <span class="badge-free">Incluso</span></div>
+      <div class="coherence-bar-wrap">
+        <div class="coherence-row">
+          <div>
+            <div class="coherence-score" id="ciScore" style="color:#D4AC0D">74<span style="font-size:1.2rem;color:var(--warm-gray)">/100</span></div>
+            <div class="coherence-label">Indice di coerenza documentale</div>
           </div>
-
-          <div class="tier-option">
-            <input type="radio" name="tier" id="t2" value="TIER_1_ENTRY_89">
-            <label class="tier-label" for="t2">
-              <span class="tier-name">Entry</span>
-              <span class="tier-price">€ 89</span>
-              <span class="tier-desc">Report completo: ROI, cash flow, valore OMI, margine reale.</span>
-              <span class="tier-badge">Più richiesto</span>
-            </label>
+          <div style="text-align:right">
+            <div id="ciVerdict" style="font-size:.82rem;color:#D4AC0D;font-weight:600">CONVENIENTE CON RISERVA</div>
+            <div id="ciNote" style="font-size:.75rem;color:var(--warm-gray);margin-top:.2rem"></div>
           </div>
+        </div>
+        <div class="bar-track"><div class="bar-fill" id="ciBar" style="width:0%"></div></div>
+        <div class="bar-legend"><span>0 — Alta criticità</span><span>50 — Neutro</span><span>100 — Ottimale</span></div>
+      </div>
+    </div>
 
-          <div class="tier-option">
-            <input type="radio" name="tier" id="t3" value="TIER_2_ADVISORY_150">
-            <label class="tier-label" for="t3">
-              <span class="tier-name">Advisory</span>
-              <span class="tier-price">€ 150</span>
-              <span class="tier-desc">Analisi approfondita + consulenza scritta su strategia d'offerta.</span>
-            </label>
-          </div>
+    <!-- Dati immobile -->
+    <div class="section">
+      <div class="section-title">Dati immobile <span class="badge-free">Incluso</span></div>
+      <div class="data-grid" id="dataGrid"></div>
+    </div>
 
-          <div class="tier-option">
-            <input type="radio" name="tier" id="t4" value="TIER_3_PREMIUM_690">
-            <label class="tier-label" for="t4">
-              <span class="tier-name">Premium</span>
-              <span class="tier-price">€ 690</span>
-              <span class="tier-desc">Dossier professionale completo + call con Simone Azzali.</span>
-            </label>
-          </div>
+    <!-- Rischi -->
+    <div class="section">
+      <div class="section-title">Rischi principali <span class="badge-free">Incluso</span></div>
+      <div id="rischiList"></div>
+    </div>
 
+    <!-- PAYWALL -->
+    <div class="paywall-section">
+      <div class="paywall-blur">
+        <div class="section-title" style="margin-bottom:1rem">Analisi finanziaria completa <span class="badge-locked">Sblocca</span></div>
+        <div class="blur-row">
+          <div class="blur-cell"><label>ROI rivendita lordo</label><span>██,█%</span></div>
+          <div class="blur-cell"><label>ROI affitto lordo</label><span>█,█%</span></div>
+          <div class="blur-cell"><label>Cash flow netto/mese</label><span>€ ███</span></div>
+        </div>
+        <div class="blur-row">
+          <div class="blur-cell"><label>Investimento totale</label><span>€ ██████</span></div>
+          <div class="blur-cell"><label>Valore post-intervento</label><span>€ ██████</span></div>
+          <div class="blur-cell"><label>Profitto lordo pot.</label><span>€ ██████</span></div>
+        </div>
+        <div class="blur-row">
+          <div class="blur-cell"><label>Massimale offerta consigliato</label><span>€ ███.███</span></div>
+          <div class="blur-cell"><label>Breakeven</label><span>██ anni</span></div>
+          <div class="blur-cell"><label>Canone affitto stimato</label><span>€ ███/mese</span></div>
+        </div>
+        <div style="margin-top:1.2rem;padding:1rem;background:var(--cream);border:1px solid var(--border)">
+          <div style="font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--warm-gray);margin-bottom:.4rem">Raccomandazione — Simone Azzali, Geometra</div>
+          <div style="font-size:.85rem;color:#aaa;font-style:italic">███████ ████ ████████ — ████ ██████████ ████ ███████ ████ ███ █████ ██ ████████ ██████████. Target massimo ██████ con █% margine di sicurezza.</div>
         </div>
       </div>
 
-      <div class="divider"></div>
+      <div class="paywall-overlay">
+        <div class="lock-icon">🔒</div>
+        <h2 class="paywall-title">Sblocca l'analisi completa</h2>
+        <p class="paywall-desc">ROI, cash flow, massimale d'offerta e raccomandazione di Simone Azzali. PDF validato entro 48 ore.</p>
 
-      <p class="consent">
-        Proseguendo accetti i <a href="#">Termini di servizio</a>. Il pagamento è gestito
-        da Stripe in modo sicuro. External Opinion non conserva i dati della carta.
-      </p>
-
-      <button type="submit" class="btn-submit" id="submit-btn">
-        Procedi al pagamento
-        <span class="spinner"></span>
-      </button>
-
-    </form>
-
-    <div class="status-box" id="status-box">
-      <div class="status-step" id="step-1">Invio richiesta di analisi…</div>
-      <div class="status-step" id="step-2">Creazione sessione di pagamento…</div>
-      <div class="status-step" id="step-3">Reindirizzamento a Stripe…</div>
+        <div class="pay-form">
+          <div class="pay-field">
+            <label class="pay-label" for="payEmail">La tua email</label>
+            <input type="email" id="payEmail" class="pay-input" placeholder="nome@email.it" autocomplete="email">
+          </div>
+          <div class="tier-mini">
+            <div class="tier-opt">
+              <input type="radio" name="payTier" id="pt1" value="TIER_1_SCREENING_69" checked>
+              <label class="tier-lbl" for="pt1">
+                <span class="tier-lbl-name">Screening</span>
+                <span class="tier-lbl-price">€ 69</span>
+              </label>
+            </div>
+            <div class="tier-opt">
+              <input type="radio" name="payTier" id="pt2" value="TIER_1_ENTRY_89">
+              <label class="tier-lbl" for="pt2">
+                <span class="tier-lbl-name">Entry</span>
+                <span class="tier-lbl-price">€ 89</span>
+              </label>
+            </div>
+            <div class="tier-opt">
+              <input type="radio" name="payTier" id="pt3" value="TIER_2_ADVISORY_150">
+              <label class="tier-lbl" for="pt3">
+                <span class="tier-lbl-name">Advisory</span>
+                <span class="tier-lbl-price">€ 150</span>
+              </label>
+            </div>
+            <div class="tier-opt">
+              <input type="radio" name="payTier" id="pt4" value="TIER_3_PREMIUM_690">
+              <label class="tier-lbl" for="pt4">
+                <span class="tier-lbl-name">Premium</span>
+                <span class="tier-lbl-price">€ 690</span>
+              </label>
+            </div>
+          </div>
+          <button class="btn-pay" id="btnPay" onclick="procediPagamento()">
+            Sblocca il report completo →
+          </button>
+          <div class="pay-hint">Stripe sicuro · nessun dato carta conservato</div>
+          <div class="pay-status" id="payStatus"></div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div class="trust-notes">
-    <div class="trust-item">
-      <strong>Consegna</strong>
-      <span>Report PDF entro 48 ore dalla conferma del pagamento</span>
+    <div class="nota-demo">
+      <strong>Nota</strong> — Questa è un'anteprima dimostrativa con dati mock. Il report reale viene elaborato con il motore F7 CASCADE e validato manualmente da Simone Azzali, Geometra iscritto all'Albo di Brescia.
     </div>
-    <div class="trust-item">
-      <strong>Revisione umana</strong>
-      <span>Ogni analisi è validata da Simone Azzali prima della consegna</span>
+
+    <div class="firma">
+      <div class="firma-avatar">SA</div>
+      <div class="firma-info">
+        <div class="firma-name">Simone Azzali</div>
+        <div class="firma-role">Geometra · Albo di Brescia · Analista aste giudiziarie</div>
+      </div>
     </div>
-    <div class="trust-item">
-      <strong>Pagamento sicuro</strong>
-      <span>Stripe — nessun dato carta conservato sui nostri server</span>
+
+    <div style="text-align:center;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)">
+      <button onclick="resetDemo()" style="background:none;border:1px solid var(--border);padding:.6rem 1.4rem;cursor:pointer;font-family:'Instrument Sans',sans-serif;font-size:.82rem;color:var(--warm-gray)">← Analizza un'altra asta</button>
     </div>
-  </div>
-</main>
+
+  </div><!-- /fase-anteprima -->
+
+</div><!-- /container -->
 
 <script>
-(function () {
-  const form      = document.getElementById('aste-form');
-  const btn       = document.getElementById('submit-btn');
-  const statusBox = document.getElementById('status-box');
-  const steps     = [
-    document.getElementById('step-1'),
-    document.getElementById('step-2'),
-    document.getElementById('step-3'),
-  ];
+const VERDETTI = {
+  VERDE:  { emoji: '🟢', color: '#1E8449', label: 'VERDE',  desc: 'CONVENIENTE' },
+  GIALLO: { emoji: '🟡', color: '#D4AC0D', label: 'GIALLO', desc: 'CONVENIENTE CON RISERVA' },
+  ROSSO:  { emoji: '🔴', color: '#C0392B', label: 'ROSSO',  desc: 'DA EVITARE' },
+};
 
-  function setStep(n, isError) {
-    statusBox.classList.add('visible');
-    if (isError) { statusBox.classList.add('error'); return; }
-    steps.forEach((s, i) => {
-      if (i < n) s.classList.add('done');
-    });
+let _urlCorrente = '';
+
+function ciToVerdetto(n) {
+  if (n >= 80) return 'VERDE';
+  if (n >= 55) return 'GIALLO';
+  return 'ROSSO';
+}
+
+async function avviaDemo() {
+  const url = document.getElementById('urlAsta').value.trim();
+  const err = document.getElementById('errGlobal');
+  err.classList.remove('visible');
+
+  if (!url) {
+    err.textContent = 'Inserisci l\'URL dell\'asta prima di procedere.';
+    err.classList.add('visible');
+    document.getElementById('urlAsta').focus();
+    return;
+  }
+  try { new URL(url); } catch(_) {
+    err.textContent = 'L\'URL non è valido. Esempio: https://pvp.giustizia.it/pvp/...';
+    err.classList.add('visible');
+    return;
   }
 
-  function showError(msg) {
-    statusBox.classList.add('visible', 'error');
-    statusBox.innerHTML = '<strong>Errore:</strong> ' + msg;
-    btn.disabled = false;
-    btn.classList.remove('loading');
-    btn.textContent = 'Riprova';
-    btn.appendChild(Object.assign(document.createElement('span'), { className: 'spinner' }));
-  }
+  _urlCorrente = url;
+  document.getElementById('fase-form').style.display = 'none';
+  document.getElementById('fase-processing').classList.add('visible');
 
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const url   = document.getElementById('url-asta').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const tier  = form.querySelector('input[name="tier"]:checked').value;
-
-    if (!url || !email) {
-      showError('Compila tutti i campi prima di procedere.');
-      return;
-    }
-
-    btn.disabled = true;
-    btn.classList.add('loading');
-    btn.firstChild.textContent = 'Elaborazione…';
-
-    try {
-      // Step 1 — avvia analisi
-      setStep(0);
-      const analyzeRes = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urlAsta: url, email }),
-      });
-      if (!analyzeRes.ok) {
-        const err = await analyzeRes.json().catch(() => ({}));
-        throw new Error(err.error || 'Impossibile avviare l\'analisi');
-      }
-      const { jobId } = await analyzeRes.json();
-      setStep(1);
-
-      // Step 2 — crea sessione checkout
-      const checkoutRes = await fetch(`/api/jobs/${jobId}/checkout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier, email }),
-      });
-      if (!checkoutRes.ok) {
-        const err = await checkoutRes.json().catch(() => ({}));
-        throw new Error(err.error || 'Impossibile creare la sessione di pagamento');
-      }
-      const { checkoutUrl } = await checkoutRes.json();
-      setStep(2);
-
-      // Step 3 — redirect Stripe
-      window.location.href = checkoutUrl;
-
-    } catch (err) {
-      showError(err.message);
-    }
+  // Anima i passi
+  const passi = ['ps1','ps2','ps3','ps4','ps5'];
+  const tempi = [500, 1000, 1600, 2100, 2600];
+  passi.forEach((id, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      el.classList.add('done');
+      el.querySelector('.proc-step-icon').textContent = '✓';
+    }, tempi[i]);
   });
-})();
+
+  try {
+    const res = await fetch('/api/demo/analyze-auction', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ urlAsta: url }),
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.error || 'Errore del server');
+    }
+    const data = await res.json();
+    await new Promise(r => setTimeout(r, 2900));
+    renderAnteprima(data.preview, url);
+  } catch (e) {
+    document.getElementById('fase-processing').classList.remove('visible');
+    document.getElementById('fase-form').style.display = '';
+    err.textContent = 'Errore: ' + e.message;
+    err.classList.add('visible');
+  }
+}
+
+function renderAnteprima(p, url) {
+  const vKey = ciToVerdetto(p.coherenceIndex);
+  const v = VERDETTI[vKey];
+
+  document.getElementById('semLight').textContent = v.emoji;
+  document.getElementById('semVerdict').textContent = v.label;
+  document.getElementById('semVerdict').style.color = v.color;
+
+  document.getElementById('ciScore').innerHTML = `${p.coherenceIndex}<span style="font-size:1.2rem;color:var(--warm-gray)">/100</span>`;
+  document.getElementById('ciScore').style.color = v.color;
+  document.getElementById('ciVerdict').textContent = v.desc;
+  document.getElementById('ciVerdict').style.color = v.color;
+  document.getElementById('ciNote').textContent = p.rischi?.[0]?.titolo?.split('—')[0]?.trim() || '';
+
+  // Titolo: tenta di estrarre ID dall'URL
+  let titolo = 'Immobile in asta giudiziaria';
+  try {
+    const u = new URL(url);
+    const id = u.searchParams.get('id') || u.pathname.split('/').filter(Boolean).pop();
+    if (id && id.length < 30) titolo = `Ref. ${id.toUpperCase()}`;
+  } catch(_) {}
+  document.getElementById('rTitle').textContent = titolo;
+  document.getElementById('rSub').textContent = url.length > 60 ? url.substring(0, 58) + '…' : url;
+
+  setTimeout(() => { document.getElementById('ciBar').style.width = p.coherenceIndex + '%'; }, 200);
+
+  // Dati grid
+  const campi = [
+    ['Prezzo base asta', p.prezzoBase],
+    ['Valore CTU (perizia)', p.valutazioneCTU],
+    ['Sconto vs mercato', p.scontoMercato],
+    ['Superficie netta', p.superficie],
+    ['Piano / Totale piani', p.piano],
+    ['Anno costruzione', p.annoCostruzione],
+    ['Stato conservativo', p.statoConservativo],
+    ['Occupazione', p.occupazione],
+    ['Spese arretrate', p.speseArretrate],
+    ['Zona OMI', p.zonaOMI],
+  ];
+  document.getElementById('dataGrid').innerHTML = campi.map(([l, val]) =>
+    `<div class="data-cell"><label>${l}</label><span>${val ?? '—'}</span></div>`
+  ).join('');
+
+  // Rischi
+  document.getElementById('rischiList').innerHTML = (p.rischi || []).map(r => {
+    const cls = { Alto: 'alto', Medio: 'medio', Basso: 'basso' }[r.livello] || 'basso';
+    return `<div class="risk-item">
+      <span class="risk-badge ${cls}">${r.livello}</span>
+      <div>
+        <div class="risk-title">${r.titolo}</div>
+        <div class="risk-desc">${r.desc}</div>
+        <div class="risk-cost">${r.costo}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('fase-processing').classList.remove('visible');
+  document.getElementById('fase-anteprima').classList.add('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function procediPagamento() {
+  const email = document.getElementById('payEmail').value.trim();
+  const tier = document.querySelector('input[name="payTier"]:checked')?.value;
+  const status = document.getElementById('payStatus');
+  status.classList.remove('visible');
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    status.textContent = 'Inserisci un\'email valida per ricevere il report.';
+    status.classList.add('visible');
+    return;
+  }
+
+  const btn = document.getElementById('btnPay');
+  btn.disabled = true;
+  btn.textContent = 'Connessione…';
+
+  try {
+    // Step 1: avvia analisi reale con URL e email
+    const ar = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ urlAsta: _urlCorrente, email }),
+    });
+    if (!ar.ok) {
+      const e = await ar.json().catch(() => ({}));
+      throw new Error(e.error || 'Impossibile avviare l\'analisi');
+    }
+    const { jobId } = await ar.json();
+
+    // Step 2: crea checkout
+    const cr = await fetch(`/api/jobs/${jobId}/checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tier, email }),
+    });
+    if (!cr.ok) {
+      const e = await cr.json().catch(() => ({}));
+      throw new Error(e.error || 'Errore nel checkout');
+    }
+    const { checkoutUrl } = await cr.json();
+
+    window.location.href = checkoutUrl;
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Sblocca il report completo →';
+    status.textContent = 'Errore: ' + e.message;
+    status.classList.add('visible');
+  }
+}
+
+function resetDemo() {
+  document.getElementById('fase-anteprima').classList.remove('visible');
+  document.getElementById('fase-processing').classList.remove('visible');
+  document.getElementById('fase-form').style.display = '';
+  document.getElementById('urlAsta').value = '';
+  ['ps1','ps2','ps3','ps4','ps5'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('done');
+    el.querySelector('.proc-step-icon').textContent = '○';
+  });
+  _urlCorrente = '';
+  document.getElementById('urlAsta').focus();
+}
+
+document.getElementById('urlAsta').addEventListener('keydown', e => {
+  if (e.key === 'Enter') avviaDemo();
+});
 </script>
 </body>
 </html>

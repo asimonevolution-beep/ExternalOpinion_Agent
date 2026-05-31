@@ -404,6 +404,9 @@ apiRouter.get('/checkout/:sessionId', async (req, res) => {
 // Mount API router
 app.use('/api', apiRouter);
 
+// Demo paywall routes — mock analyze + notifica ntfy
+app.use('/api/demo', require('./demo-router'));
+
 // Mount SSE real-time hub — stream aggiornamenti verso portali e dispositivi
 app.use('/api', getSSERouter());
 

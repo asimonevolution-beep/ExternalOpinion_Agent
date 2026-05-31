@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anteprima Report — Via della Costituzione 12, Brescia — External Opinion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F5F0E8;
+  --ink: #1A1612;
+  --warm-gray: #8C8279;
+  --accent: #C8A96E;
+  --accent-dark: #9E7E45;
+  --border: rgba(26,22,18,0.12);
+  --yellow: #D4AC0D;
+  --green: #1E8449;
+  --red: #C0392B;
+}
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { background:var(--cream); color:var(--ink); font-family:'Instrument Sans',sans-serif; font-size:15px; line-height:1.6; }
+
+/* NAV */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:1.1rem 3rem; background:rgba(245,240,232,.96);
+  backdrop-filter:blur(12px); border-bottom:1px solid var(--border);
+}
+.nav-logo { font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; text-decoration:none; color:var(--ink); }
+.nav-badge { font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; background:var(--accent); color:#fff; padding:.2rem .7rem; border-radius:2px; }
+
+/* LAYOUT */
+.container { max-width:860px; margin:0 auto; padding:6.5rem 2rem 4rem; }
+
+/* HEADER REPORT */
+.report-header {
+  border-bottom: 2px solid var(--ink); padding-bottom:1.5rem; margin-bottom:2rem;
+  display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;
+}
+.report-meta { flex:1; }
+.report-tag { font-size:.68rem; letter-spacing:.18em; text-transform:uppercase; color:var(--warm-gray); margin-bottom:.4rem; }
+.report-title { font-family:'Cormorant Garamond',serif; font-size:1.9rem; font-weight:300; line-height:1.2; margin-bottom:.3rem; }
+.report-sub { font-size:.82rem; color:var(--warm-gray); font-family:'DM Mono',monospace; }
+.semaforo {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:#fff; border:1px solid var(--border); padding:1rem 1.5rem; min-width:140px;
+}
+.semaforo-light { font-size:2.4rem; margin-bottom:.3rem; }
+.semaforo-label { font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color:var(--warm-gray); }
+.semaforo-verdict { font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:600; color:#D4AC0D; }
+
+/* SEZIONI */
+.section { margin-bottom:1.8rem; }
+.section-title {
+  font-size:.72rem; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--warm-gray); border-bottom:1px solid var(--border); padding-bottom:.4rem; margin-bottom:1rem;
+  display:flex; align-items:center; gap:.6rem;
+}
+.section-title .badge-free { font-size:.6rem; background:#1E8449; color:#fff; padding:.15rem .5rem; border-radius:1px; letter-spacing:.1em; }
+.section-title .badge-locked { font-size:.6rem; background:var(--accent); color:#fff; padding:.15rem .5rem; border-radius:1px; letter-spacing:.1em; }
+
+/* GRID DATI */
+.data-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:.75rem; }
+.data-cell {
+  background:#fff; border:1px solid var(--border); padding:.9rem 1rem;
+}
+.data-cell label { display:block; font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--warm-gray); margin-bottom:.2rem; }
+.data-cell span { font-family:'DM Mono',monospace; font-size:.9rem; font-weight:400; }
+
+/* COHERENCE INDEX */
+.coherence-bar-wrap { background:#fff; border:1px solid var(--border); padding:1.2rem 1.4rem; margin-bottom:1rem; }
+.coherence-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:.6rem; }
+.coherence-score { font-family:'Cormorant Garamond',serif; font-size:2.6rem; font-weight:300; color:#D4AC0D; }
+.coherence-label { font-size:.75rem; color:var(--warm-gray); }
+.bar-track { height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+.bar-fill { height:100%; background:linear-gradient(90deg,#1E8449,#D4AC0D); border-radius:4px; transition:width .8s; }
+.bar-legend { display:flex; justify-content:space-between; font-size:.65rem; color:var(--warm-gray); margin-top:.3rem; letter-spacing:.06em; }
+
+/* RISCHI */
+.risk-item {
+  border:1px solid var(--border); background:#fff; padding:.9rem 1rem;
+  display:flex; gap:.9rem; align-items:flex-start; margin-bottom:.6rem;
+}
+.risk-badge {
+  font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; padding:.2rem .55rem;
+  border-radius:2px; white-space:nowrap; margin-top:.1rem;
+}
+.risk-badge.medium { background:#F0AD4E22; color:#B7770D; border:1px solid #F0AD4E; }
+.risk-badge.low { background:#1E844922; color:#1E8449; border:1px solid #1E8449; }
+.risk-title { font-size:.88rem; font-weight:500; margin-bottom:.15rem; }
+.risk-desc { font-size:.78rem; color:var(--warm-gray); }
+.risk-cost { font-family:'DM Mono',monospace; font-size:.78rem; color:var(--ink); margin-top:.25rem; }
+
+/* PAYWALL SECTION */
+.paywall-section {
+  position:relative; border:1px solid var(--border); background:#fff; border-radius:2px;
+  overflow:hidden; margin-bottom:1.8rem;
+}
+.paywall-blur {
+  padding:1.5rem; filter:blur(4px); user-select:none; pointer-events:none;
+}
+.paywall-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(245,240,232,0) 0%, rgba(245,240,232,.7) 30%, rgba(245,240,232,.97) 60%, var(--cream) 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+  padding:2rem 1.5rem 2rem;
+}
+.lock-icon { font-size:2rem; margin-bottom:.8rem; }
+.paywall-title { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:400; margin-bottom:.4rem; text-align:center; }
+.paywall-desc { font-size:.82rem; color:var(--warm-gray); text-align:center; margin-bottom:1.4rem; max-width:380px; line-height:1.6; }
+.btn-unlock {
+  background:var(--ink); color:var(--cream); border:none; cursor:pointer;
+  padding:1rem 2.4rem; font-family:'Instrument Sans',sans-serif;
+  font-size:.9rem; font-weight:600; letter-spacing:.04em; transition:background .2s;
+  display:flex; align-items:center; gap:.7rem;
+}
+.btn-unlock:hover { background:#2c2520; }
+.btn-unlock:disabled { background:var(--warm-gray); cursor:wait; }
+.price-tag { background:var(--accent); color:#fff; padding:.2rem .7rem; font-size:.78rem; border-radius:1px; }
+
+.blur-row { display:flex; gap:.75rem; margin-bottom:.75rem; }
+.blur-cell { flex:1; background:var(--cream); border:1px solid var(--border); padding:.8rem; }
+.blur-cell label { display:block; font-size:.65rem; letter-spacing:.1em; text-transform:uppercase; color:var(--warm-gray); margin-bottom:.2rem; }
+.blur-cell span { font-family:'DM Mono',monospace; font-size:.95rem; font-weight:400; color:#aaa; }
+
+/* NOTE */
+.note-box { background:#fff; border-left:3px solid var(--accent); padding:.9rem 1.1rem; font-size:.82rem; color:var(--warm-gray); line-height:1.6; margin-bottom:1.8rem; }
+
+/* FIRMA */
+.firma { display:flex; gap:1rem; align-items:center; border-top:1px solid var(--border); padding-top:1.4rem; margin-top:2rem; }
+.firma-avatar { width:44px; height:44px; background:var(--ink); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--cream); font-family:'Cormorant Garamond',serif; font-size:1.2rem; font-weight:600; flex-shrink:0; }
+.firma-info { font-size:.78rem; }
+.firma-name { font-weight:600; font-size:.88rem; margin-bottom:.1rem; }
+.firma-role { color:var(--warm-gray); }
+
+/* STATUS */
+.status-overlay { position:fixed; inset:0; background:rgba(26,22,18,.5); z-index:200; display:none; align-items:center; justify-content:center; }
+.status-overlay.visible { display:flex; }
+.status-card { background:var(--cream); padding:2.5rem 3rem; text-align:center; max-width:340px; }
+.status-card h3 { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:300; margin-bottom:.8rem; }
+.status-card p { font-size:.85rem; color:var(--warm-gray); }
+.spinner { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; margin:1rem auto; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+@media(max-width:600px) {
+  nav { padding:1rem 1.2rem; }
+  .container { padding:5.5rem 1.2rem 3rem; }
+  .report-header { flex-direction:column; }
+  .data-grid { grid-template-columns:1fr 1fr; }
+  .blur-row { flex-direction:column; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">External Opinion</a>
+  <span class="nav-badge">Anteprima Report</span>
+</nav>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <div class="report-meta">
+      <div class="report-tag">Parere tecnico indipendente · Ref. EO-2026-0847</div>
+      <h1 class="report-title">Via della Costituzione 12<br>Brescia (BS) — Lotto 3</h1>
+      <div class="report-sub">Tribunale di Brescia · Asta del 18/06/2026 · Rip. Gen. ES N. 847/2024</div>
+    </div>
+    <div class="semaforo">
+      <div class="semaforo-light">🟡</div>
+      <div class="semaforo-label">Verdetto</div>
+      <div class="semaforo-verdict">GIALLO</div>
+    </div>
+  </div>
+
+  <!-- COHERENCE INDEX -->
+  <div class="section">
+    <div class="section-title">Coherence Index <span class="badge-free">Incluso</span></div>
+    <div class="coherence-bar-wrap">
+      <div class="coherence-row">
+        <div>
+          <div class="coherence-score">74<span style="font-size:1.2rem;color:var(--warm-gray)">/100</span></div>
+          <div class="coherence-label">Indice di coerenza documentale</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:.82rem;color:#D4AC0D;font-weight:600;">CONVENIENTE CON RISERVA</div>
+          <div style="font-size:.75rem;color:var(--warm-gray);margin-top:.2rem;">Veranda abusiva sanabile</div>
+        </div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:74%"></div></div>
+      <div class="bar-legend"><span>0 — Alta criticità</span><span>50 — Neutro</span><span>100 — Ottimale</span></div>
+    </div>
+  </div>
+
+  <!-- DATI IMMOBILE -->
+  <div class="section">
+    <div class="section-title">Dati immobile <span class="badge-free">Incluso</span></div>
+    <div class="data-grid">
+      <div class="data-cell"><label>Prezzo base asta</label><span>€ 118.000</span></div>
+      <div class="data-cell"><label>Valore CTU (perizia)</label><span>€ 148.500</span></div>
+      <div class="data-cell"><label>Sconto vs mercato</label><span>−20,6%</span></div>
+      <div class="data-cell"><label>Superficie netta</label><span>84 mq + 6 mq balcone</span></div>
+      <div class="data-cell"><label>Piano / Totale piani</label><span>3° su 6</span></div>
+      <div class="data-cell"><label>Anno costruzione</label><span>1978</span></div>
+      <div class="data-cell"><label>Stato conservativo</label><span>Buono</span></div>
+      <div class="data-cell"><label>Occupazione</label><span>Libero al rilascio</span></div>
+      <div class="data-cell"><label>Spese arretrate</label><span>€ 2.340</span></div>
+      <div class="data-cell"><label>Zona OMI</label><span>B2 — €1.650/mq</span></div>
+    </div>
+  </div>
+
+  <!-- RISCHI IDENTIFICATI -->
+  <div class="section">
+    <div class="section-title">Rischi principali <span class="badge-free">Incluso</span></div>
+
+    <div class="risk-item">
+      <span class="risk-badge medium">Medio</span>
+      <div>
+        <div class="risk-title">Veranda non dichiarata — Difformità urbanistica</div>
+        <div class="risk-desc">Vano veranda di ~4 mq realizzato senza DIA/SCIA. Sanabile ai sensi dell'art. 37 D.P.R. 380/2001 (TUE).</div>
+        <div class="risk-cost">Costo sanatoria stimato: € 7.800 – 9.200</div>
+      </div>
+    </div>
+
+    <div class="risk-item">
+      <span class="risk-badge low">Basso</span>
+      <div>
+        <div class="risk-title">Spese condominiali insolute</div>
+        <div class="risk-desc">€ 2.340 a carico dell'acquirente per anno in corso + anno precedente (art. 63 disp. att. c.c.).</div>
+        <div class="risk-cost">Da scontare direttamente sull'offerta massima</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYWALL: ANALISI FINANZIARIA -->
+  <div class="paywall-section">
+    <div class="paywall-blur">
+      <div class="section-title" style="margin-bottom:1rem;">Analisi finanziaria completa <span class="badge-locked">Sblocca</span></div>
+      <div class="blur-row">
+        <div class="blur-cell"><label>ROI rivendita lordo</label><span>██,█%</span></div>
+        <div class="blur-cell"><label>ROI affitto lordo</label><span>█,█%</span></div>
+        <div class="blur-cell"><label>Cash flow netto/mese</label><span>€ ███</span></div>
+      </div>
+      <div class="blur-row">
+        <div class="blur-cell"><label>Investimento totale</label><span>€ ██████</span></div>
+        <div class="blur-cell"><label>Valore post-intervento</label><span>€ ██████</span></div>
+        <div class="blur-cell"><label>Profitto lordo pot.</label><span>€ ██████</span></div>
+      </div>
+      <div class="blur-row">
+        <div class="blur-cell"><label>Massimale offerta consigliato</label><span>€ ███.███</span></div>
+        <div class="blur-cell"><label>Breakeven</label><span>██ anni</span></div>
+        <div class="blur-cell"><label>Canone affitto stimato</label><span>€ ███/mese</span></div>
+      </div>
+      <div style="margin-top:1.2rem; padding:1rem; background:var(--cream); border:1px solid var(--border);">
+        <div style="font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--warm-gray); margin-bottom:.4rem;">Raccomandazione — Simone Azzali, Geometra</div>
+        <div style="font-size:.85rem; color:#aaa; font-style:italic;">███████ ████ ████████ — ████ ██████████ ████ ███████ ████ ███ █████ ██ ████████ ██████████. Target massimo ██████ con █% margine di sicurezza.</div>
+      </div>
+    </div>
+
+    <div class="paywall-overlay">
+      <div class="lock-icon">🔒</div>
+      <h2 class="paywall-title">Sblocca l'analisi completa</h2>
+      <p class="paywall-desc">ROI, cash flow, massimale d'offerta e raccomandazione finale di Simone Azzali. Ricevi il PDF validato entro 48 ore.</p>
+      <button class="btn-unlock" id="btn-unlock" onclick="iniziaCheckout()">
+        Sblocca il report completo
+        <span class="price-tag">€ 69</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- NOTE METODOLOGICHE -->
+  <div class="note-box">
+    <strong>Metodologia</strong> — Il Coherence Index è calcolato con il motore deterministico F7 CASCADE (zero AI nel calcolo finale). L'estrazione dati perizia utilizza Claude 3 Haiku + consenso multi-modello. La validazione finale è manuale ad opera di Simone Azzali, Geometra iscritto all'Albo di Brescia.
+  </div>
+
+  <!-- FIRMA -->
+  <div class="firma">
+    <div class="firma-avatar">SA</div>
+    <div class="firma-info">
+      <div class="firma-name">Simone Azzali</div>
+      <div class="firma-role">Geometra · Albo di Brescia · Analista aste giudiziarie</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- OVERLAY CARICAMENTO -->
+<div class="status-overlay" id="overlay">
+  <div class="status-card">
+    <h3>Reindirizzamento a Stripe…</h3>
+    <div class="spinner"></div>
+    <p>Connessione al sistema di pagamento sicuro.</p>
+  </div>
+</div>
+
+<script>
+async function iniziaCheckout() {
+  const btn = document.getElementById('btn-unlock');
+  const overlay = document.getElementById('overlay');
+  btn.disabled = true;
+  btn.textContent = 'Connessione in corso…';
+  overlay.classList.add('visible');
+
+  try {
+    const res = await fetch('/api/demo/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    if (!res.ok) throw new Error('Errore nella creazione della sessione di pagamento');
+    const { checkoutUrl } = await res.json();
+    window.location.href = checkoutUrl;
+  } catch (err) {
+    overlay.classList.remove('visible');
+    btn.disabled = false;
+    btn.innerHTML = 'Sblocca il report completo <span class="price-tag">€ 69</span>';
+    alert('Errore: ' + err.message);
+  }
+}
+</script>
+</body>
+</html>
