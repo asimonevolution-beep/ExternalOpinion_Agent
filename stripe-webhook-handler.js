@@ -31,10 +31,11 @@ const TIER_MAPPING = {
 // ============================================================================
 // WEBHOOK — firma verificata
 // ============================================================================
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+router.post('/webhook', express.raw({ type: '*/*' }), async (req, res) => {
   if (!stripe) return res.status(500).json({ error: 'Stripe non configurato' });
 
   const sig = req.headers['stripe-signature'];
+  console.log('[STRIPE-DEBUG] body isBuffer:', Buffer.isBuffer(req.body), 'len:', req.body?.length, 'sig:', sig?.substring(0, 40));
   let event;
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
