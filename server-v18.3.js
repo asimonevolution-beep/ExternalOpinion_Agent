@@ -109,6 +109,9 @@ app.use(cors({
 app.use(compression());
 app.use(morgan('combined'));
 
+// Stripe webhook — deve ricevere il body RAW prima di express.json()
+app.use('/api/stripe', stripeRouter);
+
 // Body parsers
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
@@ -400,9 +403,6 @@ apiRouter.get('/checkout/:sessionId', async (req, res) => {
 
 // Mount API router
 app.use('/api', apiRouter);
-
-// Mount Stripe webhook
-app.use('/api/stripe', stripeRouter);
 
 // Mount SSE real-time hub — stream aggiornamenti verso portali e dispositivi
 app.use('/api', getSSERouter());
