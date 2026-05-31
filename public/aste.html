@@ -275,7 +275,7 @@ h1 em { font-style: italic; color: var(--accent-dark); }
           placeholder="https://pvp.giustizia.it/pvp/it/detail_aste.page?id=..."
           autocomplete="off" spellcheck="false"
         >
-        <button class="btn-demo" id="btnDemo" onclick="avviaDemo()">Analizza gratis</button>
+        <button class="btn-demo" id="btnDemo">Analizza gratis</button>
       </div>
       <p class="form-hint">Supportati: PVP, Astegiudiziarie.it, Tribunali.it, Portaleaste.it</p>
     </div>
@@ -405,7 +405,7 @@ h1 em { font-style: italic; color: var(--accent-dark); }
               type="email" id="payEmail" class="pay-input"
               placeholder="nome@email.it" autocomplete="email"
             >
-            <button class="btn-paga" id="btnPaga" onclick="procediPagamento()">
+            <button class="btn-paga" id="btnPaga">
               PAGA <span class="btn-paga-price">€ 69</span>
             </button>
           </div>
@@ -428,7 +428,7 @@ h1 em { font-style: italic; color: var(--accent-dark); }
     </div>
 
     <div style="text-align:center;margin-top:2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
-      <button onclick="resetDemo()" style="background:none;border:1px solid var(--border);padding:.55rem 1.3rem;cursor:pointer;font-family:'Instrument Sans',sans-serif;font-size:.8rem;color:var(--warm-gray)">← Analizza un'altra asta</button>
+      <button id="btnReset" style="background:none;border:1px solid var(--border);padding:.55rem 1.3rem;cursor:pointer;font-family:'Instrument Sans',sans-serif;font-size:.8rem;color:var(--warm-gray)">← Analizza un'altra asta</button>
     </div>
 
   </div><!-- /fase-anteprima -->
@@ -626,6 +626,9 @@ function resetDemo() {
   document.getElementById('urlAsta').focus();
 }
 
+document.getElementById('btnDemo').addEventListener('click', avviaDemo);
+document.getElementById('btnPaga').addEventListener('click', procediPagamento);
+document.getElementById('btnReset').addEventListener('click', resetDemo);
 document.getElementById('urlAsta').addEventListener('keydown', e => {
   if (e.key === 'Enter') avviaDemo();
 });
