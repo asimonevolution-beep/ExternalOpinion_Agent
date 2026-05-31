@@ -911,6 +911,13 @@ app.get('/api/admin/vendite', requireAdmin, async (req, res) => {
 });
 
 // ============================================================================
+// PAGINA ASTE — form checkout
+// ============================================================================
+app.get('/aste', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'aste.html'));
+});
+
+// ============================================================================
 // SPA fallback — serve index.html per qualsiasi route non-API
 // ============================================================================
 app.get('*', (req, res) => {
