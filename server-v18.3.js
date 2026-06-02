@@ -580,40 +580,6 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // ============================================================================
-// IDEMPOTENCY SELF-TEST (temporaneo P0 — rimosso dopo verifica)
-// ============================================================================
-app.get('/api/p0-selftest-eo83562128', async (req, res) => {
-  const prismaClient = require('./db');
-  const testKey = `selftest-p0-${Date.now()}`;
-  try {
-    // Primo insert — deve riuscire
-    await prismaClient.idempotencyKey.create({
-      data: { idempotencyKey: testKey, jobId: 'test', operation: 'selftest',
-              status: 'SUCCESS', result: '{}', expiresAt: new Date(Date.now() + 60000) },
-    });
-    // Secondo insert — deve dare P2002
-    let duplicateCaught = false;
-    try {
-      await prismaClient.idempotencyKey.create({
-        data: { idempotencyKey: testKey, jobId: 'test', operation: 'selftest',
-                status: 'SUCCESS', result: '{}', expiresAt: new Date(Date.now() + 60000) },
-      });
-    } catch (e) {
-      if (e.code === 'P2002') duplicateCaught = true;
-      else throw e;
-    }
-    // Conta record — deve essere esattamente 1
-    const count = await prismaClient.idempotencyKey.count({ where: { idempotencyKey: testKey } });
-    // Cleanup
-    await prismaClient.idempotencyKey.delete({ where: { idempotencyKey: testKey } });
-    const pass = duplicateCaught && count === 1;
-    return res.json({ pass, duplicateCaught, count, pipeline: process.env.PIPELINE_ENABLED, ntfy: !!process.env.NTFY_TOPIC });
-  } catch (err) {
-    return res.status(500).json({ pass: false, error: err.message });
-  }
-});
-
-// ============================================================================
 // ADMIN STATS DASHBOARD
 // ============================================================================
 
