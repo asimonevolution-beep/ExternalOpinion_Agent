@@ -59,77 +59,79 @@ router.post('/webhook', express.raw({ type: '*/*' }), async (req, res) => {
 });
 
 // ============================================================================
-// CHECKOUT COMPLETATO
+// CHECKOUT COMPLETATO (FIX P0: idempotency atomica + consegna manuale)
 // ============================================================================
 async function handleCheckoutCompleted(session) {
   const reportId    = session.metadata?.reportId;
   const clientEmail = session.customer_email;
   if (!reportId) { console.warn('[STRIPE] reportId mancante'); return; }
-
   const amountEuro = session.amount_total / 100;
   const tier       = TIER_MAPPING[amountEuro] || 'TIER_4_ENTERPRISE_API';
 
-  // Idempotency: controlla se gia processato
-  const existing = await prisma.idempotencyKey.findFirst({
-    where: { jobId: reportId, operation: 'stripe_checkout', status: 'SUCCESS' },
-  });
-  if (existing) { console.log(`[STRIPE] Checkout gia processato per ${reportId}`); return; }
-
-  await prisma.$transaction(async (tx) => {
-    await tx.immobile.update({
-      where: { jobId: reportId },
-      data:  { pagato: true, livelloCommerciale: tier },
-    });
-    await tx.jobEvent.create({
-      data: {
-        jobId:     reportId,
-        eventType: 'PAYMENT_COMPLETED',
-        metadata:  JSON.stringify({ stripeSessionId: session.id, amount: amountEuro, tier, customerEmail: clientEmail }),
-      },
-    });
-    await tx.activityLog.create({
-      data: { event: 'STRIPE_CHECKOUT_COMPLETED', dataJson: JSON.stringify({ reportId, sessionId: session.id, tier, amount: amountEuro }) },
-    });
-    await tx.idempotencyKey.create({
+  // G2 — IDEMPOTENCY ATOMICA: la chiave UNIQUE è il gate, creata PRIMA del lavoro
+  try {
+    await prisma.idempotencyKey.create({
       data: {
         idempotencyKey: `checkout-${session.id}`,
-        jobId:     reportId,
-        operation: 'stripe_checkout',
-        status:    'SUCCESS',
-        result:    JSON.stringify({ tier, amount: amountEuro }),
+        jobId: reportId, operation: 'stripe_checkout', status: 'SUCCESS',
+        result: JSON.stringify({ tier, amount: amountEuro }),
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
-    }).catch(() => {});  // ignora se gia esiste
+    });
+  } catch (e) {
+    if (e.code === 'P2002') { console.log(`[STRIPE] gia processato ${session.id}`); return; }
+    throw e;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.immobile.update({ where: { jobId: reportId }, data: { pagato: true, livelloCommerciale: tier } });
+    await tx.jobEvent.create({ data: { jobId: reportId, eventType: 'PAYMENT_COMPLETED',
+      metadata: JSON.stringify({ stripeSessionId: session.id, amount: amountEuro, tier, customerEmail: clientEmail }) } });
+    await tx.activityLog.create({ data: { event: 'STRIPE_CHECKOUT_COMPLETED',
+      dataJson: JSON.stringify({ reportId, sessionId: session.id, tier, amount: amountEuro }) } });
   });
 
-  console.log(`[STRIPE] Report ${reportId} sbloccato: ${tier} (EUR ${amountEuro})`);
-
-  // Recupera email dal record job se non nella sessione Stripe
   const email = clientEmail || await (async () => {
-    try {
-      const j = await prisma.job.findUnique({ where: { id: reportId } });
-      return JSON.parse(j?.payload || '{}').email || null;
-    } catch { return null; }
+    try { const j = await prisma.job.findUnique({ where: { id: reportId } });
+      return JSON.parse(j?.payload || '{}').email || null; } catch { return null; }
   })();
 
-  // Avvia generazione PDF + notifica email (flow report → notify)
-  try {
-    await getFlowProducer().add({
-      name: `notifyJob-paid-${reportId}`,
-      queueName: 'notificationQueue',
-      data: { jobId: reportId, email, tier },
-      opts: { attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
-      children: [{
-        name: `reportJob-paid-${reportId}`,
-        queueName: 'reportRenderQueue',
-        data: { jobId: reportId, tier },
+  // G1 — CONSEGNA: pipeline solo se esplicitamente accesa; altrimenti notifica per consegna manuale
+  if (process.env.PIPELINE_ENABLED === 'true') {
+    try {
+      await getFlowProducer().add({
+        name: `notifyJob-paid-${reportId}`,
+        queueName: 'notificationQueue',
+        data: { jobId: reportId, email, tier },
         opts: { attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
-      }],
-    });
-    console.log(`[STRIPE] Flow report→notify avviato per ${reportId}`);
-  } catch (err) {
-    console.error(`[STRIPE] Errore avvio report dopo pagamento per ${reportId}:`, err.message);
+        children: [{
+          name: `reportJob-paid-${reportId}`,
+          queueName: 'reportRenderQueue',
+          data: { jobId: reportId, tier },
+          opts: { attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
+        }],
+      });
+      console.log(`[STRIPE] Flow report→notify avviato per ${reportId}`);
+    } catch (err) {
+      console.error(`[STRIPE] flow KO ${reportId}:`, err.message);
+      await notifyManual(reportId, email, tier, amountEuro);
+    }
+  } else {
+    await notifyManual(reportId, email, tier, amountEuro);
   }
+}
+
+// Notifica garantita sul telefono di Simone (ntfy) col jobId da evadere a mano
+async function notifyManual(reportId, email, tier, amountEuro) {
+  const topic = process.env.NTFY_TOPIC;
+  if (!topic) { console.log(`[MANUAL] PAGATO ${reportId} ${tier} EUR${amountEuro} ${email}`); return; }
+  try {
+    await fetch(`https://ntfy.sh/${topic}`, {
+      method: 'POST',
+      headers: { Title: `PAGATO EUR${amountEuro} — ${tier}`, Priority: 'urgent', Tags: 'moneybag' },
+      body: `Job ${reportId}\nEmail: ${email || 'n/d'}\nEvadi il report a mano.`,
+    });
+  } catch (e) { console.error('[MANUAL] ntfy KO:', e.message); }
 }
 
 // ============================================================================
