@@ -1,6 +1,5 @@
 ﻿[build]
-  command = "node scripts/fs-gatekeeper.js && npm run build"
-  publish = "dist"
+  publish = "public"
 
 [[redirects]]
   from = "/*"

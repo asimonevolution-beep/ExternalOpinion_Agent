@@ -1,4 +1,5 @@
 ﻿'use strict';
+require('events').EventEmitter.defaultMaxListeners = 30;
 require('dotenv').config();
 const express     = require('express');
 const path        = require('path');
@@ -63,6 +64,12 @@ const {
   startSubscriber,
   getSSERouter,
 } = require('./realtime-hub');
+
+const {
+  hashInput,
+  validateVerdict,
+  verdictValidationMiddleware,
+} = require('./src/engines/edv');
 
 // ============================================================================
 // APP INITIALIZATION
@@ -200,6 +207,9 @@ apiRouter.post(
         }
       }
 
+      // Hash deterministico dell'input per audit trail / idempotency
+      const inputHash = hashInput({ urlAsta, email, service, tier, zonaDati });
+
       // Crea Job (atomic transaction)
       const jobRecord = await createJob({
         url: urlAsta,
@@ -209,7 +219,7 @@ apiRouter.post(
         zonaDati,
       });
 
-      console.log(`[API] Job created: ${jobRecord.id}`);
+      console.log(`[API] Job created: ${jobRecord.id} | inputHash: ${inputHash}`);
 
       // ===== CREA DAG PIPELINE =====
       await createAnalysisPipeline(jobRecord.id, jobRecord.payload, tier);
@@ -218,6 +228,7 @@ apiRouter.post(
       return res.status(202).json({
         success: true,
         jobId: jobRecord.id,
+        inputHash,
         status: 'PENDING',
         createdAt: jobRecord.createdAt,
         pollingUrl: `/api/jobs/${jobRecord.id}`,
@@ -770,6 +781,16 @@ app.post('/api/verdict', (req, res) => {
     motore:   'F7 CASCADE v1.0',
     tier:     'TIER_1_CASCADE_79',
   });
+});
+
+// ============================================================================
+// EDV — Validazione struttura verdict (quality gate pipeline)
+// POST /api/validate-verdict
+// Body: { colore, riskScore?, coherenceIndex?, roi? }
+// ============================================================================
+
+app.post('/api/validate-verdict', verdictValidationMiddleware, (req, res) => {
+  res.json({ success: true, message: 'Verdict strutturalmente valido' });
 });
 
 // ============================================================================
