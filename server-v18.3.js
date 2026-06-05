@@ -177,6 +177,28 @@ app.get('/api/setup', (req, res) => {
 
 const apiRouter = express.Router();
 
+const { runDeterministicInference, buildNarrativeAndFindings } = require('./src/engines/core-engine-v13.4');
+
+/**
+ * POST /api/v1/preanalisi — Free pre-screening (frontend public form)
+ * Core Engine v13.4.0, zero AI, no auth required.
+ */
+apiRouter.post('/v1/preanalisi', analyzeApiLimiter, (req, res) => {
+  try {
+    const { tipo, zona, prezzo, mq, anno, stato, note, plan } = req.body;
+    if (!zona || !prezzo || !mq || prezzo < 1000 || mq < 10) {
+      return res.status(400).json({ success: false, error: 'Campi obbligatori: zona, prezzo, mq' });
+    }
+    const payload = { tipo, zona, prezzo: Number(prezzo), mq: Number(mq), anno, stato, note: note || '', plan };
+    const inference = runDeterministicInference(payload);
+    const { narrative, findings } = buildNarrativeAndFindings(payload, inference);
+    return res.json({ success: true, ...inference, narrative, findings, engine: 'core-engine-v13.4.0' });
+  } catch (err) {
+    console.error('[PREANALISI]', err.message);
+    return res.status(500).json({ success: false, error: 'Errore interno' });
+  }
+});
+
 /**
  * POST /api/analyze â€” Create analysis job (non-blocking with DAG)
  */
