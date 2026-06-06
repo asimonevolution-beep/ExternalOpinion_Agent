@@ -2,9 +2,9 @@
   "name": "external-opinion-agent",
   "version": "13.1.0",
   "description": "Production-ready External Opinion platform for PDF processing, cash flow analysis, WhatsApp notifications, and REST API integration.",
-  "main": "server.js",
+  "main": "server-v18.3.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node server-v18.3.js",
     "worker": "node worker.js",
     "build": "prisma generate",
     "postinstall": "prisma generate --no-hints || true",
