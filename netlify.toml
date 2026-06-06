@@ -1,7 +1,15 @@
 [build]
   publish = "public"
 
+# Proxy tutte le chiamate /api/* verso il backend Railway
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from   = "/api/*"
+  to     = "https://externalopinionagent-production-1f66.up.railway.app/api/:splat"
+  status = 200
+  force  = true
+
+# SPA fallback
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
   status = 200
