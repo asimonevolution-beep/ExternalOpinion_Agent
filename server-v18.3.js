@@ -480,6 +480,30 @@ apiRouter.get('/checkout/:sessionId', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/lead-event — Tracciamento frontend (PAGE_VIEW, FORM_STARTED, ecc.)
+ * Fire-and-forget: risponde sempre 204, non blocca il frontend.
+ */
+apiRouter.post('/lead-event', async (req, res) => {
+  res.sendStatus(204); // risponde subito, senza aspettare il DB
+  const { eventType, source, email, url, tier,
+          utm_source, utm_medium, utm_campaign } = req.body || {};
+  if (!eventType) return;
+  trackLead({
+    eventType: String(eventType).slice(0, 64),
+    email:  email  || null,
+    url:    url    || null,
+    tier:   tier   || null,
+    ip:     req.ip || null,
+    source: source || null,
+    metadata: {
+      utm_source:   utm_source   || null,
+      utm_medium:   utm_medium   || null,
+      utm_campaign: utm_campaign || null,
+    },
+  });
+});
+
 // Mount API router
 app.use('/api', apiRouter);
 

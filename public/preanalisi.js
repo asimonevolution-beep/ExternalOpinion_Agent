@@ -188,9 +188,53 @@ function resetForm() {
   document.getElementById('progress-bar').style.width  = '0';
 }
 
+// ── Lead tracking ──────────────────────────────────────────────────────────
+
+function getUtmParams() {
+  const p = new URLSearchParams(window.location.search);
+  return {
+    utm_source:   p.get('utm_source')   || undefined,
+    utm_medium:   p.get('utm_medium')   || undefined,
+    utm_campaign: p.get('utm_campaign') || undefined,
+  };
+}
+
+function sendLeadEvent(payload) {
+  try {
+    navigator.sendBeacon
+      ? navigator.sendBeacon('/api/lead-event', new Blob([JSON.stringify(payload)], { type: 'application/json' }))
+      : fetch('/api/lead-event', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), keepalive: true }).catch(() => {});
+  } catch (_) {}
+}
+
+function initLeadTracking() {
+  // PAGE_VIEW — al caricamento
+  sendLeadEvent({ eventType: 'PAGE_VIEW', source: 'landing', ...getUtmParams() });
+
+  // FORM_STARTED — prima volta che l'utente tocca URL o email
+  let formStartedSent = false;
+  function onFormStart() {
+    if (formStartedSent) return;
+    formStartedSent = true;
+    const email = document.getElementById('emailInput').value.trim() || undefined;
+    const url   = document.getElementById('urlAsta').value.trim()    || undefined;
+    sendLeadEvent({ eventType: 'FORM_STARTED', source: 'landing', email, url, ...getUtmParams() });
+  }
+  ['urlAsta', 'emailInput'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input',  onFormStart, { once: false });
+      el.addEventListener('focus',  onFormStart, { once: true  });
+    }
+  });
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+
 document.addEventListener('DOMContentLoaded', () => {
   initScrollReveal();
   initScrollToButtons();
+  initLeadTracking();
   document.getElementById('btnAnalizza').addEventListener('click', avviaAnalisi);
   document.getElementById('btnPaga').addEventListener('click', avviaPagamento);
 });
