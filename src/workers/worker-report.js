@@ -137,9 +137,11 @@ async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValida
     const roiColor = calcoliScoring.roiConveniente ? GREEN : RED;
     doc.fillColor(roiColor).font('Helvetica-Bold').fontSize(52)
        .text(`${calcoliScoring.roi}%`, 50, 90, { align: 'center' });
-    doc.fillColor(INK).font('Helvetica-Bold').fontSize(14)
-       .text(calcoliScoring.roiConveniente ? 'INVESTIMENTO CONVENIENTE' : 'INVESTIMENTO NON CONVENIENTE',
-             50, 155, { align: 'center' });
+    const roiEsito = calcoliScoring.roiConveniente
+      ? 'Esito ROI: positivo — coerente con la soglia minima'
+      : 'Esito ROI: negativo — approfondimento necessario prima di procedere';
+    doc.fillColor(INK).font('Helvetica-Bold').fontSize(12)
+       .text(roiEsito, 50, 155, { align: 'center' });
     doc.font('Helvetica').fontSize(11).fillColor(INK).moveDown(1)
        .text(spiegazione?.roi?.recommendation || '', 50, doc.y, { width: 495, lineGap: 4 });
 
@@ -165,9 +167,13 @@ async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValida
 
     doc.moveDown(2);
     doc.fillColor(INK).font('Helvetica-Bold').fontSize(12)
-       .text('Raccomandazione finale:');
+       .text('Azione diagnostica:');
+    const signal = calcoliScoring.decisionSignal;
+    const actionText = signal
+      ? signal.customerAction
+      : (spiegazione?.riskProfile?.recommendation || '');
     doc.font('Helvetica').fontSize(11)
-       .text(spiegazione?.riskProfile?.recommendation || '', { width: 495, lineGap: 4 });
+       .text(actionText, { width: 495, lineGap: 4 });
 
     // ---- PAGINA 6: DATI TECNICI & FIRMA ----
     doc.addPage();

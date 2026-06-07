@@ -851,14 +851,16 @@ app.post('/api/verdict', (req, res) => {
   const risk     = (d * 0.3) + (dq * 0.3) + (ms * 0.4);
   const riskPct  = Math.round(risk * 100);
 
-  let decision, colore, azione;
-  if (risk < 0.30) {
-    decision = 'PROCEDERE';  colore = 'VERDE';  azione = 'Acquisto consigliato con riserva tecnica';
-  } else if (risk < 0.60) {
-    decision = 'NEGOZIARE';  colore = 'GIALLO'; azione = 'Negoziare ribasso o chiedere garanzie';
-  } else {
-    decision = 'EVITARE';    colore = 'ROSSO';  azione = 'Rischio elevato — sconsigliato salvo analisi approfondita';
-  }
+  const { calculateDecisionSignal } = require('./src/engines/decision-signal');
+  const signal = calculateDecisionSignal({
+    riskScore:         riskPct,
+    coherenceIndex:    Math.round((1 - dq) * 100),
+    roi:               null,
+    documentsVerified: dq >= 0.7,
+  });
+  const colore   = signal.color === 'GREEN' ? 'VERDE' : signal.color === 'RED' ? 'ROSSO' : 'GIALLO';
+  const decision = signal.label;
+  const azione   = signal.customerAction;
 
   const edv = Math.round(79 - (20 + (risk * 30)));
 

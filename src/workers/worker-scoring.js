@@ -16,6 +16,8 @@ const prisma = require('../../db');
 const { recordJobEvent, safeRoiCalculation } = require('../../orchestrator');
 const { generaRelazioneCompletaSpiegata } = require('../../explainability-engine');
 
+const { calculateDecisionSignal, colorToSemaforo } = require('../engines/decision-signal');
+
 const WORKER_ID = `scoring-${crypto.randomBytes(4).toString('hex')}`;
 
 const { getSharedRedis } = require('../../redis-connection');
@@ -53,11 +55,18 @@ function eseguiMotoreDeterministico(datiAI, parametriMercato) {
   const costiTotaliOperativi      = (costiSanatoria || 0) + (costiRipristino || 0);
   const margineReale              = valorePotenziale - costiTotaliOperativi;
   const profittoFuturoPostRivendita = valoreFuturoProiettato - costiTotaliOperativi;
-  const roiCalcolato              = safeRoiCalculation(margineReale, costiTotaliOperativi);
+  const roiCalcolato = safeRoiCalculation(margineReale, costiTotaliOperativi);
+  const signal       = calculateDecisionSignal({
+    riskScore:         coherenceIndex,
+    coherenceIndex,
+    roi:               parseFloat(roiCalcolato.toFixed(2)),
+    documentsVerified: false,
+  });
 
   return {
     coherenceIndex:            parseFloat(coherenceIndex.toFixed(2)),
-    semaforo:                  coherenceIndex > 70 ? 'VERDE' : coherenceIndex > 40 ? 'GIALLO' : 'ROSSO',
+    semaforo:                  colorToSemaforo(signal.color),
+    decisionSignal:            signal,
     valoreAttuale:             Math.round(valoreAttuale),
     valorePotenziale:          Math.round(valorePotenziale),
     valoreFuturoProiettato:    Math.round(valoreFuturoProiettato),
