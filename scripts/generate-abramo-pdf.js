@@ -4,11 +4,13 @@ const fs   = require('fs');
 const path = require('path');
 const { calculateDecisionSignal } = require('../src/engines/decision-signal');
 
-// Dati caso Abramo — derivati dal motore (hardcoded per demo, da collegare a worker-scoring in Azione 3)
+// Dati caso Abramo — ROI da safe-roi-calculation.cjs (Azione 2)
+const { safeRoiCalculation } = require('./lib/safe-roi-calculation.cjs');
+const ABRAMO_ROI = safeRoiCalculation({ expectedRevenue: 180450, totalCosts: 260000 }); // -30.6
 const ABRAMO = {
   riskScore:         75,
   coherenceIndex:    50,
-  roi:               -32.3,
+  roi:               ABRAMO_ROI,
   documentsVerified: false,
 };
 const SIGNAL = calculateDecisionSignal(ABRAMO);
@@ -83,7 +85,7 @@ const kpis = [
   { label: 'Risk Score',  value: '75 / 100', sub: 'elevato'     },
   { label: 'Prezzo / m²', value: '€299',     sub: 'OMI €450'    },
   { label: 'Coherence',   value: '50 / 100', sub: 'medio-basso' },
-  { label: 'ROI 5 anni',  value: '-32,3%',   sub: 'negativo',   red: true },
+  { label: 'ROI 5 anni',  value: `${ABRAMO_ROI}%`, sub: 'negativo', red: true },
 ];
 const kY = bY + 62;
 const kW = CW / 4;

@@ -1,28 +1,39 @@
 {
   "action": "Azione 2 - Allineamento ROI",
-  "status": "PATCH_APPLIED",
-  "action2_status": "ACTIVE_NOT_DONE",
+  "status": "VERIFIED",
+  "action2_status": "DONE",
   "roi_expected": -30.6,
   "roi_old": -32.3,
+  "roi_in_pdf": -30.6,
+  "old_roi_present_in_pdf": false,
   "source_data": {
     "expectedRevenue": 180450,
     "totalCosts": 260000
   },
   "formula": "((expectedRevenue - totalCosts) / totalCosts) * 100",
-  "discovered_files": [
-    "reports\\ABRAMO_CASE_DIAGNOSTIC_PREVIEW.md"
-  ],
-  "patched_files": [],
-  "safe_roi_status": "PASS_PURE_FALLBACK",
-  "pdf_status": "NOT_VERIFIED",
-  "verification_result": "PASS_TEXT_ONLY",
+  "safe_roi_status": "PASS",
+  "safe_roi_file": "scripts/lib/safe-roi-calculation.cjs",
+  "pdf_status": "VERIFIED",
+  "pdf_path": "reports/ABRAMO_CASE_DIAGNOSTIC_PREVIEW.pdf",
+  "decision_in_pdf": "GIALLO — NEGOZIARE / VERIFICARE DOCUMENTI PRIMA DI PROCEDERE",
+  "decision_color": "YELLOW",
+  "decision_risk_level": "HIGH",
+  "abramo_is_yellow": true,
+  "abramo_is_green": false,
+  "verification_result": "PASS",
+  "verification_method": "PDF rendered and read — ROI field confirmed -30.6%, decision confirmed YELLOW/HIGH",
   "errors": [],
   "production_touched": false,
   "email_sent": false,
   "deploy_executed": false,
   "next_locked_action": "Azione 3",
-  "safe_roi_file": "scripts/lib/safe-roi-calculation.cjs",
   "checked_files": [
-    "reports\\ABRAMO_CASE_DIAGNOSTIC_PREVIEW.md"
-  ]
+    "reports/ABRAMO_CASE_DIAGNOSTIC_PREVIEW.pdf",
+    "scripts/generate-abramo-pdf.js",
+    "scripts/lib/safe-roi-calculation.cjs"
+  ],
+  "patched_files": [
+    "scripts/generate-abramo-pdf.js"
+  ],
+  "verified_at": "2026-06-07T00:00:00Z"
 }
