@@ -1,0 +1,168 @@
+{
+  "_meta": {
+    "schema": "1.0",
+    "description": "Memoria persistente Autonomous Kinetic Ecosystem — External Opinion",
+    "instructions": "Appendere entries, mai cancellare. Ogni agente aggiunge il proprio blocco in 'sessions'.",
+    "lastUpdated": "2026-06-07T13:10:00Z"
+  },
+
+  "current_state": {
+    "github_tip": "b97d310",
+    "netlify_deploy": "605c2d3",
+    "railway_active": "f0ea437",
+    "railway_behind_by": 5,
+    "railway_auto_deploy": false,
+    "db_tables": 15,
+    "lead_events_count": 0,
+    "jobs_count_approx": 0,
+    "stripe_mode": "TEST",
+    "funnel_status": "PARTIAL — Railway CORS bloccato, redeploy manuale richiesto"
+  },
+
+  "friction_log": [
+    {
+      "id": "F001",
+      "date": "2026-06-07",
+      "problem": "netlify.toml mancava proxy /api/* → Railway",
+      "impact": "CRITICO — tutto il funnel rotto",
+      "fix": "Aggiunto [[redirects]] from=/api/* to=Railway",
+      "commit": "cb82d48",
+      "status": "RESOLVED"
+    },
+    {
+      "id": "F002",
+      "date": "2026-06-07",
+      "problem": "CORS_ORIGIN Railway non includeva externalopinion.netlify.app",
+      "impact": "CRITICO — CORS blocca tutti gli endpoint",
+      "fix": "PRODUCTION_ORIGINS hardcoded in server-v18.3.js",
+      "commit": "b97d310",
+      "status": "RESOLVED_IN_CODE — pending Railway redeploy"
+    },
+    {
+      "id": "F003",
+      "date": "2026-06-07",
+      "problem": "Nessun tracciamento lead pre-pagamento",
+      "impact": "ALTO — lead persi (es. 'Abramo' non tracciato)",
+      "fix": "LeadEvent model + trackLead() fire-and-forget",
+      "commit": "778fb0e",
+      "status": "RESOLVED_IN_CODE — pending Railway redeploy"
+    },
+    {
+      "id": "F004",
+      "date": "2026-06-07",
+      "problem": "PAGE_VIEW non inviato dal frontend",
+      "impact": "MEDIO — visitatori non tracciati",
+      "fix": "initLeadTracking() in preanalisi.js + POST /api/lead-event",
+      "commit": "605c2d3",
+      "status": "RESOLVED_IN_CODE — pending Railway redeploy"
+    },
+    {
+      "id": "F005",
+      "date": "2026-06-07",
+      "problem": "Railway non ha auto-deploy GitHub",
+      "impact": "OPERATIVO — ogni deploy richiede click manuale",
+      "fix": "Nessuno (accesso dashboard non disponibile)",
+      "commit": null,
+      "status": "OPEN — azione umana richiesta"
+    },
+    {
+      "id": "F006",
+      "date": "2026-06-07",
+      "problem": "Stripe in modalità TEST — nessun pagamento reale possibile",
+      "impact": "CRITICO per revenue",
+      "fix": "Aggiungere STRIPE_SECRET_KEY live su Railway Variables",
+      "commit": null,
+      "status": "OPEN — azione umana richiesta"
+    }
+  ],
+
+  "decisions": [
+    {
+      "id": "D001",
+      "date": "2026-06-07",
+      "decision": "Lead tracker fire-and-forget — mai blocca il flusso principale",
+      "rationale": "Un errore di analytics non deve mai degradare l'esperienza utente",
+      "file": "lead-tracker.js"
+    },
+    {
+      "id": "D002",
+      "date": "2026-06-07",
+      "decision": "PRODUCTION_ORIGINS hardcoded invece di solo env var",
+      "rationale": "Railway env non aggiornato può rompere CORS → garanzia in codice",
+      "file": "server-v18.3.js:105"
+    },
+    {
+      "id": "D003",
+      "date": "2026-06-07",
+      "decision": "sendBeacon con fallback fetch+keepalive per PAGE_VIEW",
+      "rationale": "sendBeacon non blocca il caricamento e sopravvive alla chiusura pagina",
+      "file": "public/preanalisi.js"
+    },
+    {
+      "id": "D004",
+      "date": "2026-06-07",
+      "decision": "TIER_1_SCREENING_69 come tier default nel form",
+      "rationale": "DAG termina a READY_FOR_PAYMENT — utente vede semaforo prima di pagare",
+      "file": "public/preanalisi.js:73"
+    }
+  ],
+
+  "cascade_protocol": {
+    "system": "CASCADE / External Opinion",
+    "internalArchitecture": "Autonomous Kinetic Ecosystem",
+    "protectedInternalModel": "Nuclear Diagnostic Ecosystem",
+    "coreLaw": "Minimize friction. Preserve energy. Maximize validated power.",
+    "externalExposure": "Do not expose internal energy/reactor/nuclear metaphors to customers.",
+    "currentExternalTurbine": "traffic → lead → preview → paywall → payment → automated report → delivery → real revenue",
+    "priorityOrder": [
+      "1. correct frontend online",
+      "2. Railway backend reachable",
+      "3. CORS configured correctly",
+      "4. Stripe live configuration ready",
+      "5. end-to-end simulated customer flow",
+      "6. payment success",
+      "7. report generation",
+      "8. report delivery",
+      "9. audit/log trace",
+      "10. repeatable acquisition loop"
+    ],
+    "iterations": []
+  },
+
+  "sessions": [
+    {
+      "session_id": "b00d429e-e990-4de7-8d72-ee4d4777e422",
+      "date": "2026-06-07",
+      "agent": "Claude Sonnet 4.6",
+      "commits_pushed": ["cb82d48", "778fb0e", "605c2d3", "b97d310"],
+      "netlify_deployed": true,
+      "railway_deployed": false,
+      "key_actions": [
+        "Fix netlify.toml proxy /api/*",
+        "LeadEvent Prisma model + prisma db push",
+        "lead-tracker.js fire-and-forget module",
+        "PAGE_VIEW + FORM_STARTED in preanalisi.js",
+        "POST /api/lead-event endpoint",
+        "CORS hardcoded PRODUCTION_ORIGINS",
+        "Netlify deploy via CLI (ticket auth)"
+      ],
+      "blocked_on": "Railway redeploy manuale (no auto-deploy)"
+    }
+  ],
+
+  "environment_map": {
+    "railway_variables_to_update": [
+      "CORS_ORIGIN → https://externalopinion.netlify.app,https://externalopinion.it",
+      "BASE_URL → https://externalopinion.netlify.app",
+      "STRIPE_SECRET_KEY → sk_live_* (da stripe.com live mode)",
+      "STRIPE_WEBHOOK_SECRET → whsec_* (da stripe.com webhook per Railway URL)"
+    ],
+    "railway_variables_confirmed_present": [
+      "DATABASE_URL",
+      "REDIS_URL",
+      "ANTHROPIC_API_KEY",
+      "RESEND_API_KEY",
+      "ADMIN_TOKEN"
+    ]
+  }
+}
