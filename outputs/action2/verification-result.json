@@ -1,0 +1,28 @@
+{
+  "action": "Azione 2 - Allineamento ROI",
+  "status": "PATCH_APPLIED",
+  "action2_status": "ACTIVE_NOT_DONE",
+  "roi_expected": -30.6,
+  "roi_old": -32.3,
+  "source_data": {
+    "expectedRevenue": 180450,
+    "totalCosts": 260000
+  },
+  "formula": "((expectedRevenue - totalCosts) / totalCosts) * 100",
+  "discovered_files": [
+    "reports\\ABRAMO_CASE_DIAGNOSTIC_PREVIEW.md"
+  ],
+  "patched_files": [],
+  "safe_roi_status": "PASS_PURE_FALLBACK",
+  "pdf_status": "NOT_VERIFIED",
+  "verification_result": "PASS_TEXT_ONLY",
+  "errors": [],
+  "production_touched": false,
+  "email_sent": false,
+  "deploy_executed": false,
+  "next_locked_action": "Azione 3",
+  "safe_roi_file": "scripts/lib/safe-roi-calculation.cjs",
+  "checked_files": [
+    "reports\\ABRAMO_CASE_DIAGNOSTIC_PREVIEW.md"
+  ]
+}

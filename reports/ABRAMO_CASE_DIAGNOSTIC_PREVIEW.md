@@ -136,7 +136,7 @@ Valore proiettato 5 anni (trend -0,5%/anno):         €175.984
 
 Investimento totale stimato:  €260.000
 Margine a 5 anni:             -€84.016
-ROI 5 anni:                   -32,3%
+ROI 5 anni:                   -30,6%
 ```
 
 **Interpretazione:** Al prezzo attuale e con i costi di recupero stimati, l'operazione

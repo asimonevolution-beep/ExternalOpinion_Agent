@@ -10,7 +10,8 @@
     "postinstall": "prisma generate --no-hints || true",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
-    "deploy": "node scripts/fs-gatekeeper.js && netlify deploy --prod"
+    "deploy": "node scripts/fs-gatekeeper.js && netlify deploy --prod",
+    "cascade:action2": "node scripts/patch-action2-roi.cjs && node scripts/verify-action2-roi.cjs"
   },
   "engines": {
     "node": ">=18.0.0"
