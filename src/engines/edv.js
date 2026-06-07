@@ -1,78 +1,50 @@
 'use strict';
 const crypto = require('crypto');
 
-const VALID_VERDICTS = ['VERDE', 'GIALLO', 'ROSSO'];
+/**
+ * EDV — External Data Validation utilities
+ * Deterministic hashing + verdict validation for audit trail & idempotency.
+ */
 
 /**
- * Crea un hash SHA-256 deterministico dell'input di analisi.
- * Usato per audit trail e idempotency check.
+ * Produce a deterministic SHA-256 hex hash of the input object.
+ * Keys are sorted so identical payloads always yield the same hash.
  */
-function hashInput(payload) {
-  const normalized = {
-    urlAsta:    payload.urlAsta   || '',
-    email:      payload.email     || '',
-    service:    payload.service   || '',
-    tier:       payload.tier      || '',
-    zonaDati:   payload.zonaDati  || {},
-  };
-  return crypto
-    .createHash('sha256')
-    .update(JSON.stringify(normalized))
-    .digest('hex');
+function hashInput(obj) {
+  const canonical = JSON.stringify(obj, Object.keys(obj).sort());
+  return crypto.createHash('sha256').update(canonical).digest('hex');
 }
 
 /**
- * Valida la struttura e i valori del verdict prodotto dalla pipeline.
- * Restituisce { valid: true } oppure { valid: false, errors: [...] }.
+ * Validate that a verdict object has the required fields and sane values.
+ * Returns { valid: boolean, errors: string[] }.
  */
 function validateVerdict(verdict) {
   const errors = [];
-
   if (!verdict || typeof verdict !== 'object') {
-    return { valid: false, errors: ['verdict mancante o non è un oggetto'] };
+    return { valid: false, errors: ['Verdict must be a non-null object'] };
   }
-
-  if (!VALID_VERDICTS.includes(verdict.colore)) {
-    errors.push(`colore non valido: "${verdict.colore}" (atteso VERDE/GIALLO/ROSSO)`);
+  if (typeof verdict.risk_score !== 'number' || verdict.risk_score < 0 || verdict.risk_score > 100) {
+    errors.push('risk_score must be a number between 0 and 100');
   }
-
-  if (typeof verdict.coherenceIndex === 'number') {
-    if (verdict.coherenceIndex < 0 || verdict.coherenceIndex > 1) {
-      errors.push(`coherenceIndex fuori range: ${verdict.coherenceIndex} (atteso 0-1)`);
-    }
+  if (!['CRITICAL', 'MODERATE', 'CONTROLLED'].includes(verdict.risk_class)) {
+    errors.push('risk_class must be CRITICAL, MODERATE, or CONTROLLED');
   }
-
-  if (verdict.roi !== undefined && typeof verdict.roi !== 'number') {
-    errors.push(`roi non è un numero: ${verdict.roi}`);
-  }
-
-  if (typeof verdict.riskScore === 'number') {
-    if (verdict.riskScore < 0 || verdict.riskScore > 100) {
-      errors.push(`riskScore fuori range: ${verdict.riskScore} (atteso 0-100)`);
-    }
-  }
-
-  return errors.length === 0
-    ? { valid: true }
-    : { valid: false, errors };
+  return { valid: errors.length === 0, errors };
 }
 
 /**
- * Middleware Express: valida il campo `verdict` nel body della richiesta.
- * Usato su endpoint che ricevono output della pipeline per garantire
- * che il verdict sia strutturalmente corretto prima dell'elaborazione.
+ * Express middleware that validates req.body.verdict before proceeding.
  */
 function verdictValidationMiddleware(req, res, next) {
-  const verdict = req.body?.verdict || req.body;
-  const result = validateVerdict(verdict);
-  if (!result.valid) {
-    return res.status(422).json({
-      success: false,
-      error: 'Verdict non valido',
-      details: result.errors,
-    });
+  const { verdict } = req.body || {};
+  if (!verdict) return next();
+  const { valid, errors } = validateVerdict(verdict);
+  if (!valid) {
+    return res.status(400).json({ success: false, error: 'Invalid verdict', details: errors });
   }
   next();
 }
 
 module.exports = { hashInput, validateVerdict, verdictValidationMiddleware };
+
