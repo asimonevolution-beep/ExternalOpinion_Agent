@@ -1,5 +1,5 @@
 ﻿'use strict';
-require('events').EventEmitter.defaultMaxListeners = 30;
+require('events').EventEmitter.defaultMaxListeners = 50;
 require('dotenv').config();
 const express     = require('express');
 const path        = require('path');
@@ -70,6 +70,8 @@ const {
   validateVerdict,
   verdictValidationMiddleware,
 } = require('./src/engines/edv');
+
+const { trackLead } = require('./lead-tracker');
 
 // ============================================================================
 // APP INITIALIZATION
@@ -232,6 +234,17 @@ apiRouter.post(
       // Hash deterministico dell'input per audit trail / idempotency
       const inputHash = hashInput({ urlAsta, email, service, tier, zonaDati });
 
+      // Traccia il lead PRIMA della creazione del Job (anche se createJob fallisce)
+      trackLead({
+        eventType: 'FORM_SUBMITTED',
+        email,
+        url: urlAsta,
+        tier,
+        ip: req.ip,
+        source: req.get('referer') || 'direct',
+        metadata: { service, inputHash },
+      });
+
       // Crea Job (atomic transaction)
       const jobRecord = await createJob({
         url: urlAsta,
@@ -242,6 +255,17 @@ apiRouter.post(
       });
 
       console.log(`[API] Job created: ${jobRecord.id} | inputHash: ${inputHash}`);
+
+      // Traccia il job creato (collega jobId al lead)
+      trackLead({
+        eventType: 'JOB_CREATED',
+        email,
+        url: urlAsta,
+        tier,
+        jobId: jobRecord.id,
+        ip: req.ip,
+        source: req.get('referer') || 'direct',
+      });
 
       // ===== CREA DAG PIPELINE =====
       await createAnalysisPipeline(jobRecord.id, jobRecord.payload, tier);
@@ -391,8 +415,30 @@ apiRouter.post(
         });
       }
 
+      // Traccia il raggiungimento del paywall
+      const jobPayload = (() => { try { return JSON.parse(jobRecord.payload || '{}'); } catch { return {}; } })();
+      trackLead({
+        eventType: 'PAYWALL_HIT',
+        email:  email || jobPayload.email,
+        url:    jobPayload.url || jobPayload.urlAsta,
+        tier,
+        jobId,
+        ip: req.ip,
+      });
+
       // Crea Stripe session
       const checkoutSession = await createCheckoutSession(jobId, tier, email);
+
+      // Traccia apertura checkout Stripe
+      trackLead({
+        eventType: 'CHECKOUT_STARTED',
+        email:  email || jobPayload.email,
+        url:    jobPayload.url || jobPayload.urlAsta,
+        tier,
+        jobId,
+        ip: req.ip,
+        metadata: { sessionId: checkoutSession.id },
+      });
 
       return res.json({
         success: true,

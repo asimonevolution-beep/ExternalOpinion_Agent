@@ -235,3 +235,21 @@ model CircuitBreakerState {
   cooldownMs       Int      @default(30000)
   updatedAt        DateTime @updatedAt
 }
+
+model LeadEvent {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  email     String?
+  url       String?
+  eventType String
+  tier      String?
+  jobId     String?
+  ip        String?
+  source    String?
+  metadata  String   @default("{}")
+
+  @@index([email])
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([jobId])
+}
