@@ -102,12 +102,20 @@ app.set('trust proxy', 1);
 securityMiddleware(app);
 
 // Standard middleware
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
-  : [];
+const PRODUCTION_ORIGINS = [
+  'https://externalopinion.netlify.app',
+  'https://externalopinion.it',
+  'https://www.externalopinion.it',
+];
+const allowedOrigins = [
+  ...PRODUCTION_ORIGINS,
+  ...(process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+    : []),
+];
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('CORS non consentito'));
