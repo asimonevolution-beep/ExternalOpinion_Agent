@@ -1,14 +1,15 @@
 """
 L2 SENSOR — Google Alerts RSS — External Opinion / CASCADE
-Worker continuo: esegue scan ogni SCAN_INTERVAL_MINUTES (default 60).
-Output: stdout JSON + /app/output/l2_signals.json
+Worker continuo: scan ogni SCAN_INTERVAL_MINUTES (default 60).
+Espone /health/live su PORT per Railway healthcheck.
 """
 
 import os
 import json
-import sys
 import time
+import threading
 from datetime import datetime, timezone
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 import feedparser
@@ -16,22 +17,23 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-RSS_URL             = os.getenv("GOOGLE_ALERTS_RSS_URL", "")
-SCAN_INTERVAL_MIN   = int(os.getenv("SCAN_INTERVAL_MINUTES", "60"))
-OUTPUT_DIR          = Path("/app/output")
-OUTPUT_FILE         = OUTPUT_DIR / "l2_signals.json"
+RSS_URL           = os.getenv("GOOGLE_ALERTS_RSS_URL", "")
+SCAN_INTERVAL_MIN = int(os.getenv("SCAN_INTERVAL_MINUTES", "60"))
+PORT              = int(os.getenv("PORT", "8080"))
+OUTPUT_DIR        = Path("/app/output")
+OUTPUT_FILE       = OUTPUT_DIR / "l2_signals.json"
 
 KEYWORDS = {
-    "aste":       ["asta", "aste", "aggiudicazione", "offerta minima", "pignoramento",
-                   "vendita giudiziaria", "pvp", "esecuzione immobiliare", "tribunale"],
-    "immobili":   ["immobile", "immobili", "casa", "appartamento", "catasto", "perizia",
-                   "geometra", "rogito", "preliminare", "difformità catastale", "abuso edilizio"],
-    "rischio":    ["costi nascosti", "ipoteca", "irregolarità", "difformità", "abuso",
-                   "oneri condominiali", "truffa immobiliare", "prima di firmare"],
-    "opportunità":["sotto prezzo", "occasione", "affare", "svendita",
-                   "prezzo ribassato", "vendita urgente"],
-    "economico":  ["acquisto casa", "investimento immobiliare", "mercato immobiliare",
-                   "valutazione indipendente", "diagnostica immobiliare", "cosa controllare"],
+    "aste":        ["asta", "aste", "aggiudicazione", "offerta minima", "pignoramento",
+                    "vendita giudiziaria", "pvp", "esecuzione immobiliare", "tribunale"],
+    "immobili":    ["immobile", "immobili", "casa", "appartamento", "catasto", "perizia",
+                    "geometra", "rogito", "preliminare", "difformità catastale", "abuso edilizio"],
+    "rischio":     ["costi nascosti", "ipoteca", "irregolarità", "difformità", "abuso",
+                    "oneri condominiali", "truffa immobiliare", "prima di firmare"],
+    "opportunità": ["sotto prezzo", "occasione", "affare", "svendita",
+                    "prezzo ribassato", "vendita urgente"],
+    "economico":   ["acquisto casa", "investimento immobiliare", "mercato immobiliare",
+                    "valutazione indipendente", "diagnostica immobiliare", "cosa controllare"],
 }
 
 WEIGHTS = {"aste": 35, "rischio": 30, "immobili": 20, "opportunità": 25, "economico": 15}
@@ -60,6 +62,37 @@ MOCK_RSS = """<?xml version="1.0" encoding="UTF-8"?>
 <pubDate>Mon, 09 Jun 2026 06:00:00 +0000</pubDate></item>
 </channel></rss>"""
 
+# stato globale aggiornato ad ogni scan
+_last_stats = {"total": 0, "L2_HIGH": 0, "L2_MEDIUM": 0, "L1_LOW": 0, "last_run": None}
+
+
+# ── Health HTTP server ─────────────────────────────────────────────────────────
+
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/health/live":
+            body = json.dumps({"status": "ok", "stats": _last_stats}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+    def log_message(self, *args):
+        pass  # silenzia i log HTTP
+
+
+def start_health_server():
+    server = HTTPServer(("0.0.0.0", PORT), HealthHandler)
+    t = threading.Thread(target=server.serve_forever, daemon=True)
+    t.start()
+    print(f"[L2] Health server su :{PORT}/health/live", flush=True)
+
+
+# ── Scoring ────────────────────────────────────────────────────────────────────
 
 def score_text(text: str) -> tuple[int, list[str]]:
     tl = text.lower()
@@ -79,6 +112,8 @@ def classify(score: int) -> str:
     if score >= 30: return "L2_MEDIUM"
     return "L1_LOW"
 
+
+# ── Parser ─────────────────────────────────────────────────────────────────────
 
 def parse(url: str, mock: bool = False) -> list[dict]:
     feed = feedparser.parse(MOCK_RSS if mock else url)
@@ -103,10 +138,13 @@ def parse(url: str, mock: bool = False) -> list[dict]:
     return out
 
 
-def run_scan() -> dict:
+# ── Scan ───────────────────────────────────────────────────────────────────────
+
+def run_scan():
+    global _last_stats
     mock = not bool(RSS_URL)
     if mock:
-        print("[L2] GOOGLE_ALERTS_RSS_URL non trovata — MOCK_FEED attivo", flush=True)
+        print("[L2] GOOGLE_ALERTS_RSS_URL assente — MOCK_FEED", flush=True)
     else:
         print(f"[L2] Feed: {RSS_URL}", flush=True)
 
@@ -115,37 +153,43 @@ def run_scan() -> dict:
     medium = [s for s in signals if s["level"] == "L2_MEDIUM"]
     low    = [s for s in signals if s["level"] == "L1_LOW"]
 
-    result = {
-        "run_at":      datetime.now(timezone.utc).isoformat(),
-        "source_type": "MOCK" if mock else "LIVE",
-        "feed_url":    RSS_URL or "MOCK",
-        "stats":       {"total": len(signals), "L2_HIGH": len(high),
-                        "L2_MEDIUM": len(medium), "L1_LOW": len(low)},
-        "signals":     signals,
+    _last_stats = {
+        "total":    len(signals),
+        "L2_HIGH":  len(high),
+        "L2_MEDIUM": len(medium),
+        "L1_LOW":   len(low),
+        "last_run": datetime.now(timezone.utc).isoformat(),
     }
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    result = {
+        "run_at":      _last_stats["last_run"],
+        "source_type": "MOCK" if mock else "LIVE",
+        "feed_url":    RSS_URL or "MOCK",
+        "stats":       _last_stats,
+        "signals":     signals,
+    }
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
 
-    print(f"[L2] Segnali totali: {len(signals)} | HIGH: {len(high)} | MEDIUM: {len(medium)} | LOW: {len(low)}", flush=True)
+    print(f"[L2] totale={len(signals)} HIGH={len(high)} MEDIUM={len(medium)} LOW={len(low)}", flush=True)
     for s in high:
         print(f"[L2] HIGH [{s['urgency_score']:3d}] {s['title'][:80]}", flush=True)
-
     if not high and not medium:
-        print("[L2] GATE: nessun segnale qualificato — BLOCCO", flush=True)
+        print("[L2] GATE: 0 segnali qualificati", flush=True)
 
-    return result
 
+# ── Main ───────────────────────────────────────────────────────────────────────
 
 def main():
-    print(f"[L2] Worker avviato — scan ogni {SCAN_INTERVAL_MIN} minuti", flush=True)
+    start_health_server()
+    print(f"[L2] Worker avviato — intervallo {SCAN_INTERVAL_MIN}min", flush=True)
     while True:
         try:
             run_scan()
         except Exception as e:
-            print(f"[L2] ERRORE: {e}", flush=True)
-        print(f"[L2] Prossimo scan tra {SCAN_INTERVAL_MIN} minuti", flush=True)
+            print(f"[L2] ERRORE scan: {e}", flush=True)
+        print(f"[L2] Prossimo scan tra {SCAN_INTERVAL_MIN}min", flush=True)
         time.sleep(SCAN_INTERVAL_MIN * 60)
 
 

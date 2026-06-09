@@ -9,4 +9,6 @@ COPY sensor.py .
 
 RUN mkdir -p /app/output
 
+EXPOSE 8080
+
 CMD ["python", "sensor.py"]
