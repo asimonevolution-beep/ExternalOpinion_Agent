@@ -2,10 +2,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY l2-sensor/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY sensor.py .
+COPY l2-sensor/sensor.py .
 
 RUN mkdir -p /app/output
 
