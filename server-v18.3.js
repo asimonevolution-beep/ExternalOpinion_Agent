@@ -1044,6 +1044,71 @@ app.get('/aste', (req, res) => {
 });
 
 // ============================================================================
+// CHECKOUT ASTE — POST /aste/checkout
+// ============================================================================
+app.post('/aste/checkout', checkoutLimiter, async (req, res) => {
+  try {
+    const { indirizzo, lotto, email, telefono, note } = req.body;
+
+    // Validazione
+    if (!indirizzo || !email || !telefono) {
+      return res.status(400).json({
+        success: false,
+        error: 'Indirizzo, email e telefono sono obbligatori',
+      });
+    }
+
+    // Crea record Job per la perizia asta
+    const job = await prisma.job.create({
+      data: {
+        url: `aste://${indirizzo}`, // pseudo-URL per identificare che viene da /aste
+        status: 'PENDING_PAYMENT',
+        payload: JSON.stringify({
+          indirizzo,
+          lotto,
+          email,
+          telefono,
+          note,
+          source: 'aste-form',
+          timestamp: new Date().toISOString(),
+        }),
+      },
+    });
+
+    // Crea Immobile associato al Job
+    await prisma.immobile.create({
+      data: {
+        jobId: job.id,
+        status: 'GIALLO',
+      },
+    });
+
+    // Crea Stripe checkout session
+    const { createCheckoutSession } = require('./stripe-webhook-handler');
+    const session = await createCheckoutSession(
+      job.id,
+      'TIER_1_CASCADE_79', // €79 per perizia asta
+      email
+    );
+
+    console.log(`[ASTE-CHECKOUT] Job ${job.id} — session ${session.id} creata`);
+
+    res.json({
+      success: true,
+      sessionId: session.id,
+      checkoutUrl: session.url,
+      jobId: job.id,
+    });
+  } catch (err) {
+    console.error('[ASTE-CHECKOUT ERROR]', err.message);
+    res.status(500).json({
+      success: false,
+      error: err.message || 'Errore checkout',
+    });
+  }
+});
+
+// ============================================================================
 // SPA fallback — serve index.html per qualsiasi route non-API
 // ============================================================================
 app.get('*', (req, res) => {

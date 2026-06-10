@@ -13,6 +13,7 @@ const express  = require('express');
 const stripeKey = process.env.STRIPE_SECRET_KEY;
 const stripe   = stripeKey && stripeKey.startsWith('sk_') ? require('stripe')(stripeKey) : null;
 const prisma   = require('./db');
+const { Resend } = require('resend');
 
 // Import lazy per evitare problemi di init order con Redis/BullMQ
 function getFlowProducer() {
@@ -119,6 +120,9 @@ async function handleCheckoutCompleted(session) {
   } else {
     await notifyManual(reportId, email, tier, amountEuro);
   }
+
+  // Invia email di conferma al cliente
+  await sendConfirmationEmail(email, reportId, tier, amountEuro);
 }
 
 // Notifica garantita sul telefono di Simone (ntfy) col jobId da evadere a mano
@@ -132,6 +136,53 @@ async function notifyManual(reportId, email, tier, amountEuro) {
       body: `Job ${reportId}\nEmail: ${email || 'n/d'}\nEvadi il report a mano.`,
     });
   } catch (e) { console.error('[MANUAL] ntfy KO:', e.message); }
+}
+
+// ============================================================================
+// EMAIL DI CONFERMA AL CLIENTE
+// ============================================================================
+async function sendConfirmationEmail(email, reportId, tier, amountEuro) {
+  if (!email || !process.env.RESEND_API_KEY) {
+    console.log(`[EMAIL] Skip conferma ${reportId} — email mancante o API key assente`);
+    return;
+  }
+
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    const tierLabel = {
+      'TIER_1_CASCADE_79': 'Perizia Asta — Verdetto CASCADE',
+      'TIER_1_SCREENING_69': 'Screening Report',
+      'TIER_1_ENTRY_89': 'Entry Report',
+      'TIER_2_ADVISORY_150': 'Advisory Report',
+      'TIER_3_PREMIUM_690': 'Premium Report',
+    }[tier] || tier;
+
+    await resend.emails.send({
+      from: 'info@externalopinion.it',
+      to: email,
+      subject: `✅ Perizia ricevuta — Ordine #${reportId.substring(0, 8)}`,
+      html: `
+        <h2>Ciao,</h2>
+        <p>Grazie per l'ordine! Abbiamo ricevuto il pagamento di <strong>€${amountEuro}</strong> per <strong>${tierLabel}</strong>.</p>
+
+        <p><strong>Codice ordine:</strong> ${reportId.substring(0, 8)}</p>
+
+        <p>Stiamo elaborando la perizia. La riceverai per email entro <strong>2-4 ore</strong>.</p>
+
+        <hr style="border: none; border-top: 1px solid #ddd; margin: 2rem 0;">
+
+        <p style="font-size: 0.9rem; color: #666;">
+          Domande? Rispondi direttamente a questa email.<br>
+          <strong>External Opinion — Perizie immobiliari con AI</strong>
+        </p>
+      `,
+    });
+
+    console.log(`[EMAIL] Conferma inviata a ${email} — jobId ${reportId}`);
+  } catch (err) {
+    console.error(`[EMAIL] Errore invio conferma ${reportId}:`, err.message);
+  }
 }
 
 // ============================================================================

@@ -1,0 +1,10 @@
+node_modules/
+.git/
+*.log
+*.zip
+*.html
+Netlify Visual Editor*
+reports/
+archive/
+outreach/
+vision_processing/

@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<!-- saved from url=(0062)file:///C:/ExternalOpinion_Agent/analisi_competitiva_2026.html -->
+<html lang="it"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExternalOpinion — Analisi Competitiva 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&amp;family=DM+Mono:wght@300;400;500&amp;family=Fraunces:ital,wght@0,300;0,600;1,300&amp;display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f5f3ee;
+    --accent: #c8441b;
+    --accent2: #1b6ec8;
+    --gold: #c8a41b;
+    --muted: #6b6860;
+    --border: #d4d0c8;
+    --card: #ffffff;
+    --green: #1a6b3c;
+    --red: #c8441b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 48px 60px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: 'MARKET INTELLIGENCE';
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: rgba(245,243,238,0.1);
+    white-space: nowrap;
+    font-weight: 800;
+  }
+  .header-tag {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 52px;
+    font-weight: 300;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  header h1 em { font-style: italic; color: var(--accent); }
+  .header-meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(245,243,238,0.15);
+  }
+  .meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .meta-label { font-size: 9px; letter-spacing: 0.2em; color: rgba(245,243,238,0.4); text-transform: uppercase; }
+  .meta-val { font-size: 20px; font-family: 'Syne', sans-serif; font-weight: 700; }
+  .meta-val.accent { color: var(--accent); }
+  .meta-val.blue { color: #7ab8f5; }
+  .meta-val.gold { color: #f5d87a; }
+
+  /* LAYOUT */
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 48px; }
+  .section { padding: 56px 0 0; }
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 32px;
+  }
+
+  /* MARKET SIZE STRIP */
+  .market-strip {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 28px 60px;
+    display: flex;
+    gap: 0;
+    align-items: center;
+    overflow: hidden;
+  }
+  .strip-item {
+    flex: 1;
+    padding: 0 32px;
+    border-right: 1px solid rgba(245,243,238,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .strip-item:first-child { padding-left: 0; }
+  .strip-item:last-child { border-right: none; }
+  .strip-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+  }
+  .strip-num.r { color: var(--accent); }
+  .strip-num.b { color: #7ab8f5; }
+  .strip-num.g { color: #7af5b8; }
+  .strip-label { font-size: 10px; letter-spacing: 0.1em; color: rgba(245,243,238,0.5); }
+
+  /* COMPETITOR TABLE */
+  .comp-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
+    margin-bottom: 40px;
+  }
+  .comp-header {
+    display: grid;
+    grid-template-columns: 200px 1fr 120px 120px 140px 120px;
+    gap: 0;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 20px;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-family: 'Syne', sans-serif;
+  }
+  .comp-row {
+    display: grid;
+    grid-template-columns: 200px 1fr 120px 120px 140px 120px;
+    gap: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    align-items: center;
+    transition: background 0.2s;
+    position: relative;
+  }
+  .comp-row:hover { background: #faf9f6; }
+  .comp-row.highlight { border-left: 4px solid var(--accent); }
+  .comp-row.highlight::before {
+    content: '← YOURS';
+    position: absolute;
+    right: -1px;
+    top: -1px;
+    background: var(--accent);
+    color: white;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    padding: 3px 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+  }
+  .comp-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; }
+  .comp-country { font-size: 9px; color: var(--muted); margin-top: 2px; }
+  .comp-desc { font-size: 11px; color: var(--muted); padding: 0 16px; }
+  .comp-funding { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 15px; }
+  .comp-model { font-size: 10px; letter-spacing: 0.05em; }
+  .comp-gap { font-size: 10px; }
+
+  /* TIER BADGE */
+  .tier { display: inline-block; padding: 2px 8px; font-size: 9px; letter-spacing: 0.1em; font-weight: 700; font-family: 'Syne', sans-serif; }
+  .tier-1 { background: #fde8e2; color: var(--red); border: 1px solid #f5b5a0; }
+  .tier-2 { background: #e2ecfd; color: var(--accent2); border: 1px solid #a0c0f5; }
+  .tier-3 { background: #e2fded; color: var(--green); border: 1px solid #a0f5c0; }
+  .tier-x { background: #fff3cc; color: #8a6a00; border: 1px solid #f5d87a; }
+
+  /* FEATURE MATRIX */
+  .feature-matrix {
+    overflow-x: auto;
+    margin-bottom: 40px;
+    border: 1px solid var(--border);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 12px 16px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  th.you { background: var(--accent); }
+  td {
+    padding: 11px 16px;
+    font-size: 11px;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.feature-name { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600; background: #faf9f6; }
+  .check { color: var(--green); font-weight: 700; font-size: 14px; }
+  .cross { color: var(--red); font-weight: 700; font-size: 14px; }
+  .partial { color: var(--gold); font-weight: 700; font-size: 14px; }
+  td.you-col { background: #fff8f6; }
+
+  /* PRICING TABLE */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .price-card {
+    border: 1px solid var(--border);
+    background: var(--card);
+    padding: 24px;
+    position: relative;
+  }
+  .price-card.featured { border-color: var(--accent); background: #fff8f6; }
+  .price-card.featured::before {
+    content: 'COMPETITOR';
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: white;
+    font-size: 8px;
+    padding: 2px 10px;
+    letter-spacing: 0.1em;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+  }
+  .price-brand { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .price-model { font-size: 9px; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; }
+  .price-main { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; margin-bottom: 4px; }
+  .price-sub { font-size: 10px; color: var(--muted); margin-bottom: 16px; }
+  .price-per-call { font-size: 10px; padding: 6px 10px; background: var(--paper); border: 1px solid var(--border); margin-bottom: 16px; }
+  .price-items { list-style: none; }
+  .price-items li { font-size: 10px; color: var(--muted); padding: 3px 0; display: flex; gap: 6px; }
+  .price-items li::before { content: '→'; color: var(--accent); }
+
+  /* OPPORTUNITY BLOCKS */
+  .opp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
+  .opp-card { padding: 28px; border: 1px solid var(--border); background: var(--card); }
+  .opp-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--border);
+    margin-bottom: 12px;
+    line-height: 1;
+  }
+  .opp-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .opp-desc { font-size: 11px; color: var(--muted); line-height: 1.7; }
+  .opp-tag { display: inline-block; margin-top: 12px; padding: 3px 10px; font-size: 9px; font-family: 'Syne', sans-serif; font-weight: 700; letter-spacing: 0.1em; background: var(--ink); color: var(--paper); }
+
+  /* POSITIONING MAP */
+  .pos-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 32px;
+    margin-bottom: 40px;
+    position: relative;
+  }
+  .pos-map {
+    width: 100%;
+    height: 420px;
+    position: relative;
+    border-bottom: 2px solid var(--border);
+    border-left: 2px solid var(--border);
+  }
+  .axis-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+  }
+  .axis-x { position: absolute; bottom: -28px; right: 0; }
+  .axis-y { position: absolute; top: 0; left: -28px; transform: rotate(-90deg) translateX(-50%); transform-origin: left center; white-space: nowrap; }
+  .dot {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    transform: translate(-50%, 50%);
+    cursor: pointer;
+  }
+  .dot-label {
+    position: absolute;
+    font-size: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    white-space: nowrap;
+    transform: translate(-50%, 0);
+    top: -20px;
+  }
+  .dot-sub {
+    position: absolute;
+    font-size: 8px;
+    color: var(--muted);
+    white-space: nowrap;
+    transform: translate(-50%, 0);
+    top: -34px;
+    letter-spacing: 0.05em;
+  }
+
+  /* GAP ANALYSIS */
+  .gap-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 40px; }
+  .gap-item {
+    border: 1px solid var(--border);
+    background: var(--card);
+    padding: 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .gap-sev {
+    width: 4px;
+    align-self: stretch;
+    flex-shrink: 0;
+  }
+  .sev-high { background: var(--red); }
+  .sev-med { background: var(--gold); }
+  .sev-low { background: var(--green); }
+  .gap-content {}
+  .gap-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+  .gap-desc { font-size: 11px; color: var(--muted); line-height: 1.7; }
+  .gap-action { margin-top: 10px; font-size: 10px; color: var(--accent2); font-family: 'Syne', sans-serif; font-weight: 600; }
+
+  /* MONETIZATION */
+  .mono-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+  .mono-table th {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 10px 16px;
+    text-align: left;
+  }
+  .mono-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    vertical-align: top;
+  }
+  .mono-table tr:hover td { background: #faf9f6; }
+  .rev-tag { display: inline-block; padding: 1px 8px; font-size: 9px; font-family: 'Syne', sans-serif; font-weight: 700; letter-spacing: 0.05em; }
+  .rev-b2b { background: #e2ecfd; color: var(--accent2); }
+  .rev-b2c { background: #fde8e2; color: var(--red); }
+  .rev-api { background: #e2fded; color: var(--green); }
+  .rev-plat { background: #f5f0e2; color: #7a5e00; }
+
+  /* FOOTER */
+  footer {
+    background: var(--ink);
+    color: rgba(245,243,238,0.4);
+    padding: 32px 60px;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 80px;
+  }
+  footer span { color: var(--accent); }
+
+  /* SWOT */
+  .swot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-bottom: 40px; }
+  .swot-cell { padding: 28px 32px; }
+  .swot-s { background: #e8f5ef; border: 1px solid #b5dfc8; }
+  .swot-w { background: #fdf0ee; border: 1px solid #f5c0b5; }
+  .swot-o { background: #edf2fd; border: 1px solid #b5c8f5; }
+  .swot-t { background: #fdf8e8; border: 1px solid #f5e8b5; }
+  .swot-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .swot-icon { font-size: 18px; }
+  .swot-items { list-style: none; }
+  .swot-items li { font-size: 11px; padding: 4px 0; display: flex; gap: 8px; }
+  .swot-items li::before { content: '•'; font-weight: 900; }
+  .swot-s .swot-items li::before { color: var(--green); }
+  .swot-w .swot-items li::before { color: var(--red); }
+  .swot-o .swot-items li::before { color: var(--accent2); }
+  .swot-t .swot-items li::before { color: var(--gold); }
+
+  @media print {
+    body { font-size: 11px; }
+    header { padding: 32px 40px; }
+    .container { padding: 0 40px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-tag">ExternalOpinion.it — Report riservato · Maggio 2026</div>
+  <h1>Analisi Competitiva<br><em>AI Real Estate</em> 2026</h1>
+  <div class="header-meta">
+    <div class="meta-item">
+      <div class="meta-label">Mercato AI RE globale 2026</div>
+      <div class="meta-val accent">$404.9B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">CAGR 2026→2030</div>
+      <div class="meta-val blue">+33.9%</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Competitor analizzati</div>
+      <div class="meta-val gold">14</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Gap opportunità Italia</div>
+      <div class="meta-val accent">ALTO</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Target mercato IT</div>
+      <div class="meta-val">~€2.1B</div>
+    </div>
+  </div>
+</header>
+
+<div class="market-strip">
+  <div class="strip-item">
+    <div class="strip-num r">750K</div>
+    <div class="strip-label">compravendite Italia 2025</div>
+  </div>
+  <div class="strip-item">
+    <div class="strip-num b">€2.179</div>
+    <div class="strip-label">prezzo medio/mq Italia mar 2026 (+4.31% YoY)</div>
+  </div>
+  <div class="strip-item">
+    <div class="strip-num g">107gg</div>
+    <div class="strip-label">tempo medio vendita grandi città</div>
+  </div>
+  <div class="strip-item">
+    <div class="strip-num r">7.6%</div>
+    <div class="strip-label">sconto medio trattativa 2025</div>
+  </div>
+  <div class="strip-item">
+    <div class="strip-num b">92%</div>
+    <div class="strip-label">CRE firms che adottano AI 2026</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- COMPETITOR MAP -->
+  <div class="section">
+    <div class="section-label">01 — Landscape</div>
+    <div class="section-title">Mappa Competitor per Segmento</div>
+
+    <div class="comp-grid">
+      <div class="comp-header">
+        <div>Azienda</div>
+        <div>Posizionamento</div>
+        <div>Funding</div>
+        <div>Modello</div>
+        <div>Copertura</div>
+        <div>Tier</div>
+      </div>
+
+      <!-- TIER 1: Direct Global -->
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">HouseCanary</div>
+          <div class="comp-country">🇺🇸 USA · AVM leader</div>
+        </div>
+        <div class="comp-desc">AVM istituzionale su 120M+ immobili USA. Confidence score, forecast 36 mesi, API per lenders/fondi. Gold-standard settore.</div>
+        <div class="comp-funding">Custom</div>
+        <div class="comp-model">API + SaaS<br>$0.30–$6/call</div>
+        <div class="comp-gap">USA only<br>No IT</div>
+        <div><span class="tier tier-1">TIER 1</span></div>
+      </div>
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">CoreLogic / Cotality</div>
+          <div class="comp-country">🇺🇸 USA · 50+ anni dati</div>
+        </div>
+        <div class="comp-desc">Total Home ValueX: AVM single-model, 99% accuratezza, 3.9% YoY, 3B record storici, 99.9% copertura USA.</div>
+        <div class="comp-funding">Enterprise</div>
+        <div class="comp-model">Licenza bulk<br>Enterprise only</div>
+        <div class="comp-gap">USA/AU<br>No EU</div>
+        <div><span class="tier tier-1">TIER 1</span></div>
+      </div>
+
+      <!-- TIER 1: EU Competitor -->
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">PriceHubble</div>
+          <div class="comp-country">🇨🇭 CH/EU · Series B</div>
+        </div>
+        <div class="comp-desc">Data-driven valuation EU. Partnership TECMA per Italia. Dati transazioni, listing, demografia, location. €34M funding. Swiss Life investor.</div>
+        <div class="comp-funding">€34M</div>
+        <div class="comp-model">B2B SaaS<br>API white-label</div>
+        <div class="comp-gap">IT presente<br>via partner</div>
+        <div><span class="tier tier-1">TIER 1</span></div>
+      </div>
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">OneDome</div>
+          <div class="comp-country">🇬🇧 UK · Series B</div>
+        </div>
+        <div class="comp-desc">Analytics + workflow tools per professionisti RE. Dati da registri comunali integrati nei listing. $46.9M funding. Channel 4 Ventures.</div>
+        <div class="comp-funding">$46.9M</div>
+        <div class="comp-model">SaaS RE<br>Pro workflow</div>
+        <div class="comp-gap">UK focus<br>No IT</div>
+        <div><span class="tier tier-1">TIER 1</span></div>
+      </div>
+
+      <!-- TIER 2: Italy Direct -->
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">Casavo</div>
+          <div class="comp-country">🇮🇹 Milano · Proptech IT</div>
+        </div>
+        <div class="comp-desc">iBuyer→Marketplace. EVA Valuation Flow: stima FMV real-time. $817M raised totale. Pivot da iBuyer a marketplace con servizi integrati.</div>
+        <div class="comp-funding">$817M</div>
+        <div class="comp-model">Marketplace<br>Fee transazione</div>
+        <div class="comp-gap">IT/ES/FR<br>B2C focus</div>
+        <div><span class="tier tier-2">TIER 2</span></div>
+      </div>
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">Wikicasa.it</div>
+          <div class="comp-country">🇮🇹 Milano · Proptech IT</div>
+        </div>
+        <div class="comp-desc">Portale annunci + data providing B2B. Quotazioni per zona, mortgage, valutazioni. Partner Sotheby's &amp; Century 21. ~$5M revenue.</div>
+        <div class="comp-funding">$3.3M</div>
+        <div class="comp-model">Portal + B2B<br>Data licensing</div>
+        <div class="comp-gap">IT only<br>Bassa AI</div>
+        <div><span class="tier tier-2">TIER 2</span></div>
+      </div>
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">idealista/data</div>
+          <div class="comp-country">🇪🇸 ES con IT presenza</div>
+        </div>
+        <div class="comp-desc">Analisi zone investimento, valutazione assets. Report prezzi con tech proprietaria. Forte distribuzione agenzie IT tramite portale idealista.</div>
+        <div class="comp-funding">N/D</div>
+        <div class="comp-model">SaaS + Portal<br>B2B report</div>
+        <div class="comp-gap">IT presente<br>No AI report</div>
+        <div><span class="tier tier-2">TIER 2</span></div>
+      </div>
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">Tecnocasa (ufficio studi)</div>
+          <div class="comp-country">🇮🇹 Network 12.000+ agenzie</div>
+        </div>
+        <div class="comp-desc">Dati transazionali reali dal network. Report mercato semestrali. Nessuna API pubblica. Monopolio dati granulari IT ma zero monetizzazione data.</div>
+        <div class="comp-funding">Privata</div>
+        <div class="comp-model">Interno<br>No API</div>
+        <div class="comp-gap">IT dominante<br>Zero AI</div>
+        <div><span class="tier tier-2">TIER 2</span></div>
+      </div>
+
+      <!-- TIER 3: US mid -->
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">ATTOM Data</div>
+          <div class="comp-country">🇺🇸 Mid-market API</div>
+        </div>
+        <div class="comp-desc">158M proprietà USA. Tax, deed, valuation. $95/mese entry. Enterprise per volume. Mid-market tra consumer e istituzionale.</div>
+        <div class="comp-funding">N/D</div>
+        <div class="comp-model">API tiered<br>da $95/mo</div>
+        <div class="comp-gap">USA only</div>
+        <div><span class="tier tier-3">TIER 3</span></div>
+      </div>
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">Cherre / Agent.STUDIO</div>
+          <div class="comp-country">🇺🇸 Enterprise AI</div>
+        </div>
+        <div class="comp-desc">100+ connettori dati RE. AI analytics + automazione 2025. Platform per enterprise CRE con integrazione sistemi esistenti.</div>
+        <div class="comp-funding">N/D</div>
+        <div class="comp-model">Enterprise<br>Custom</div>
+        <div class="comp-gap">USA/globale<br>No IT</div>
+        <div><span class="tier tier-3">TIER 3</span></div>
+      </div>
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">AppFolio AI</div>
+          <div class="comp-country">🇺🇸 Property Mgmt</div>
+        </div>
+        <div class="comp-desc">AI per property management mid-size. +46% efficienza operativa dichiarata. Focalizzato su PM, non valutazione pura.</div>
+        <div class="comp-funding">Quotata</div>
+        <div class="comp-model">SaaS PM<br>Subscription</div>
+        <div class="comp-gap">USA only<br>No valuation</div>
+        <div><span class="tier tier-3">TIER 3</span></div>
+      </div>
+
+      <!-- YOU -->
+      <div class="comp-row highlight">
+        <div>
+          <div class="comp-name">ExternalOpinion</div>
+          <div class="comp-country">🇮🇹 Italia · AI-native</div>
+        </div>
+        <div class="comp-desc">Piattaforma AI multi-agent per perizie/valutazioni immobiliari IT. Scoring proprietario, report AI, RAG, async pipeline. Stack Node.js+Python+Prisma.</div>
+        <div class="comp-funding">Bootstrap</div>
+        <div class="comp-model">SaaS B2B<br>+ API + Report</div>
+        <div class="comp-gap">IT primo<br>AI-native</div>
+        <div><span class="tier tier-x">YOU</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FEATURE MATRIX -->
+  <div class="section">
+    <div class="section-label">02 — Feature Comparison</div>
+    <div class="section-title">Matrice Funzionalità Chiave</div>
+
+    <div class="feature-matrix">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:220px">Feature</th>
+            <th class="you">ExternalOpinion</th>
+            <th>HouseCanary</th>
+            <th>PriceHubble</th>
+            <th>Casavo EVA</th>
+            <th>Wikicasa</th>
+            <th>idealista/data</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="feature-name">AVM Automatico</td>
+            <td class="you-col"><span class="partial">◑</span> In build</td>
+            <td><span class="check">✓</span> Gold std</td>
+            <td><span class="check">✓</span> EU leader</td>
+            <td><span class="check">✓</span> IT/ES</td>
+            <td><span class="partial">◑</span> Base</td>
+            <td><span class="partial">◑</span> Zona</td>
+          </tr>
+          <tr>
+            <td class="feature-name">Report AI Narrativo</td>
+            <td class="you-col"><span class="check">✓</span> Core feature</td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">Multi-Agent AI Pipeline</td>
+            <td class="you-col"><span class="check">✓</span> Core arch</td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">RAG su dati catastali IT</td>
+            <td class="you-col"><span class="check">✓</span> Modulo</td>
+            <td><span class="cross">✗</span> No IT</td>
+            <td><span class="partial">◑</span> Parziale</td>
+            <td><span class="partial">◑</span> Parziale</td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">Perizia tecnica (aste/CTU)</td>
+            <td class="you-col"><span class="check">✓</span> CARICO_ASTE</td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">Scoring proprietario</td>
+            <td class="you-col"><span class="check">✓</span> geometry_engine</td>
+            <td><span class="check">✓</span> Confidence</td>
+            <td><span class="check">✓</span></td>
+            <td><span class="partial">◑</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">API pubblica</td>
+            <td class="you-col"><span class="partial">◑</span> Roadmap</td>
+            <td><span class="check">✓</span> $0.30-$6/call</td>
+            <td><span class="check">✓</span> B2B</td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="partial">◑</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">White-label / Embed</td>
+            <td class="you-col"><span class="partial">◑</span> Roadmap</td>
+            <td><span class="check">✓</span></td>
+            <td><span class="check">✓</span> Core</td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="check">✓</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">Async queue (BullMQ)</td>
+            <td class="you-col"><span class="check">✓</span></td>
+            <td><span class="cross">✗</span> N/D</td>
+            <td><span class="cross">✗</span> N/D</td>
+            <td><span class="cross">✗</span> N/D</td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">Copertura mercato IT</td>
+            <td class="you-col"><span class="check">✓</span> Target primario</td>
+            <td><span class="cross">✗</span> USA only</td>
+            <td><span class="partial">◑</span> Via partner</td>
+            <td><span class="check">✓</span></td>
+            <td><span class="check">✓</span></td>
+            <td><span class="check">✓</span></td>
+          </tr>
+          <tr>
+            <td class="feature-name">Conformità normativa IT</td>
+            <td class="you-col"><span class="check">✓</span> By design</td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="partial">◑</span></td>
+            <td><span class="partial">◑</span></td>
+            <td><span class="check">✓</span></td>
+            <td><span class="check">✓</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PRICING BENCHMARK -->
+  <div class="section">
+    <div class="section-label">03 — Pricing Benchmark</div>
+    <div class="section-title">Modelli di Pricing nel Settore</div>
+
+    <div class="pricing-grid">
+      <div class="price-card featured">
+        <div class="price-brand">HouseCanary</div>
+        <div class="price-model">API per-call · USA</div>
+        <div class="price-main">$19<span style="font-size:14px;color:var(--muted)">/mo</span></div>
+        <div class="price-sub">entry tier individuale</div>
+        <div class="price-per-call">API: $0.30 – $6.00 per call · endpoint-based</div>
+        <ul class="price-items">
+          <li>AVM mensile aggiornato</li>
+          <li>Forecast 36 mesi</li>
+          <li>Confidence score incluso</li>
+          <li>Volume: bulk custom</li>
+        </ul>
+      </div>
+
+      <div class="price-card">
+        <div class="price-brand">ATTOM Data</div>
+        <div class="price-model">API tiered · USA</div>
+        <div class="price-main">$95<span style="font-size:14px;color:var(--muted)">/mo</span></div>
+        <div class="price-sub">entry · 158M proprietà</div>
+        <div class="price-per-call">Enterprise: custom negotiation</div>
+        <ul class="price-items">
+          <li>Tax + deed + valuation</li>
+          <li>Mid-market target</li>
+          <li>Bulk licensing required</li>
+          <li>No EU coverage</li>
+        </ul>
+      </div>
+
+      <div class="price-card">
+        <div class="price-brand">PriceHubble</div>
+        <div class="price-model">B2B SaaS · EU</div>
+        <div class="price-main">Custom</div>
+        <div class="price-sub">enterprise/white-label</div>
+        <div class="price-per-call">Licensing per paese + integration fee</div>
+        <ul class="price-items">
+          <li>White-label per banche/agenzie</li>
+          <li>Data-driven EU</li>
+          <li>Partnership TECMA IT</li>
+          <li>No self-serve</li>
+        </ul>
+      </div>
+
+      <div class="price-card">
+        <div class="price-brand">Wikicasa / idealista</div>
+        <div class="price-model">Portal + data IT</div>
+        <div class="price-main">€99+<span style="font-size:14px;color:var(--muted)">/mo</span></div>
+        <div class="price-sub">abbonamento agenzie</div>
+        <div class="price-per-call">Data B2B: custom · no API pubblica</div>
+        <ul class="price-items">
+          <li>Listing visibility focus</li>
+          <li>Report di zona base</li>
+          <li>Nessun AI avanzato</li>
+          <li>No perizie tecniche</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- POSITIONING MAP -->
+  <div class="section">
+    <div class="section-label">04 — Posizionamento</div>
+    <div class="section-title">Mappa Posizionamento: AI Depth vs Copertura IT</div>
+
+    <div class="pos-container">
+      <div class="pos-map" id="posMap">
+        <!-- Axis labels -->
+        <div class="axis-label axis-x">Copertura Mercato Italiano →</div>
+        <div class="axis-label axis-y">← Profondità AI / Tecnologia</div>
+
+        <!-- Competitors positioned -->
+        <!-- HouseCanary: High AI, Low IT -->
+        <div class="dot" style="background:#c8441b;left:8%;bottom:85%">
+          <div class="dot-sub">BENCHMARK</div>
+          <div class="dot-label">HouseCanary</div>
+        </div>
+        <!-- CoreLogic: High AI, Very Low IT -->
+        <div class="dot" style="background:#c8441b;left:5%;bottom:80%">
+          <div class="dot-label" style="top:-20px">CoreLogic</div>
+        </div>
+        <!-- PriceHubble: Medium AI, Medium IT -->
+        <div class="dot" style="background:#1b6ec8;left:45%;bottom:65%">
+          <div class="dot-sub">EU LEADER</div>
+          <div class="dot-label">PriceHubble</div>
+        </div>
+        <!-- Casavo: Medium AI, High IT -->
+        <div class="dot" style="background:#c8a41b;left:75%;bottom:45%">
+          <div class="dot-sub">$817M</div>
+          <div class="dot-label">Casavo</div>
+        </div>
+        <!-- Wikicasa: Low AI, High IT -->
+        <div class="dot" style="background:#6b6860;left:80%;bottom:20%">
+          <div class="dot-label">Wikicasa</div>
+        </div>
+        <!-- idealista: Low AI, High IT -->
+        <div class="dot" style="background:#6b6860;left:88%;bottom:25%">
+          <div class="dot-label">idealista/data</div>
+        </div>
+        <!-- Tecnocasa: Very Low AI, Very High IT data -->
+        <div class="dot" style="background:#6b6860;left:92%;bottom:10%">
+          <div class="dot-label">Tecnocasa</div>
+        </div>
+        <!-- ExternalOpinion: High AI, High IT — TARGET QUADRANT -->
+        <div class="dot" style="background:#c8441b;width:18px;height:18px;left:78%;bottom:78%;box-shadow:0 0 20px rgba(200,68,27,0.5)">
+          <div class="dot-sub" style="font-weight:700;color:var(--accent)">TARGET QUADRANT</div>
+          <div class="dot-label" style="font-family:&#39;Syne&#39;,sans-serif;font-weight:800;color:var(--accent);font-size:12px">ExternalOpinion ★</div>
+        </div>
+
+        <!-- Quadrant lines -->
+        <div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--border);border-left:1px dashed var(--border)"></div>
+        <div style="position:absolute;left:0;right:0;bottom:50%;height:1px;background:var(--border);border-top:1px dashed var(--border)"></div>
+
+        <!-- Quadrant labels -->
+        <div style="position:absolute;right:24px;top:16px;font-size:9px;letter-spacing:0.1em;color:var(--muted);font-family:&#39;Syne&#39;,sans-serif">HIGH AI + HIGH IT = BLUE OCEAN</div>
+        <div style="position:absolute;left:24px;top:16px;font-size:9px;letter-spacing:0.1em;color:var(--muted);font-family:&#39;Syne&#39;,sans-serif">HIGH AI + NO IT</div>
+        <div style="position:absolute;right:24px;bottom:24px;font-size:9px;letter-spacing:0.1em;color:var(--muted);font-family:&#39;Syne&#39;,sans-serif">LOW AI + HIGH IT = Traditional</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAP ANALYSIS -->
+  <div class="section">
+    <div class="section-label">05 — Gap Analysis</div>
+    <div class="section-title">Gap Critici da Colmare per Competere</div>
+
+    <div class="gap-list">
+      <div class="gap-item">
+        <div class="gap-sev sev-high"></div>
+        <div class="gap-content">
+          <div class="gap-title">AVM Italia: Dati Transazionali Reali</div>
+          <div class="gap-desc">HouseCanary/Cotality si basano su dati transazionali reali (atti notarili, catasto). In Italia i dati OMI (Agenzia Entrate) sono parzialmente pubblici ma grezzi. Senza integrazione OMI/catasto, l'AVM ha bassa accuratezza vs competitor EU.</div>
+          <div class="gap-action">→ Integrazione API Agenzia Entrate OMI + scraping zone catastali</div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gap-sev sev-high"></div>
+        <div class="gap-content">
+          <div class="gap-title">Confidence Score &amp; Explainability</div>
+          <div class="gap-desc">HouseCanary pubblica confidence score per ogni valutazione. È il KPI #1 per lenders/fondi. Senza un confidence score calibrato e auditabile, il prodotto non è vendibile al segmento B2B istituzionale (banche, SGR, fondi).</div>
+          <div class="gap-action">→ Implementare scoring Bayesiano con intervallo di confidenza esplicito nel report</div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gap-sev sev-high"></div>
+        <div class="gap-content">
+          <div class="gap-title">API Pubblica Documentata</div>
+          <div class="gap-desc">Tutti i competitor Tier 1 hanno API REST documentata con pricing per-call. Senza API pubblica, il mercato B2B tech (agenzie digitali, proptech, lenders) non può integrarti. È il canale a margine più alto.</div>
+          <div class="gap-action">→ OpenAPI spec + developer portal + pricing tier entro MVP</div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gap-sev sev-med"></div>
+        <div class="gap-content">
+          <div class="gap-title">White-label per Banche/Agenzie</div>
+          <div class="gap-desc">PriceHubble cresce principalmente via white-label B2B (banche, assicurazioni, network agenzie). È il modello ad ARR più alto e churn più basso. Richiede branding customizzabile, SLA garantiti, contratti annuali.</div>
+          <div class="gap-action">→ White-label mode: theme custom + tenant isolation in Prisma + SLA 99.9%</div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gap-sev sev-med"></div>
+        <div class="gap-content">
+          <div class="gap-title">Forecast Temporale (trend 12-36 mesi)</div>
+          <div class="gap-desc">HouseCanary offre forecast proprietari a 36 mesi per ZIP code. Differenziale forte con competitor IT (Wikicasa/idealista mostrano solo storico). Con i dati Tecnocasa/OMI si può costruire un modello predittivo per province IT.</div>
+          <div class="gap-action">→ Time-series model (Prophet/ARIMA) su zone catastali per forecast 12M</div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gap-sev sev-med"></div>
+        <div class="gap-content">
+          <div class="gap-title">Volume Processing &amp; Batch API</div>
+          <div class="gap-desc">I fondi RE e i servicer di NPL/UTP devono valutare portafogli da 100-10.000 asset in batch. CoreLogic/HouseCanary hanno bulk API. BullMQ è già in stack: manca l'interfaccia batch upload + report multipli + CSV export.</div>
+          <div class="gap-action">→ Batch endpoint: POST /valuations/bulk + webhook completion + CSV/Excel export</div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gap-sev sev-low"></div>
+        <div class="gap-content">
+          <div class="gap-title">Certificazione / Firma Digitale Perizie</div>
+          <div class="gap-desc">Per CTU, banche e procedure esecutive, la perizia deve essere firmata digitalmente da un perito abilitato. Il tool può generare la bozza AI e il perito firma: modello "AI-assisted appraisal" già usato in UK da OneDome.</div>
+          <div class="gap-action">→ Integrazione firma digitale (DocuSign/Namirial) + workflow approvazione perito</div>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gap-sev sev-low"></div>
+        <div class="gap-content">
+          <div class="gap-title">Benchmark Comparabili (Comparable Sales)</div>
+          <div class="gap-desc">Ogni valutazione professionale richiede comparabili espliciti. Il geometry_engine può calcolare la distanza, ma i comparabili devono essere recuperati da un database annunci storici (Immobiliare.it, Idealista archivi) e presentati nel report.</div>
+          <div class="gap-action">→ Comparable sales engine: clustering per zona+tipologia+epoca + display in report</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MONETIZATION STRATEGY -->
+  <div class="section">
+    <div class="section-label">06 — Monetizzazione</div>
+    <div class="section-title">Revenue Streams Prioritizzati per ExternalOpinion</div>
+
+    <table class="mono-table">
+      <thead>
+        <tr>
+          <th style="width:180px">Stream</th>
+          <th style="width:80px">Tipo</th>
+          <th style="width:160px">Pricing Benchmark</th>
+          <th style="width:140px">Target Cliente</th>
+          <th style="width:100px">Time-to-Rev</th>
+          <th>Note Strategiche</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Report AI on-demand</strong></td>
+          <td><span class="rev-tag rev-b2c">B2C/B2B</span></td>
+          <td>€29 – €149/report</td>
+          <td>Privati, agenti, CTU</td>
+          <td><strong style="color:var(--green)">Immediato</strong></td>
+          <td>Prodotto MVP vendibile ora. Perizie aste: €79-149 per lotto. Alto margine, nessun costo fisso oltre LLM.</td>
+        </tr>
+        <tr>
+          <td><strong>SaaS Subscription B2B</strong></td>
+          <td><span class="rev-tag rev-b2b">B2B</span></td>
+          <td>€199–€999/mo (agenzie, studi)</td>
+          <td>Agenzie, studi peritali</td>
+          <td><strong style="color:var(--gold)">1-3 mesi</strong></td>
+          <td>Bundle: X report/mese + dashboard. Churn basso se integrato nel workflow. ACV €2.4K–€12K.</td>
+        </tr>
+        <tr>
+          <td><strong>API per-call</strong></td>
+          <td><span class="rev-tag rev-api">API</span></td>
+          <td>€0.50–€5.00/call</td>
+          <td>Proptech, fintech, lenders</td>
+          <td><strong style="color:var(--gold)">2-4 mesi</strong></td>
+          <td>HouseCanary benchmark: $0.30–$6. Endpoint: AVM, scoring, report. Developer-first. Scalabile a volume.</td>
+        </tr>
+        <tr>
+          <td><strong>White-label Enterprise</strong></td>
+          <td><span class="rev-tag rev-b2b">B2B</span></td>
+          <td>€2.000–€10.000/mo</td>
+          <td>Banche, SGR, servicer NPL</td>
+          <td><strong style="color:var(--red)">4-9 mesi</strong></td>
+          <td>ARR più alto. Richiede SLA 99.9%, audit trail, firma digitale. Mercato NPL/UTP IT in crescita.</td>
+        </tr>
+        <tr>
+          <td><strong>Batch / Portfolio Valuation</strong></td>
+          <td><span class="rev-tag rev-plat">PLATFORM</span></td>
+          <td>€0.30–€1.50/asset (volume)</td>
+          <td>Fondi RE, servicer, SGR</td>
+          <td><strong style="color:var(--red)">3-6 mesi</strong></td>
+          <td>Un deal da 500 asset = €150–€750 per run. Fondi riballano portafogli ogni trimestre. Revenue ricorrente.</td>
+        </tr>
+        <tr>
+          <td><strong>Data Licensing</strong></td>
+          <td><span class="rev-tag rev-api">DATA</span></td>
+          <td>Custom annuale</td>
+          <td>Università, media, govtech</td>
+          <td><strong style="color:var(--red)">6-12 mesi</strong></td>
+          <td>Solo se accumuli dati proprietari significativi. Long-term moat. Non prioritizzare ora.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SWOT -->
+  <div class="section">
+    <div class="section-label">07 — SWOT vs Competitor</div>
+    <div class="section-title">Analisi SWOT Competitiva ExternalOpinion</div>
+
+    <div class="swot-grid">
+      <div class="swot-cell swot-s">
+        <div class="swot-label"><span class="swot-icon">◆</span> Strengths</div>
+        <ul class="swot-items">
+          <li>Unico AI-native con pipeline multi-agent per perizie IT</li>
+          <li>Modulo aste/CTU non replicato da nessun competitor</li>
+          <li>Stack moderno (Node/Python/BullMQ/Redis) vs legacy competitor</li>
+          <li>Copertura normativa italiana by design</li>
+          <li>Costi infrastruttura bassi (Railway, startup costs)</li>
+          <li>Time-to-market rapido senza burocrazia enterprise</li>
+        </ul>
+      </div>
+      <div class="swot-cell swot-w">
+        <div class="swot-label"><span class="swot-icon">◇</span> Weaknesses</div>
+        <ul class="swot-items">
+          <li>Nessun dato transazionale proprietario (dipendenza esterna)</li>
+          <li>AVM non ancora calibrato su scala nazionale</li>
+          <li>Nessuna API pubblica documentata oggi</li>
+          <li>Budget limitato per crescita e marketing</li>
+          <li>Brand awareness zero vs competitor consolidati</li>
+          <li>Team size: rischio esecuzione su roadmap ambiziosa</li>
+        </ul>
+      </div>
+      <div class="swot-cell swot-o">
+        <div class="swot-label"><span class="swot-icon">◈</span> Opportunities</div>
+        <ul class="swot-items">
+          <li>Mercato NPL/UTP IT: €40B+ di crediti in workout (banche)</li>
+          <li>750K compravendite/anno in Italia: enorme volume potenziale</li>
+          <li>Nessun competitor AI-native puro nel mercato IT</li>
+          <li>AI Act EU: compliance-first è vantaggio vs US player</li>
+          <li>Digitalizzazione catasto/OMI: dati sempre più accessibili</li>
+          <li>Agenzie RE: 37K+ in Italia, ancora su processi manuali</li>
+        </ul>
+      </div>
+      <div class="swot-cell swot-t">
+        <div class="swot-label"><span class="swot-icon">◉</span> Threats</div>
+        <ul class="swot-items">
+          <li>PriceHubble può accelerare su IT con partner locali (già TECMA)</li>
+          <li>Casavo può pivotare verso B2B data con il suo patrimonio dati</li>
+          <li>Immobiliare.it / Idealista possono lanciare feature AI</li>
+          <li>LLM commodity: il report AI diventa replicabile facilmente</li>
+          <li>Regolazione AI Act può rallentare feature automatizzate</li>
+          <li>Consolidamento mercato: M&amp;A riduce spazio indie player</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPPORTUNITIES -->
+  <div class="section">
+    <div class="section-label">08 — Opportunità Blue Ocean</div>
+    <div class="section-title">Segmenti Non Serviti dai Competitor</div>
+
+    <div class="opp-grid">
+      <div class="opp-card">
+        <div class="opp-num">01</div>
+        <div class="opp-title">Perizie per Procedure Esecutive (Aste)</div>
+        <div class="opp-desc">In Italia ci sono ~80.000 procedure esecutive immobiliari/anno. Ogni CTU deve produrre una perizia tecnica. Zero competitor offre AI per questo. Il modulo CARICO_ASTE è già in stack. Mercato captive ad altissimo ticket (€500-2.000/perizia).</div>
+        <div class="opp-tag">QUICKWIN MVP</div>
+      </div>
+      <div class="opp-card">
+        <div class="opp-num">02</div>
+        <div class="opp-title">Portfolio NPL/UTP per Banche e Servicer</div>
+        <div class="opp-desc">I servicer di crediti deteriorati (Prelios, doValue, Cerved) devono valutare migliaia di collaterali RE. Nessun player IT offre bulk AI valuation. Un contratto con un servicer vale €50K-€500K/anno. BullMQ + batch API è la chiave.</div>
+        <div class="opp-tag">HIGH VALUE</div>
+      </div>
+      <div class="opp-card">
+        <div class="opp-num">03</div>
+        <div class="opp-title">AI-Assisted Appraisal per Peritale</div>
+        <div class="opp-desc">Modello "AI draft + human sign-off": il perito genera la bozza in 2 min con AI, la rivede e firma digitalmente. Dimezza i tempi, raddoppia il volume di pratiche. Nessun competitor italiano ha pensato a questo workflow ibrido.</div>
+        <div class="opp-tag">DIFFERENZIANTE</div>
+      </div>
+      <div class="opp-card">
+        <div class="opp-num">04</div>
+        <div class="opp-title">White-label per Agenzie Franchise</div>
+        <div class="opp-desc">Reti come RE/MAX, Coldwell Banker, Keller Williams IT hanno migliaia di agenti che fanno CMA manuali. Un white-label a €199-499/sede/mese con 500 sedi = €100K-250K MRR. PriceHubble va sulle banche: tu puoi andare sulle agenzie.</div>
+        <div class="opp-tag">SCALABILE</div>
+      </div>
+      <div class="opp-card">
+        <div class="opp-num">05</div>
+        <div class="opp-title">Compliance AI Act per Valutazioni</div>
+        <div class="opp-desc">L'AI Act EU classifica i sistemi AI per valutazioni finanziarie/RE come "high risk". Competitor US (HouseCanary) non sono compliant EU. Chi costruisce explainability + audit trail ora ha vantaggio regolatorio 2-3 anni vs incumbent.</div>
+        <div class="opp-tag">MOAT REGOLATORIO</div>
+      </div>
+      <div class="opp-card">
+        <div class="opp-num">06</div>
+        <div class="opp-title">Due Diligence RE per M&amp;A e Fondi</div>
+        <div class="opp-desc">I fondi RE fanno due diligence su portafogli prima di acquisizioni. Oggi è un processo manuale con spreadsheet. Un report AI che integra AVM + analisi rischio + comparabili + forecast vale €2.000-10.000 per portafoglio. Mercato non toccato.</div>
+        <div class="opp-tag">HIGH TICKET</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div>ExternalOpinion.it · Analisi Competitiva AI Real Estate · <span>Maggio 2026</span> · Riservato</div>
+  <div>Dati: Research &amp; Markets, CBInsights, Prospeo, HouseCanary, PriceHubble, Immobiliare.it, Tecnocasa, Casavo</div>
+</footer>
+
+
+
+</body></html>

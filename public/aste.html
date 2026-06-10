@@ -3,635 +3,453 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Analisi Asta Giudiziaria — External Opinion</title>
-<meta name="description" content="Inserisci l'URL dell'asta: ottieni subito Risk Score e segnali principali gratis. Sblocca ROI, cash flow e massimale d'offerta per € 69.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<title>Perizia Asta Giudiziaria — External Opinion</title>
+<meta name="description" content="Valutazione automatica immobili per aste giudiziarie. €79 per report completo. Entro 2-4 ore.">
 <style>
 :root {
-  --cream: #F5F0E8;
-  --ink: #1A1612;
-  --warm-gray: #8C8279;
-  --accent: #C8A96E;
-  --accent-dark: #9E7E45;
-  --border: rgba(26,22,18,0.12);
-  --yellow: #D4AC0D;
-  --green: #1E8449;
-  --red: #C0392B;
+  --bg: #0c0e14;
+  --surface: #131620;
+  --surface2: #1a1e2e;
+  --border: #252a3e;
+  --text: #e8eaf2;
+  --muted: #6b7194;
+  --accent: #00e5a0;
+  --danger: #ef4444;
 }
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { background: var(--cream); color: var(--ink); font-family: 'Instrument Sans', sans-serif; font-size: 15px; line-height: 1.6; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.container { max-width: 600px; margin: 0 auto; padding: 4rem 2rem; }
 
 /* NAV */
 nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 1.25rem 3rem;
-  background: rgba(245,240,232,0.95); backdrop-filter: blur(12px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(12, 14, 20, 0.95);
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
-}
-.nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; color: var(--ink); }
-.nav-back { font-size: 0.82rem; color: var(--warm-gray); text-decoration: none; letter-spacing: 0.04em; }
-.nav-back:hover { color: var(--ink); }
-
-.container { max-width: 680px; margin: 0 auto; padding: 7rem 2rem 5rem; }
-
-/* ── FASE 1: HERO + FORM ── */
-.tag {
-  font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--warm-gray); margin-bottom: 1.8rem;
-  display: flex; align-items: center; gap: 0.75rem;
-}
-.tag::before { content: ''; display: block; width: 32px; height: 1px; background: var(--accent); }
-h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 300; line-height: 1.15; margin-bottom: 1.2rem; }
-h1 em { font-style: italic; color: var(--accent-dark); }
-.subtitle { font-size: 0.92rem; color: var(--warm-gray); line-height: 1.7; margin-bottom: 2.5rem; max-width: 520px; }
-
-.form-card { background: #fff; border: 1px solid var(--border); padding: 2rem 2.5rem; margin-bottom: 2rem; }
-.form-label { display: block; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 0.5rem; }
-.url-row { display: flex; gap: 0.75rem; }
-.url-input {
-  flex: 1; padding: 0.85rem 1rem;
-  border: 1px solid var(--border); background: var(--cream);
-  font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--ink);
-  outline: none; transition: border-color 0.2s;
-}
-.url-input:focus { border-color: var(--accent); }
-.url-input::placeholder { color: var(--warm-gray); }
-.btn-demo {
-  background: var(--ink); color: var(--cream); border: none; cursor: pointer;
-  padding: 0.85rem 1.6rem; font-family: 'Instrument Sans', sans-serif;
-  font-size: 0.88rem; font-weight: 600; letter-spacing: 0.04em;
-  transition: background 0.2s; white-space: nowrap;
-}
-.btn-demo:hover { background: #2c2520; }
-.btn-demo:disabled { background: var(--warm-gray); cursor: wait; }
-.form-hint { font-size: 0.74rem; color: var(--warm-gray); margin-top: 0.6rem; }
-
-.trust-notes { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
-.trust-item { flex: 1; min-width: 130px; }
-.trust-item strong { display: block; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.3rem; }
-.trust-item span { font-size: 0.8rem; color: var(--warm-gray); line-height: 1.5; }
-
-.error-global { display: none; padding: 0.8rem 1rem; border-left: 3px solid var(--red); background: #fff; font-size: 0.84rem; color: var(--red); margin-bottom: 1rem; }
-.error-global.visible { display: block; }
-
-/* ── FASE 2: PROCESSING ── */
-#fase-processing { display: none; }
-#fase-processing.visible { display: block; }
-.processing-card { background: #fff; border: 1px solid var(--border); padding: 2.5rem; text-align: center; }
-.proc-title { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; margin-bottom: 0.4rem; }
-.spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 1rem auto; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.proc-steps { text-align: left; max-width: 300px; margin: 1.2rem auto 0; }
-.proc-step { font-size: 0.8rem; color: var(--warm-gray); padding: 0.3rem 0; display: flex; align-items: center; gap: 0.6rem; transition: color 0.3s; }
-.proc-step.done { color: var(--green); }
-.proc-step-icon { width: 14px; text-align: center; }
-
-/* ── FASE 3: ANTEPRIMA ── */
-#fase-anteprima { display: none; }
-#fase-anteprima.visible { display: block; }
-
-/* Header report */
-.report-header {
-  border-bottom: 2px solid var(--ink); padding-bottom: 1.2rem; margin-bottom: 1.6rem;
-}
-.report-tag { font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 0.5rem; }
-.report-title { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; font-weight: 300; line-height: 1.2; margin-bottom: 0.2rem; }
-.report-sub { font-size: 0.78rem; color: var(--warm-gray); font-family: 'DM Mono', monospace; word-break: break-all; }
-
-/* ── RISK HERO: score grande + stima prezzo ── */
-.risk-hero {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;
-}
-.rs-card {
-  background: #fff; border: 1px solid var(--border); padding: 1.4rem 1.5rem;
-  display: flex; flex-direction: column; justify-content: space-between;
-}
-.rs-label { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 0.6rem; }
-.rs-number {
-  font-family: 'Cormorant Garamond', serif; font-size: 4.2rem; font-weight: 300;
-  line-height: 1; letter-spacing: -0.02em;
-}
-.rs-number sup { font-size: 1.4rem; vertical-align: top; margin-top: 0.4rem; color: var(--warm-gray); font-weight: 300; }
-.rs-sub { font-size: 0.75rem; color: var(--warm-gray); margin-top: 0.5rem; }
-.rs-verdict { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 0.3rem; }
-
-.prezzo-card {
-  background: #fff; border: 1px solid var(--border); padding: 1.4rem 1.5rem;
-}
-.prezzo-label { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 0.6rem; }
-.prezzo-valore {
-  font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; line-height: 1;
-}
-.prezzo-sub { font-size: 0.75rem; color: var(--warm-gray); margin-top: 0.4rem; }
-.prezzo-sconto {
-  display: inline-block; margin-top: 0.6rem; font-family: 'DM Mono', monospace;
-  font-size: 0.82rem; font-weight: 400; color: var(--green);
-  background: rgba(30,132,73,.08); border: 1px solid rgba(30,132,73,.25);
-  padding: 0.2rem 0.6rem;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* ── 3 SEGNALI ── */
-.segnali-row {
-  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; margin-bottom: 1.6rem;
+.nav-logo {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
-.segnale {
-  background: #fff; border: 1px solid var(--border); padding: 0.9rem 1rem;
-  position: relative; overflow: hidden;
+
+.nav-back {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-decoration: none;
+  cursor: pointer;
 }
-.segnale::before {
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+
+.nav-back:hover { color: var(--text); }
+
+/* HERO */
+h1 {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+  line-height: 1.2;
 }
-.segnale.ok::before      { background: var(--green); }
-.segnale.attenzione::before { background: var(--yellow); }
-.segnale.critico::before  { background: var(--red); }
-.segnale-icona { font-size: 1.1rem; margin-bottom: 0.35rem; display: block; }
-.segnale-label { font-size: 0.75rem; font-weight: 600; line-height: 1.3; margin-bottom: 0.2rem; }
-.segnale-nota  { font-size: 0.7rem; color: var(--warm-gray); font-family: 'DM Mono', monospace; }
 
-/* Sezione generica */
-.section { margin-bottom: 1.6rem; }
-.section-title {
-  font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--warm-gray); border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; margin-bottom: 1rem;
-  display: flex; align-items: center; gap: 0.6rem;
+.subtitle {
+  font-size: 1rem;
+  color: var(--muted);
+  margin-bottom: 2rem;
+  line-height: 1.6;
 }
-.badge-free   { font-size: 0.6rem; background: #1E8449; color: #fff; padding: 0.15rem 0.5rem; border-radius: 1px; letter-spacing: 0.1em; }
-.badge-locked { font-size: 0.6rem; background: var(--accent); color: #fff; padding: 0.15rem 0.5rem; border-radius: 1px; letter-spacing: 0.1em; }
 
-/* Coherence bar */
-.coherence-bar-wrap { background: #fff; border: 1px solid var(--border); padding: 1rem 1.4rem; margin-bottom: 1rem; }
-.bar-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 0.3rem; }
-.bar-fill { height: 100%; background: linear-gradient(90deg, #1E8449, #D4AC0D); border-radius: 4px; transition: width 1s; }
-.bar-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-.bar-score { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 300; }
-.bar-verdict { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
-.bar-legend { display: flex; justify-content: space-between; font-size: 0.64rem; color: var(--warm-gray); letter-spacing: 0.06em; }
-
-/* Dati grid (compatta) */
-.data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 0.6rem; }
-.data-cell { background: #fff; border: 1px solid var(--border); padding: 0.75rem 0.9rem; }
-.data-cell label { display: block; font-size: 0.64rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 0.15rem; }
-.data-cell span { font-family: 'DM Mono', monospace; font-size: 0.84rem; }
-
-/* ── PAYWALL ── */
-.paywall-section {
-  position: relative; border: 1px solid var(--border); background: #fff;
-  overflow: hidden; margin-bottom: 1.8rem;
+.price-badge {
+  display: inline-block;
+  background: var(--surface2);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
 }
-.paywall-blur { padding: 1.4rem; filter: blur(5px); user-select: none; pointer-events: none; }
-.blur-row { display: flex; gap: 0.65rem; margin-bottom: 0.65rem; }
-.blur-cell { flex: 1; background: var(--cream); border: 1px solid var(--border); padding: 0.75rem; }
-.blur-cell label { display: block; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 0.15rem; }
-.blur-cell span { font-family: 'DM Mono', monospace; font-size: 0.9rem; color: #aaa; }
 
-.paywall-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(245,240,232,0) 0%, rgba(245,240,232,.6) 22%, rgba(245,240,232,.97) 48%, var(--cream) 100%);
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-  padding: 1.5rem 1.5rem 2.2rem;
+/* FORM */
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border-radius: 6px;
 }
-.pw-lock { font-size: 1.8rem; margin-bottom: 0.5rem; }
-.pw-title { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 400; margin-bottom: 0.3rem; text-align: center; }
-.pw-desc { font-size: 0.82rem; color: var(--warm-gray); text-align: center; margin-bottom: 1.2rem; max-width: 360px; line-height: 1.6; }
 
-/* Form pagamento nel paywall */
-.pay-form { width: 100%; max-width: 420px; }
-.pay-email-row { display: flex; gap: 0; margin-bottom: 0.65rem; }
-.pay-input {
-  flex: 1; padding: 0.9rem 1rem;
-  border: 1px solid var(--ink); border-right: none; background: var(--cream);
-  font-family: 'DM Mono', monospace; font-size: 0.85rem; color: var(--ink);
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group:last-child { margin-bottom: 0; }
+
+label {
+  display: block;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+  font-weight: 500;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  border-radius: 4px;
   outline: none;
-}
-.pay-input::placeholder { color: var(--warm-gray); }
-.pay-input:focus { background: #fff; }
-
-/* Bottone PAGA — grande e prominente */
-.btn-paga {
-  background: var(--ink); color: var(--cream); border: none; cursor: pointer;
-  padding: 0.9rem 1.4rem; font-family: 'Instrument Sans', sans-serif;
-  font-size: 0.88rem; font-weight: 700; letter-spacing: 0.05em;
-  transition: background 0.2s; white-space: nowrap;
-  display: flex; align-items: center; gap: 0.5rem;
-}
-.btn-paga:hover:not(:disabled) { background: #2c2520; }
-.btn-paga:disabled { background: var(--warm-gray); cursor: wait; }
-.btn-paga-price {
-  background: var(--accent); color: #fff; padding: 0.15rem 0.55rem;
-  font-size: 0.82rem; border-radius: 1px; font-weight: 600; letter-spacing: 0.03em;
+  transition: border-color 0.2s;
 }
 
-.pay-hint { font-size: 0.7rem; color: var(--warm-gray); text-align: center; margin-top: 0.5rem; }
-.pay-error { display: none; padding: 0.6rem 0.9rem; margin-top: 0.5rem; border-left: 3px solid var(--red); background: #fff; font-size: 0.8rem; color: var(--red); }
-.pay-error.visible { display: block; }
+input:focus,
+textarea:focus {
+  border-color: var(--accent);
+}
 
-/* Firma */
-.firma { display: flex; gap: 1rem; align-items: center; border-top: 1px solid var(--border); padding-top: 1.2rem; margin-top: 1.8rem; }
-.firma-avatar { width: 40px; height: 40px; background: var(--ink); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cream); font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; flex-shrink: 0; }
-.firma-name { font-weight: 600; font-size: 0.88rem; margin-bottom: 0.1rem; }
-.firma-role { font-size: 0.76rem; color: var(--warm-gray); }
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+}
 
-.nota-demo { background: #fff; border-left: 3px solid var(--accent); padding: 0.8rem 1rem; font-size: 0.8rem; color: var(--warm-gray); line-height: 1.6; margin-bottom: 1.5rem; }
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
 
-@media (max-width: 540px) {
-  nav { padding: 1rem 1.2rem; }
-  .container { padding: 6rem 1.2rem 4rem; }
-  .url-row { flex-direction: column; }
-  .risk-hero { grid-template-columns: 1fr; }
-  .segnali-row { grid-template-columns: 1fr; }
-  .data-grid { grid-template-columns: 1fr 1fr; }
-  .blur-row { flex-direction: column; }
-  .pay-email-row { flex-direction: column; }
-  .pay-input { border-right: 1px solid var(--ink); border-bottom: none; }
-  .btn-paga { width: 100%; justify-content: center; }
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.4rem;
+}
+
+.required { color: var(--danger); }
+
+/* BUTTON */
+.btn-submit {
+  width: 100%;
+  padding: 1rem;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-submit:hover { opacity: 0.9; }
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ERROR */
+.error-message {
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 3px solid var(--danger);
+  padding: 1rem;
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  display: none;
+}
+
+.error-message.visible { display: block; }
+
+/* INFO BOXES */
+.info-boxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.info-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 1.2rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.info-box strong {
+  display: block;
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+}
+
+/* PROCESSING */
+#processing {
+  display: none;
+  text-align: center;
+}
+
+#processing.visible { display: block; }
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 2rem auto;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.processing-text {
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+/* FOOTER */
+footer {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+footer a:hover { text-decoration: underline; }
+
+@media (max-width: 600px) {
+  .container { padding: 5rem 1.5rem 2rem; }
+  .info-boxes { grid-template-columns: 1fr; }
+  nav { padding: 0.75rem 1.5rem; }
 }
 </style>
 </head>
 <body>
 
 <nav>
-  <a href="/" class="nav-logo">External Opinion</a>
-  <a href="/" class="nav-back">← Home</a>
+  <div class="nav-logo">External Opinion</div>
+  <a href="/" class="nav-back">← Back</a>
 </nav>
 
 <div class="container">
 
-  <!-- ── FASE 1: FORM ── -->
-  <div id="fase-form">
-    <div class="tag">Anteprima gratuita</div>
-    <h1>Conosci il rischio <em>prima</em><br>di fare un'offerta</h1>
-    <p class="subtitle">
-      Inserisci l'URL dell'asta giudiziaria: ottieni subito Risk Score, 3 segnali chiave e stima prezzo — <strong>gratis</strong>. Per sbloccare ROI, cash flow e massimale d'offerta: <strong>€ 69</strong>.
-    </p>
+<h1>Perizia Asta Giudiziaria</h1>
+<p class="subtitle">Valutazione automatica dell'immobile in 5 minuti. Report firmabile incluso.</p>
+<span class="price-badge">€79 per report</span>
 
-    <div class="form-card">
-      <label class="form-label" for="urlAsta">URL annuncio asta giudiziaria</label>
-      <div class="url-row">
-        <input
-          type="url" id="urlAsta" class="url-input"
-          placeholder="https://pvp.giustizia.it/pvp/it/detail_aste.page?id=..."
-          autocomplete="off" spellcheck="false"
-        >
-        <button class="btn-demo" id="btnDemo">Analizza gratis</button>
-      </div>
-      <p class="form-hint">Supportati: PVP, Astegiudiziarie.it, Tribunali.it, Portaleaste.it</p>
+<div id="error-message" class="error-message"></div>
+
+<div id="form-section">
+  <form id="aste-form" class="form-card">
+
+    <div class="form-group">
+      <label for="indirizzo">
+        Indirizzo immobile
+        <span class="required">*</span>
+      </label>
+      <input
+        type="text"
+        id="indirizzo"
+        name="indirizzo"
+        placeholder="Via Roma 10, Milano MI"
+        required
+      />
+      <div class="form-hint">Completo: numero civico, città, provincia</div>
     </div>
 
-    <div class="error-global" id="errGlobal"></div>
+    <div class="form-group">
+      <label for="lotto">Lotto / Tribunale</label>
+      <input
+        type="text"
+        id="lotto"
+        name="lotto"
+        placeholder="Asta Tribunale Milano, Lotto 5"
+      />
+      <div class="form-hint">Opzionale — aiuta a trovare comparabili</div>
+    </div>
 
-    <div class="trust-notes">
-      <div class="trust-item">
-        <strong>Anteprima gratis</strong>
-        <span>Risk Score e segnali principali senza registrazione</span>
-      </div>
-      <div class="trust-item">
-        <strong>Report in 48h</strong>
-        <span>PDF validato da Simone Azzali, Geometra</span>
-      </div>
-      <div class="trust-item">
-        <strong>Pagamento sicuro</strong>
-        <span>Stripe · nessun dato carta conservato</span>
-      </div>
+    <div class="form-group">
+      <label for="email">
+        Email
+        <span class="required">*</span>
+      </label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="tuo@email.it"
+        required
+      />
+      <div class="form-hint">Riceverai la perizia via email</div>
+    </div>
+
+    <div class="form-group">
+      <label for="telefono">
+        Telefono
+        <span class="required">*</span>
+      </label>
+      <input
+        type="tel"
+        id="telefono"
+        name="telefono"
+        placeholder="+39 3xx xxx xxxx"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="note">Note aggiuntive</label>
+      <textarea
+        id="note"
+        name="note"
+        placeholder="Condizioni dell'immobile, dettagli rilevanti..."
+      ></textarea>
+      <div class="form-hint">Massimo 500 caratteri</div>
+    </div>
+
+    <button type="submit" class="btn-submit">Procedi a pagamento</button>
+  </form>
+
+  <div class="info-boxes">
+    <div class="info-box">
+      <strong>⚡ Veloce</strong>
+      Report entro 2-4 ore
+    </div>
+    <div class="info-box">
+      <strong>📄 Firmabile</strong>
+      Pronto per la firma
+    </div>
+    <div class="info-box">
+      <strong>🔒 Sicuro</strong>
+      Pagamento via Stripe
     </div>
   </div>
+</div>
 
-  <!-- ── FASE 2: PROCESSING ── -->
-  <div id="fase-processing">
-    <div class="processing-card">
-      <div class="proc-title">Analisi in corso…</div>
-      <div class="spinner"></div>
-      <p style="font-size:.82rem;color:var(--warm-gray)">Estrazione dati perizia e calcolo Risk Score</p>
-      <div class="proc-steps">
-        <div class="proc-step" id="ps1"><span class="proc-step-icon">○</span> Recupero documento perizia</div>
-        <div class="proc-step" id="ps2"><span class="proc-step-icon">○</span> Estrazione dati catastali</div>
-        <div class="proc-step" id="ps3"><span class="proc-step-icon">○</span> Calcolo Risk Score</div>
-        <div class="proc-step" id="ps4"><span class="proc-step-icon">○</span> Identificazione segnali</div>
-        <div class="proc-step" id="ps5"><span class="proc-step-icon">○</span> Composizione anteprima</div>
-      </div>
-    </div>
-  </div>
+<div id="processing" style="display: none;">
+  <div class="spinner"></div>
+  <p class="processing-text">Reindirizzamento a pagamento...</p>
+</div>
 
-  <!-- ── FASE 3: ANTEPRIMA ── -->
-  <div id="fase-anteprima">
+<footer>
+  <p>
+    <a href="/">Home</a> ·
+    <a href="#">Privacy</a> ·
+    <a href="#">Terms</a>
+  </p>
+  <p style="margin-top: 1rem; color: #6b7194;">
+    © 2026 External Opinion. Perizie immobiliari con AI.
+  </p>
+</footer>
 
-    <!-- Intestazione report -->
-    <div class="report-header">
-      <div class="report-tag" id="rTag">Parere tecnico indipendente · Demo</div>
-      <div class="report-title" id="rTitle">Immobile in analisi</div>
-      <div class="report-sub" id="rSub">External Opinion · Anteprima gratuita</div>
-    </div>
+</div>
 
-    <!-- RISK SCORE + STIMA PREZZO -->
-    <div class="risk-hero">
-      <div class="rs-card">
-        <div class="rs-label">Risk Score <span style="font-size:.55rem;letter-spacing:.08em;color:var(--warm-gray)">/ 100</span></div>
-        <div class="rs-number" id="rsNumber" style="color:var(--yellow)">38</div>
-        <div class="rs-sub" id="rsSub">Rischio moderato</div>
-        <div class="rs-verdict" id="rsVerdict" style="color:var(--yellow)">GIALLO — CON RISERVA</div>
-      </div>
-      <div class="prezzo-card">
-        <div class="prezzo-label">Stima prezzo di mercato</div>
-        <div class="prezzo-valore" id="prezzoValore">€ 148.500</div>
-        <div class="prezzo-sub" id="prezzoSub">Perizia CTU — Tribunale</div>
-        <div class="prezzo-sconto" id="prezzoSconto">Sconto: −20,6% sul mercato</div>
-      </div>
-    </div>
-
-    <!-- 3 SEGNALI -->
-    <div class="segnali-row" id="segnaliRow">
-      <!-- popolato da JS -->
-    </div>
-
-    <!-- Coherence Index (compatto) -->
-    <div class="section">
-      <div class="section-title">Coherence Index <span class="badge-free">Incluso</span></div>
-      <div class="coherence-bar-wrap">
-        <div class="bar-meta">
-          <div>
-            <div class="bar-score" id="ciScore" style="color:var(--yellow)">74<span style="font-size:1rem;color:var(--warm-gray)">/100</span></div>
-            <div style="font-size:.72rem;color:var(--warm-gray)">Indice di coerenza documentale</div>
-          </div>
-          <div style="text-align:right">
-            <div id="ciVerdict" style="font-size:.78rem;font-weight:600;color:var(--yellow)">CONVENIENTE CON RISERVA</div>
-          </div>
-        </div>
-        <div class="bar-track"><div class="bar-fill" id="ciBar" style="width:0%"></div></div>
-        <div class="bar-legend" style="margin-top:.3rem"><span>0 — Alta criticità</span><span>50 — Neutro</span><span>100 — Ottimale</span></div>
-      </div>
-    </div>
-
-    <!-- Dati immobile (compatta) -->
-    <div class="section">
-      <div class="section-title">Dati immobile <span class="badge-free">Incluso</span></div>
-      <div class="data-grid" id="dataGrid"></div>
-    </div>
-
-    <!-- PAYWALL -->
-    <div class="paywall-section">
-      <div class="paywall-blur">
-        <div class="section-title" style="margin-bottom:1rem">Analisi finanziaria completa <span class="badge-locked">Sblocca</span></div>
-        <div class="blur-row">
-          <div class="blur-cell"><label>ROI rivendita lordo</label><span>██,█%</span></div>
-          <div class="blur-cell"><label>ROI affitto lordo</label><span>█,█%</span></div>
-          <div class="blur-cell"><label>Cash flow netto/mese</label><span>€ ███</span></div>
-        </div>
-        <div class="blur-row">
-          <div class="blur-cell"><label>Investimento totale</label><span>€ ██████</span></div>
-          <div class="blur-cell"><label>Valore post-intervento</label><span>€ ██████</span></div>
-          <div class="blur-cell"><label>Profitto lordo pot.</label><span>€ ██████</span></div>
-        </div>
-        <div class="blur-row">
-          <div class="blur-cell"><label>Massimale offerta consigliato</label><span>€ ███.███</span></div>
-          <div class="blur-cell"><label>Breakeven</label><span>██ mesi</span></div>
-          <div class="blur-cell"><label>Canone affitto stimato</label><span>€ ███/mese</span></div>
-        </div>
-        <div style="margin-top:1rem;padding:.9rem;background:var(--cream);border:1px solid var(--border)">
-          <div style="font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--warm-gray);margin-bottom:.3rem">Raccomandazione — Simone Azzali, Geometra</div>
-          <div style="font-size:.82rem;color:#aaa;font-style:italic">███████ ████ ████████ — ████ ██████████ ████ ███████ ████ ███ █████ ██ ████████. Target massimo ██████ con █% margine di sicurezza.</div>
-        </div>
-      </div>
-
-      <div class="paywall-overlay">
-        <div class="pw-lock">🔒</div>
-        <h2 class="pw-title">Sblocca il report completo</h2>
-        <p class="pw-desc">ROI, cash flow, massimale d'offerta consigliato e parere di Simone Azzali, Geometra. PDF validato entro 48 ore.</p>
-
-        <div class="pay-form">
-          <div class="pay-email-row">
-            <input
-              type="email" id="payEmail" class="pay-input"
-              placeholder="nome@email.it" autocomplete="email"
-            >
-            <button class="btn-paga" id="btnPaga">
-              PAGA <span class="btn-paga-price">€ 69</span>
-            </button>
-          </div>
-          <div class="pay-hint">Stripe sicuro · PDF entro 48h · nessun abbonamento</div>
-          <div class="pay-error" id="payError"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="nota-demo">
-      <strong>Nota</strong> — Anteprima dimostrativa con dati mock. Il report reale viene elaborato con il motore F7 CASCADE e validato da Simone Azzali, Geometra iscritto all'Albo di Brescia.
-    </div>
-
-    <div class="firma">
-      <div class="firma-avatar">SA</div>
-      <div>
-        <div class="firma-name">Simone Azzali</div>
-        <div class="firma-role">Geometra · Albo di Brescia · Analista aste giudiziarie</div>
-      </div>
-    </div>
-
-    <div style="text-align:center;margin-top:2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
-      <button id="btnReset" style="background:none;border:1px solid var(--border);padding:.55rem 1.3rem;cursor:pointer;font-family:'Instrument Sans',sans-serif;font-size:.8rem;color:var(--warm-gray)">← Analizza un'altra asta</button>
-    </div>
-
-  </div><!-- /fase-anteprima -->
-
-</div><!-- /container -->
-
+<script src="https://js.stripe.com/v3/"></script>
 <script>
-const VERDETTI = {
-  VERDE:  { color: '#1E8449', rsLabel: 'Rischio basso',     rsVerdict: 'VERDE — CONVENIENTE',       ciDesc: 'CONVENIENTE' },
-  GIALLO: { color: '#D4AC0D', rsLabel: 'Rischio moderato',  rsVerdict: 'GIALLO — CON RISERVA',      ciDesc: 'CONVENIENTE CON RISERVA' },
-  ROSSO:  { color: '#C0392B', rsLabel: 'Rischio elevato',   rsVerdict: 'ROSSO — DA EVITARE',        ciDesc: 'DA EVITARE' },
-};
-const SEGNALI_ICONE = { ok: '✓', attenzione: '⚠', critico: '✕' };
+const form = document.getElementById('aste-form');
+const errorDiv = document.getElementById('error-message');
+const formSection = document.getElementById('form-section');
+const processingDiv = document.getElementById('processing');
 
-let _urlCorrente = '';
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  errorDiv.classList.remove('visible');
 
-function ciToKey(n) {
-  if (n >= 80) return 'VERDE';
-  if (n >= 55) return 'GIALLO';
-  return 'ROSSO';
-}
+  const formData = {
+    indirizzo: document.getElementById('indirizzo').value.trim(),
+    lotto: document.getElementById('lotto').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    telefono: document.getElementById('telefono').value.trim(),
+    note: document.getElementById('note').value.trim(),
+  };
 
-async function avviaDemo() {
-  const url = document.getElementById('urlAsta').value.trim();
-  const err = document.getElementById('errGlobal');
-  err.classList.remove('visible');
-
-  if (!url) {
-    err.textContent = 'Inserisci l\'URL dell\'asta prima di procedere.';
-    err.classList.add('visible');
-    document.getElementById('urlAsta').focus();
+  // Validazione client-side
+  if (!formData.indirizzo) {
+    showError('Indirizzo richiesto');
     return;
   }
-  try { new URL(url); } catch(_) {
-    err.textContent = 'URL non valido. Esempio: https://pvp.giustizia.it/pvp/...';
-    err.classList.add('visible');
+  if (!formData.email) {
+    showError('Email richiesta');
     return;
   }
-
-  _urlCorrente = url;
-  document.getElementById('fase-form').style.display = 'none';
-  document.getElementById('fase-processing').classList.add('visible');
-
-  const passi = ['ps1','ps2','ps3','ps4','ps5'];
-  const tempi = [500, 1000, 1600, 2100, 2600];
-  passi.forEach((id, i) => setTimeout(() => {
-    const el = document.getElementById(id);
-    el.classList.add('done');
-    el.querySelector('.proc-step-icon').textContent = '✓';
-  }, tempi[i]));
+  if (!formData.telefono) {
+    showError('Telefono richiesto');
+    return;
+  }
 
   try {
-    const res = await fetch('/api/demo/analyze-auction', {
+    formSection.style.display = 'none';
+    processingDiv.classList.add('visible');
+
+    // POST a /aste/checkout
+    const response = await fetch('/aste/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ urlAsta: url }),
+      body: JSON.stringify(formData),
     });
-    if (!res.ok) {
-      const e = await res.json().catch(() => ({}));
-      throw new Error(e.error || 'Errore del server');
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Errore checkout');
     }
-    const { preview } = await res.json();
-    await new Promise(r => setTimeout(r, 2900));
-    renderAnteprima(preview, url);
-  } catch (e) {
-    document.getElementById('fase-processing').classList.remove('visible');
-    document.getElementById('fase-form').style.display = '';
-    err.textContent = 'Errore: ' + e.message;
-    err.classList.add('visible');
+
+    // Stripe redirect
+    if (data.sessionId) {
+      window.location.href = data.checkoutUrl;
+    } else if (data.url) {
+      window.location.href = data.url;
+    } else {
+      throw new Error('Nessun URL di pagamento ricevuto');
+    }
+  } catch (err) {
+    console.error('Checkout error:', err);
+    showError(err.message);
+    formSection.style.display = 'block';
+    processingDiv.classList.remove('visible');
   }
-}
+});
 
-function renderAnteprima(p, url) {
-  const vKey = ciToKey(p.coherenceIndex);
-  const v = VERDETTI[vKey];
-
-  // Risk Score
-  const rs = p.riskScore ?? (100 - p.coherenceIndex);
-  document.getElementById('rsNumber').textContent = rs;
-  document.getElementById('rsNumber').style.color = v.color;
-  document.getElementById('rsSub').textContent = v.rsLabel;
-  document.getElementById('rsVerdict').textContent = v.rsVerdict;
-  document.getElementById('rsVerdict').style.color = v.color;
-
-  // Stima prezzo
-  document.getElementById('prezzoValore').textContent = p.valutazioneCTU ?? '—';
-  document.getElementById('prezzoSconto').textContent = p.scontoMercato ? `Sconto: ${p.scontoMercato} sul mercato` : '';
-
-  // 3 segnali
-  const segnali = p.segnali || [];
-  document.getElementById('segnaliRow').innerHTML = segnali.map(s =>
-    `<div class="segnale ${s.stato}">
-      <span class="segnale-icona">${SEGNALI_ICONE[s.stato] || '•'}</span>
-      <div class="segnale-label">${s.label}</div>
-      <div class="segnale-nota">${s.nota}</div>
-    </div>`
-  ).join('');
-
-  // Titolo report
-  let titolo = 'Immobile in asta giudiziaria';
-  try {
-    const u = new URL(url);
-    const id = u.searchParams.get('id') || u.pathname.split('/').filter(Boolean).pop();
-    if (id && id.length < 30) titolo = `Ref. ${id.toUpperCase()}`;
-  } catch(_) {}
-  document.getElementById('rTitle').textContent = titolo;
-  document.getElementById('rSub').textContent = url.length > 65 ? url.substring(0, 63) + '…' : url;
-
-  // Coherence Index
-  document.getElementById('ciScore').innerHTML = `${p.coherenceIndex}<span style="font-size:1rem;color:var(--warm-gray)">/100</span>`;
-  document.getElementById('ciScore').style.color = v.color;
-  document.getElementById('ciVerdict').textContent = v.ciDesc;
-  document.getElementById('ciVerdict').style.color = v.color;
-  setTimeout(() => { document.getElementById('ciBar').style.width = p.coherenceIndex + '%'; }, 200);
-
-  // Dati immobile
-  const campi = [
-    ['Prezzo base asta', p.prezzoBase],
-    ['Valore CTU', p.valutazioneCTU],
-    ['Sconto mercato', p.scontoMercato],
-    ['Superficie', p.superficie],
-    ['Piano', p.piano],
-    ['Anno', p.annoCostruzione],
-    ['Stato', p.statoConservativo],
-    ['Occupazione', p.occupazione],
-    ['Spese arretrate', p.speseArretrate],
-    ['Zona OMI', p.zonaOMI],
-  ];
-  document.getElementById('dataGrid').innerHTML = campi.map(([l, val]) =>
-    `<div class="data-cell"><label>${l}</label><span>${val ?? '—'}</span></div>`
-  ).join('');
-
-  document.getElementById('fase-processing').classList.remove('visible');
-  document.getElementById('fase-anteprima').classList.add('visible');
+function showError(msg) {
+  errorDiv.textContent = '❌ ' + msg;
+  errorDiv.classList.add('visible');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-async function procediPagamento() {
-  const email = document.getElementById('payEmail').value.trim();
-  const errEl = document.getElementById('payError');
-  errEl.classList.remove('visible');
-
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    errEl.textContent = 'Inserisci un\'email valida per ricevere il report.';
-    errEl.classList.add('visible');
-    return;
-  }
-
-  const btn = document.getElementById('btnPaga');
-  btn.disabled = true;
-  btn.innerHTML = 'Connessione…';
-
-  try {
-    const ar = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ urlAsta: _urlCorrente, email }),
-    });
-    if (!ar.ok) {
-      const e = await ar.json().catch(() => ({}));
-      throw new Error(e.error || 'Impossibile avviare l\'analisi');
-    }
-    const { jobId } = await ar.json();
-
-    const cr = await fetch(`/api/jobs/${jobId}/checkout`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tier: 'TIER_1_SCREENING_69', email }),
-    });
-    if (!cr.ok) {
-      const e = await cr.json().catch(() => ({}));
-      throw new Error(e.error || 'Errore nel checkout');
-    }
-    const { checkoutUrl } = await cr.json();
-    window.location.href = checkoutUrl;
-  } catch (e) {
-    btn.disabled = false;
-    btn.innerHTML = 'PAGA <span class="btn-paga-price">€ 69</span>';
-    errEl.textContent = 'Errore: ' + e.message;
-    errEl.classList.add('visible');
-  }
-}
-
-function resetDemo() {
-  document.getElementById('fase-anteprima').classList.remove('visible');
-  document.getElementById('fase-processing').classList.remove('visible');
-  document.getElementById('fase-form').style.display = '';
-  document.getElementById('urlAsta').value = '';
-  ['ps1','ps2','ps3','ps4','ps5'].forEach(id => {
-    const el = document.getElementById(id);
-    el.classList.remove('done');
-    el.querySelector('.proc-step-icon').textContent = '○';
-  });
-  _urlCorrente = '';
-  document.getElementById('urlAsta').focus();
-}
-
-document.getElementById('btnDemo').addEventListener('click', avviaDemo);
-document.getElementById('btnPaga').addEventListener('click', procediPagamento);
-document.getElementById('btnReset').addEventListener('click', resetDemo);
-document.getElementById('urlAsta').addEventListener('keydown', e => {
-  if (e.key === 'Enter') avviaDemo();
-});
 </script>
+
 </body>
 </html>

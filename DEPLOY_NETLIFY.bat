@@ -1,16 +1,31 @@
 @echo off
 echo.
-echo  ╔══════════════════════════════════════╗
-echo  ║   External Opinion — Deploy Netlify  ║
-echo  ╚══════════════════════════════════════╝
+echo  ╔══════════════════════════════════════════════╗
+echo  ║   External Opinion — Deploy Netlify          ║
+echo  ║   Richiede: NETLIFY_AUTH_TOKEN impostato     ║
+echo  ╚══════════════════════════════════════════════╝
 echo.
-echo  Passo 1/2: Login Netlify (si apre il browser — clicca Authorize)
+
+REM ── Se il token è già nell'ambiente, salta il prompt ──
+IF "%NETLIFY_AUTH_TOKEN%"=="" (
+  echo  TOKEN NON TROVATO.
+  echo.
+  echo  Ottieni il token su: https://app.netlify.com/user/applications
+  echo  Sezione: Personal access tokens → New access token
+  echo.
+  set /p NETLIFY_AUTH_TOKEN="  Incolla il token e premi INVIO: "
+  echo.
+)
+
+echo  Deploying public/ su externalopinion.netlify.app ...
 echo.
-npx --yes netlify-cli login
+
+npx --yes netlify-cli deploy ^
+  --dir=public ^
+  --prod ^
+  --site=externalopinion ^
+  --auth=%NETLIFY_AUTH_TOKEN%
+
 echo.
-echo  Passo 2/2: Deploy su externalopinion.netlify.app ...
-echo.
-npx netlify-cli deploy --dir=public --prod --site=externalopinion
-echo.
-echo  ✓ Deploy completato!
+echo  ✓ Se vedi "Deploy is live" sopra, il deploy è riuscito.
 pause

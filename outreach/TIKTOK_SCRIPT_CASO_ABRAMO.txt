@@ -1,0 +1,74 @@
+CANALE: TikTok / Instagram Reels / YouTube Shorts
+OBIETTIVO: Traffico organico → link in bio → pagamento €69
+DURATA TARGET: 45–60 secondi
+CASO: Casa rurale Bastiglia (MO) — GIALLO, ROI –30,6%
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCRIPT VIDEO #1 — "L'asta che sembrava un affare"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[0–5s — HOOK visivo: schermo con il PDF report aperto]
+"Casa 401 metri quadri, €120.000. Sembra un affare?"
+
+[5–15s — PROBLEMA]
+"Prezzo al metro quadro: €299.
+Il valore OMI della zona: €450.
+Differenza: –33%. Il motivo? Non risulta dai dati pubblici."
+
+[15–30s — ANALISI]
+"Ho passato questo immobile al sistema.
+11 flag documentali aperti:
+conformità urbanistica — non verificabile senza atti comunali.
+Accesso alla proprietà su strada privata — regime giuridico non definito.
+Intervento strutturale stimato: tra €80.000 e €120.000."
+
+[30–45s — VERDETTO]
+"ROI a 5 anni: meno 30,6%.
+Verdetto del motore: GIALLO.
+Non è un no. È: prima verifica questi documenti."
+
+[45–60s — CTA]
+"Se stai guardando un'asta e vuoi sapere cosa c'è sotto,
+faccio la diagnosi in 24 ore.
+Link in bio — €69."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCRIPT VIDEO #2 — "Il semaforo dell'asta" (più breve, 30s)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[0–5s]
+"Ogni asta che guardi ha uno di questi tre colori."
+
+[5–20s — mostra i tre casi]
+"VERDE: i numeri tornano, i documenti sono puliti.
+GIALLO: qualcosa non quadra — serve approfondimento prima di offrire.
+ROSSO: risk score oltre 80, anomalie gravi rilevate."
+
+[20–30s — CTA]
+"Mandi il link dell'asta.
+In 24 ore ti dico che colore ha.
+Link in bio."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HASHTAG (copiare nei post)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+#asteiudiziarie #investimentoimmobiliare #casaallasta
+#immobiliare #investireincasa #astimmobiliari
+#periziaimobile #geometra #rischioimmobiliare
+#externalopinion
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LINK IN BIO DA IMPOSTARE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+URL: https://externalopinion.netlify.app
+Testo: "Diagnosi immobile in 24h — a partire da €69"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ASSET DA MOSTRARE NEL VIDEO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PDF: reports/ABRAMO_CASE_DIAGNOSTIC_PREVIEW.pdf
+Screenshot del banner GIALLO con risk score 75/100 e ROI –30,6%
+Schermata dei 11 flag documentali

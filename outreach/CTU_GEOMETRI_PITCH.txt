@@ -1,0 +1,65 @@
+CANALE: Geometri CTU nominati dai Tribunali / Albo Geometri
+OBIETTIVO: Vendita AI-Assisted Appraisal — bozza AI + firma perito
+TICKET: €150–€500 per perizia assistita
+VANTAGGIO: Simone è Geom. iscritto all'Albo — contatto peer-to-peer, non vendita
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EMAIL / MESSAGGIO LINKEDIN — Geometri CTU
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Oggetto: strumento AI per CTU immobiliari — bozza perizia in 24h
+
+Ciao [Nome],
+
+sono Simone Azzali, geometra iscritto all'Albo.
+Ho sviluppato un sistema di diagnostica immobiliare AI che genera
+la bozza tecnica di una perizia in 24h partendo dal PDF dell'ordinanza
+o dal link dell'annuncio.
+
+Il sistema estrae:
+— dati catastali e difformità urbanistiche rilevabili
+— stima OMI per zona e scarto dal prezzo richiesto
+— flag documentali aperti (conformità, agibilità, APE, vincoli)
+— risk score 0–100 con motivazione per voce
+
+La bozza è un documento strutturato che tu firmi e integri
+con il sopralluogo. Non sostituisce la perizia — la accelera.
+
+Costo per perizia assistita: €150–€299 a seconda della complessità.
+Consegna: 24h dal documento di input.
+
+Se ti interessa vedere un esempio reale, mando il report demo.
+
+Geom. Simone Azzali
+info@externalopinion.it
+externalopinion.it
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DOVE TROVARE CTU ATTIVI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Albo CTU Tribunale di Modena (e altri tribunali area):
+   → tribunale.giustizia.it → Albo CTU → categoria "Estimo immobiliare"
+   → nomi pubblici, contatti email spesso presenti
+
+2. LinkedIn:
+   → cerca "CTU geometra" + città
+   → cerca "perito immobiliare tribunale" + regione
+
+3. Ordine Geometri Provinciale:
+   → Collegio Geometri e Geometri Laureati della Provincia di Modena
+   → Hanno elenco soci con specializzazioni
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NUMERI DI RIFERIMENTO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Procedure esecutive immobiliari IT/anno: 80.000
+- Ogni procedura nomina 1 CTU
+- CTU impiegano 15-30 giorni per perizia tradizionale
+- External Opinion porta la bozza a 24h
+- Se 10 CTU usano il servizio 2 volte/mese: 20 perizie × €200 = €4.000/mese
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DEMO DA ALLEGARE: reports/ABRAMO_CASE_DIAGNOSTIC_PREVIEW.pdf
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
