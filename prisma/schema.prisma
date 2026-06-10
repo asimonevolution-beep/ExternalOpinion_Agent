@@ -147,6 +147,24 @@ model AuditHash {
   @@index([stepName])
 }
 
+model OmiData {
+  id              String   @id @default(uuid())
+  zonaCatastale   String   @unique
+  provincia       String
+  comune          String
+  tipologia       String
+  prezzoMinMq     Float
+  prezzoMedioMq   Float
+  prezzoMaxMq     Float
+  dataAggiornamento DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([provincia])
+  @@index([comune])
+  @@index([tipologia])
+}
+
 model ReportArtifact {
   id                String   @id @default(uuid())
   jobId             String

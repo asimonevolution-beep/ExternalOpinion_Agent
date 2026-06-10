@@ -1044,6 +1044,63 @@ app.get('/aste', (req, res) => {
 });
 
 // ============================================================================
+// API OMI LOOKUP — GET /api/v1/omi/:indirizzo
+// ============================================================================
+app.get('/api/v1/omi/:indirizzo', async (req, res) => {
+  try {
+    const { indirizzo } = req.params;
+    if (!indirizzo || indirizzo.length < 5) {
+      return res.status(400).json({ error: 'Indirizzo troppo corto' });
+    }
+
+    // Extract provincia dalla stringa indirizzo (ultimo token dopo spazi)
+    // Es: "Via Roma 10, Milano MI" → provincia = "MI"
+    const parts = indirizzo.trim().split(/,?\s+/);
+    const provincia = parts[parts.length - 1].toUpperCase();
+
+    // Lookup OMI data per provincia (mock per fase 0 — ricerca semplice)
+    const omiRecords = await prisma.omiData.findMany({
+      where: {
+        provincia: {
+          contains: provincia,
+          mode: 'insensitive',
+        },
+      },
+    });
+
+    if (omiRecords.length === 0) {
+      // Fallback: ritorna media nazionale
+      return res.json({
+        success: true,
+        indirizzo,
+        provincia,
+        tipologia: 'Apartment',
+        prezzoMinMq: 2500,
+        prezzoMedioMq: 3200,
+        prezzoMaxMq: 4000,
+        note: 'Stima nazionale (dati zona non trovati)',
+      });
+    }
+
+    // Ritorna il primo match (per semplicità — in produzione usare geocodifica accurata)
+    const omi = omiRecords[0];
+    res.json({
+      success: true,
+      indirizzo,
+      provincia,
+      comune: omi.comune,
+      tipologia: omi.tipologia,
+      prezzoMinMq: omi.prezzoMinMq,
+      prezzoMedioMq: omi.prezzoMedioMq,
+      prezzoMaxMq: omi.prezzoMaxMq,
+      zonaCatastale: omi.zonaCatastale,
+    });
+  } catch (err) {
+    console.error('[OMI-LOOKUP ERROR]', err.message);
+    res.status(500).json({ error: 'Errore lookup OMI' });
+  }
+});
+
 // CHECKOUT ASTE — POST /aste/checkout
 // ============================================================================
 app.post('/aste/checkout', checkoutLimiter, async (req, res) => {
