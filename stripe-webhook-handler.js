@@ -175,7 +175,7 @@ async function sendConfirmationEmail(email, reportId, tier, amountEuro) {
 
         <p style="font-size: 0.9rem; color: #666;">
           Domande? Rispondi direttamente a questa email.<br>
-          <strong>External Opinion — Perizie immobiliari con AI</strong>
+          <strong>External Opinion — Analisi immobiliari con AI</strong>
         </p>
       `,
     });

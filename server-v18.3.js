@@ -334,6 +334,8 @@ apiRouter.get('/jobs/:jobId', async (req, res) => {
         coherenceIndex: jobRecord.immobile.coherenceIndex,
         roi: jobRecord.immobile.roi,
         roiConveniente: jobRecord.immobile.roiConveniente,
+        valoreAttuale: jobRecord.immobile.valoreAttuale,
+        valorePotenziale: jobRecord.immobile.valorePotenziale,
         datiComputati: jobRecord.immobile.datiComputati,
         hashReport: jobRecord.immobile.hashReport,
         pagato: jobRecord.immobile.pagato,

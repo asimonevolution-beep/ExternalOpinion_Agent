@@ -55,11 +55,14 @@ function eseguiMotoreDeterministico(datiAI, parametriMercato) {
   const costiTotaliOperativi      = (costiSanatoria || 0) + (costiRipristino || 0);
   const margineReale              = valorePotenziale - costiTotaliOperativi;
   const profittoFuturoPostRivendita = valoreFuturoProiettato - costiTotaliOperativi;
-  const roiCalcolato = safeRoiCalculation(margineReale, costiTotaliOperativi);
+  // null quando LLM non ha estratto costi: distingue "zero calcolato" da "dati mancanti"
+  const roiCalcolato = costiTotaliOperativi > 0
+    ? safeRoiCalculation(margineReale, costiTotaliOperativi)
+    : null;
   const signal       = calculateDecisionSignal({
     riskScore:         coherenceIndex,
     coherenceIndex,
-    roi:               parseFloat(roiCalcolato.toFixed(2)),
+    roi:               roiCalcolato !== null ? parseFloat(roiCalcolato.toFixed(2)) : 0,
     documentsVerified: false,
   });
 
@@ -73,8 +76,8 @@ function eseguiMotoreDeterministico(datiAI, parametriMercato) {
     margineReale:              Math.round(margineReale),
     profittoFuturoPostRivendita: Math.round(profittoFuturoPostRivendita),
     costiTotaliOperativi:      Math.round(costiTotaliOperativi),
-    roi:                       parseFloat(roiCalcolato.toFixed(2)),
-    roiConveniente:            roiCalcolato > 18,
+    roi:                       roiCalcolato !== null ? parseFloat(roiCalcolato.toFixed(2)) : null,
+    roiConveniente:            roiCalcolato !== null ? roiCalcolato > 18 : false,
   };
 }
 
