@@ -192,9 +192,12 @@ async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValida
     doc.moveDown(2);
     doc.rect(50, doc.y, 495, 60).stroke(INK);
     doc.fillColor(INK).font('Helvetica-Bold').fontSize(11)
-       .text('Validato da: Geometra Simone Azzali', 60, doc.y + 10);
+       .text('Validato da: Simone Azzali, tecnico di cantiere con esperienza diretta in grandi opere', 60, doc.y + 10);
     doc.font('Helvetica').fontSize(10)
-       .text('External Opinion — Parere Tecnico Indipendente', 60, doc.y + 5);
+       .text('External Opinion — Parere Tecnico Indipendente', 60, doc.y + 5)
+       .moveDown(0.5)
+       .fontSize(8).fillColor('#888888')
+       .text('Analisi tecnica di parte a scopo informativo. Non costituisce perizia né consulenza d\'ufficio.', 60, doc.y + 5);
 
     doc.end();
   });

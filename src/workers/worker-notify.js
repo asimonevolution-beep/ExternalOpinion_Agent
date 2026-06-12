@@ -87,8 +87,8 @@ async function sendEmailCliente(jobId, email, immobile, pdfPath) {
 
       <p style="font-size:12px; color:#aaa; margin-top:30px; border-top:1px solid #ddd; padding-top:15px;">
         External Opinion — Parere Tecnico Indipendente<br>
-        Direzione Tecnica: Geometra Simone Azzali<br>
-        <em>Questo report è stato validato da un professionista prima della consegna.</em>
+        Direzione Tecnica: Simone Azzali, tecnico di cantiere<br>
+        <em>Analisi tecnica di parte a scopo informativo. Non costituisce perizia né consulenza d'ufficio.</em>
       </p>
     </div>
   `;
