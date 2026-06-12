@@ -1,8 +1,8 @@
 # CURRENT STATE — External Opinion / CASCADE
-# Aggiornato: 2026-06-12
+# Aggiornato: 2026-06-12 (sessione pomeriggio)
 
 ## Railway production
-- **Commit deployato**: `91cac13` (in deployment — push avvenuto alle ~09:30)
+- **Commit deployato**: `9837af5` (SUCCESS — deploy Railway confermato)
 - **Status**: LIVE — alive, DB connected, Redis connected
 - **URL**: https://externalopinionagent-production-1f66.up.railway.app
 - **Stripe**: sk_live_* configurato — checkout è LIVE (cs_live_* confermato)
@@ -38,16 +38,20 @@
 - PIPELINE_ENABLED: false (consegna manuale)
 
 ## Email (Resend)
-- **BLOCCATO**: dominio externalopinion.it `status: failed`
-- Errore: 403 "domain is not verified"
-- Fix: aggiungere 3 record DNS in Cloudflare (vedi NEXT_TASK.md)
-- API key valida, il blocco è SOLO DNS
+- **IN VERIFICA**: DNS (3 record) già presenti su Cloudflare, verifica Resend triggerata
+- Stato dominio: `pending` (propagazione in corso, polling ogni 5 min)
+- A verifica ok: email test inviata automaticamente, ping ntfy "EMAIL ATTIVE ✅"
 
-## Bug noti (diagnosi completata)
-- **Valore Attuale "—"**: valoreAttuale mancante in GET /api/jobs/:jobId response (server-v18.3.js righe 330-342)
-- **ROI 0.0%**: safeRoiCalculation ritorna 0 quando costiTotaliOperativi=0 — LLM non estrae costi espliciti
+## Bug risolti (commit 9837af5)
+- **Valore Attuale**: ✅ valoreAttuale + valorePotenziale aggiunti in GET /api/jobs/:jobId
+- **ROI 0.0%**: ✅ roi salvato come `null` (non 0) quando costiTotaliOperativi=0
+- **Email footer**: ✅ "Perizie immobiliari con AI" → "Analisi immobiliari con AI" (riga 178)
+
+## Script utili (scripts/)
+- `check-status.ps1` — stato deploy Railway + ultime 20 righe log
+- `check-email.ps1` — stato verifica dominio Resend
+- `new-checkout.ps1` — genera checkout live fresco e stampa URL
 
 ## Qualifiche
 - CTU/Geometra/albo/perizia(nostra): bonificati in tutte le pagine pubbliche e worker
 - Disclaimer "Analisi tecnica di parte a scopo informativo..." presente in: index.html, landing.html, aste.html, demo.html, worker-notify.js (email), worker-report.js (PDF), worker-aste.js (PDF)
-- Residuo: stripe-webhook-handler.js riga 178 ("Perizie immobiliari con AI" — da cambiare in "Analisi")

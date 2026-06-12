@@ -2,6 +2,39 @@
 
 ---
 
+## Sessione pomeriggio 2026-06-12
+
+### DNS Resend
+- 3 record DNS già presenti su Cloudflare (configurati sessione precedente)
+- Verifica dominio triggerata via API (`POST /domains/{id}/verify`)
+- Stato: `pending` — polling automatico ogni 5 min (max 30 min)
+- A verifica ok: test email automatico su a.simonevolution@gmail.com + ping ntfy "EMAIL ATTIVE ✅"
+
+### TASK B — Fix ROI + valoreAttuale + email footer (commit 9837af5)
+- Già in produzione (deploy SUCCESS alle 09:06 UTC)
+- `server-v18.3.js`: valoreAttuale + valorePotenziale aggiunti in GET /api/jobs/:jobId
+- `worker-scoring.js`: roi = null (non 0) quando costiTotaliOperativi = 0
+- `stripe-webhook-handler.js` riga 178: "Analisi immobiliari con AI"
+
+### TASK C — Script PowerShell riutilizzabili (zero dipendenze)
+| File | Funzione |
+|------|----------|
+| `scripts/check-status.ps1` | Stato deploy Railway + ultime 20 righe log |
+| `scripts/check-email.ps1` | Stato verifica dominio Resend con dettaglio record |
+| `scripts/new-checkout.ps1` | Genera sessione checkout live fresca, stampa URL |
+
+### TASK D — Checkout URL fresco per verifica mobile
+- Sessione generata: `cs_live_a1D9984RySDiwkSAank9hvALjzUhkl0EVOyXM8zsZsKEax3tml11BDeBP1`
+- jobId: `dc242b4c-04a8-4aec-b3f2-30884173ea4e`
+- URL completo inviato su ntfy eo-dev-83562128
+
+### Confronto Desktop vs Repo
+- Copia Desktop (`C:\Users\simone\Desktop\ExternalOpinion_Agent`) è ferma a V18.2 (maggio 2026)
+- Worker files nella radice Desktop sono copie vecchie: nel repo esistono già in `src/workers/` come V18.3
+- **Nessun file Desktop è più recente del repo** — copia Desktop può essere ignorata
+
+---
+
 ## Sessione diurna 2026-06-12
 
 ### TASK 1 — Checkout Live (continuazione P1)
