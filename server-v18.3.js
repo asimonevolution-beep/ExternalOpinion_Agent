@@ -1105,6 +1105,7 @@ app.get('/api/v1/omi/:indirizzo', async (req, res) => {
 // ============================================================================
 app.post('/aste/checkout', checkoutLimiter, async (req, res) => {
   try {
+    const prisma = require('./db');
     const { indirizzo, lotto, email, telefono, note } = req.body;
 
     // Validazione

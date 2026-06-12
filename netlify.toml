@@ -8,6 +8,13 @@
   status = 200
   force  = true
 
+# Proxy /aste/* verso Railway (checkout aste giudiziarie)
+[[redirects]]
+  from   = "/aste/*"
+  to     = "https://externalopinionagent-production-1f66.up.railway.app/aste/:splat"
+  status = 200
+  force  = true
+
 # SPA fallback
 [[redirects]]
   from   = "/*"

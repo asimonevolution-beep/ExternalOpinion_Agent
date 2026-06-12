@@ -24,6 +24,7 @@ const router = express.Router();
 
 const TIER_MAPPING = {
   69:  'TIER_1_SCREENING_69',
+  79:  'TIER_1_CASCADE_79',
   89:  'TIER_1_ENTRY_89',
   150: 'TIER_2_ADVISORY_150',
   690: 'TIER_3_PREMIUM_690',

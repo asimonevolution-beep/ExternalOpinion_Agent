@@ -39,3 +39,6 @@ CARICO_ASTE/
 # Build
 dist/
 build/
+
+# Local Netlify folder
+.netlify
