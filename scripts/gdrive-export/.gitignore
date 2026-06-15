@@ -1,0 +1,4 @@
+# MAI committare credenziali o token OAuth
+credentials.json
+token.json
+node_modules/

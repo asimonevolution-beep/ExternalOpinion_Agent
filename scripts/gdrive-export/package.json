@@ -1,0 +1,15 @@
+{
+  "name": "eo-gdrive-export",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Esporta i Google Docs (.gdoc) di External Opinion dal Drive e li integra nel repo come Markdown.",
+  "scripts": {
+    "export": "node export-gdocs.mjs",
+    "export:all": "node export-gdocs.mjs --all"
+  },
+  "dependencies": {
+    "@google-cloud/local-auth": "^3.0.1",
+    "googleapis": "^144.0.0"
+  }
+}
