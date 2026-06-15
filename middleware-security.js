@@ -218,8 +218,8 @@ function healthCheckEndpoints(app) {
     });
   });
 
-  // Readiness probe
-  app.get('/health/ready', async (req, res) => {
+  // Readiness probe — verifica DB + Redis e risponde JSON 200/503
+  const readinessHandler = async (req, res) => {
     const result = { database: 'unknown', redis: 'unknown', timestamp: new Date().toISOString() };
     let ok = true;
 
@@ -247,7 +247,11 @@ function healthCheckEndpoints(app) {
     }
 
     return res.status(ok ? 200 : 503).json({ status: ok ? 'ready' : 'not_ready', ...result });
-  });
+  };
+
+  // Montato su /health/ready (probe standard) e /api/health (alias per monitor esterni)
+  app.get('/health/ready', readinessHandler);
+  app.get('/api/health', readinessHandler);
 
   // Metrics endpoint
   app.get('/health/metrics', async (req, res) => {
