@@ -1,11 +1,23 @@
 # CURRENT STATE — External Opinion / CASCADE
-# Aggiornato: 2026-06-12 (sessione pomeriggio)
+# Aggiornato: 2026-06-15
 
 ## Railway production
-- **Commit deployato**: `9837af5` (SUCCESS — deploy Railway confermato)
+- **Commit deployato**: `caefb2e` (SUCCESS — deploy Railway confermato)
 - **Status**: LIVE — alive, DB connected, Redis connected
 - **URL**: https://externalopinionagent-production-1f66.up.railway.app
-- **Stripe**: sk_live_* configurato — checkout è LIVE (cs_live_* confermato)
+- **Health endpoint**: `GET /api/health` (alias di `/health/ready`) → JSON reale
+  `{"status":"ready","database":"connected","redis":"connected"}`, 200 se ok / 503 se DB o Redis giù.
+  Esistono anche `/health/live` e `/health/metrics` (Prometheus).
+- **Stripe**: ✅ LIVE e funzionante (verificato 2026-06-15). Account `acct_1TYlSo...` (IT/EUR):
+  `charges_enabled=true`, `payouts_enabled=true`, KYC completo, nessun requisito pendente.
+  Chiavi live coerenti (`sk_live`+`pk_live`+`whsec_`), webhook su `/api/stripe/webhook`,
+  `BASE_URL=https://externalopinion.netlify.app`. Il backend genera sessioni `cs_live` valide e
+  il form di pagamento si apre. Il vecchio P1 "page not found" era URL troncato nella copia
+  manuale, NON un bug: per invio manuale usare Payment Links `buy.stripe.com`, non i checkout URL.
+
+## Servizi Railway
+- ExternalOpinion_Agent: ● Online (+ /api/health) · Postgres ● Online · Redis ● Online
+- l2-sensor: ● Failed (worker secondario inattivo, stato terminale cosmetico, gira in MOCK_FEED)
 
 ## Netlify
 - **Commit deployato**: `91cac13` (in deployment)
