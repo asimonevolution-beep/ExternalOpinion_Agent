@@ -1,0 +1,234 @@
+L'analisi solleva i punti critici necessari per la transizione del backend di **External Opinion** da prototipo locale a microservizio LAN resiliente e integrabile. Di seguito viene fornito il refactoring architetturale completo e strutturato, focalizzato sull'implementazione delle priorità operative e sull'adozione di **Fastify** per garantire performance e validazione nativa dei dati.
+## Architettura del Sistema (V15)
+```
+[Client / Phone] ──( LAN + API Key )──> [ Fastify API Gateway ]
+                                                 │
+                                        ( Enqueue / Poll )
+                                                 │
+                                                 ▼
+                                        [ BullMQ + Redis ]
+                                                 │
+                                                 ▼
+                                        [ Worker Process ] ──( AbortController )──> [ Ollama Local ]
+
+```
+## Implementazione del Server (server.js)
+Questo modulo gestisce l'infrastruttura HTTP, l'autenticazione tramite Header, la validazione dei payload in ingresso per prevenire la saturazione della memoria e gli endpoint per il polling dei job e l'health check del sistema.
+```javascript
+import Fastify from 'fastify';
+import { Queue, Worker } from 'bullmq';
+import IORedis from 'ioredis';
+import { randomUUID } from 'crypto';
+
+const PORT = process.env.PORT || 3000;
+const API_KEY = process.env.API_KEY || 'external-opinion-secure';
+const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://127.0.0.1:11434';
+const MAX_PROMPT_LENGTH = 50000; // Protezione saturazione RAM / Context Window
+
+// Connessione Redis condivisa
+const connection = new IORedis(REDIS_URL, { maxRetriesPerRequest: null });
+
+// Inizializzazione Coda BullMQ
+const analisiCoda = new Queue('analisi-documenti', { connection });
+
+const fastify = Fastify({ logger: true });
+
+// Hook globale per l'autenticazione API Key su rete LAN
+fastify.addHook('onRequest', async (request, reply) => {
+  // Escludi l'endpoint di health check dall'autenticazione
+  if (request.routerPath === '/health') return;
+
+  const apiKey = request.headers['x-api-key'];
+  if (!apiKey || apiKey !== API_KEY) {
+    reply.code(401).send({ error: 'Unauthorized: Invalid or missing API Key' });
+  }
+});
+
+/**
+ * Endpoint: Ingestione Job con schema validation nativo
+ */
+fastify.post('/api/sincronizza', {
+  schema: {
+    body: {
+      type: 'object',
+      required: ['prompt', 'model'],
+      properties: {
+        prompt: { type: 'string' },
+        model: { type: 'string' }
+      }
+    }
+  }
+}, async (request, reply) => {
+  const { prompt, model } = request.body;
+
+  // Controllo dimensionale preventivo del payload
+  if (prompt.length > MAX_PROMPT_LENGTH) {
+    return reply.code(400).send({ 
+      error: `Payload too large. Max allowed characters: ${MAX_PROMPT_LENGTH}` 
+    });
+  }
+
+  const jobId = randomUUID();
+  const job = await analisiCoda.add('elaborazione_ai', 
+    { prompt, model }, 
+    { jobId, removeOnComplete: false, removeOnFail: false }
+  );
+
+  request.log.info({ jobId: job.id }, '[QUEUE] Job registrato correttamente in coda');
+  return { success: true, jobId: job.id };
+});
+
+/**
+ * Endpoint: Polling Stato e Risultato Job
+ */
+fastify.get('/api/job/:id', async (request, reply) => {
+  const { id } = request.params;
+  const job = await analisiCoda.getJob(id);
+
+  if (!job) {
+    return reply.code(404).send({ error: `Job ${id} non trovato` });
+  }
+
+  const state = await job.getState();
+  
+  return {
+    jobId: job.id,
+    state, // "waiting" | "active" | "completed" | "failed"
+    progress: job.progress,
+    result: job.returnvalue || null,
+    failedReason: job.failedReason || null,
+    timestamp: job.timestamp
+  };
+});
+
+/**
+ * Endpoint: Health Check diagnostico per orchestrazione (Railway / Local)
+ */
+fastify.get('/health', async (request, reply) => {
+  const diagnostics = {
+    uptime: process.uptime(),
+    redis: 'disconnected',
+    ollama: 'disconnected',
+    queue: { waiting: 0, active: 0 }
+  };
+
+  try {
+    // Verifica stato Redis
+    const ping = await connection.ping();
+    if (ping === 'PONG') diagnostics.redis = 'healthy';
+
+    // Verifica metriche coda
+    const [waiting, active] = await Promise.all([
+      analisiCoda.getWaitingCount(),
+      analisiCoda.getActiveCount()
+    ]);
+    diagnostics.queue = { waiting, active };
+
+    // Verifica responsività Ollama
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2000);
+    const res = await fetch(`${OLLAMA_HOST}/api/tags`, { signal: controller.signal });
+    clearTimeout(timeout);
+    
+    if (res.ok) diagnostics.ollama = 'healthy';
+  } catch (err) {
+    fastify.log.error(err, '[DIAGNOSTICS] Errore durante l health check');
+  }
+
+  const isHealthy = diagnostics.redis === 'healthy' && diagnostics.ollama === 'healthy';
+  return reply.code(isHealthy ? 200 : 503).send({ status: isHealthy ? 'OK' : 'DEGRADED', ...diagnostics });
+});
+
+// Avvio del server Fastify in ascolto su tutte le interfacce LAN
+const start = async () => {
+  try {
+    await fastify.listen({ port: PORT, host: '0.0.0.0' });
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+};
+start();
+
+```
+## Implementazione del Worker (worker.js)
+Il worker viene isolato dal thread principale dell'API. Gestisce l'esecuzione sequenziale delle chiamate a Ollama, implementando log operativi rigorosi e un meccanismo di timeout tramite AbortController per azzerare i rischi di job congelati o processi zombie.
+```javascript
+import { Worker } from 'bullmq';
+import IORedis from 'ioredis';
+
+const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://127.0.0.1:11434';
+const OLLAMA_TIMEOUT = 120000; // 2 minuti di timeout massimo per inferenza
+
+const connection = new IORedis(REDIS_URL, { maxRetriesPerRequest: null });
+
+const worker = new Worker('analisi-documenti', async (job) => {
+  const { prompt, model } = job.data;
+  console.log(`[WORKER] Avvio elaborazione per il Job ${job.id} [Modello: ${model}]`);
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    console.error(`[TIMEOUT] Job ${job.id} ha superato la soglia di ${OLLAMA_TIMEOUT}ms. Abort invocation.`);
+    controller.abort();
+  }, OLLAMA_TIMEOUT);
+
+  try {
+    const response = await fetch(`${OLLAMA_HOST}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: model,
+        prompt: prompt,
+        stream: false
+      }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Ollama risponde con status ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(`[WORKER] Job ${job.id} completato con successo`);
+    
+    // Il valore ritornato viene storicizzato automaticamente su Redis dentro il Job
+    return { response: data.response, tokens_evaluated: data.eval_count };
+
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error(`[ERROR] Fallimento durante l'esecuzione del Job ${job.id}: ${error.message}`);
+    throw error; // Permette a BullMQ di marcare il job come 'failed'
+  }
+}, { 
+  connection,
+  concurrency: 1 // Concorrenza distruttiva evitata: 1 job alla volta sulla risorsa hardware
+});
+
+worker.on('failed', (job, err) => {
+  console.error(`[QUEUE-FAIL] Job ${job?.id} fallito definitivamente: ${err.message}`);
+});
+
+```
+## Script di Reset e Avvio Cross-Platform (package.json)
+Per superare l'incompatibilità del comando killall sui sistemi Windows preservando l'operatività negli ambienti Unix/Railway, i comandi di gestione ciclo di vita del processo sono stati mappati sfruttando le utility native dei rispettivi ambienti operativi.
+Aggiungere al file package.json:
+```json
+"scripts": {
+  "start": "node server.js",
+  "worker": "node worker.js",
+  "clean:unix": "pkill -f node || true && npm cache clean --force",
+  "clean:windows": "taskkill /F /IM node.exe /T 2>nul & npm cache clean --force",
+  "dev:unix": "npm run clean:unix && node server.js & node worker.js",
+  "dev:windows": "npm run clean:windows && start /B node server.js && start /B node worker.js"
+}
+
+```
+## Verifica della Robustezza Ottenuta
+ 1. **Sicurezza di Rete (LAN):** L'aggiunta dell'hook onRequest blocca a monte le richieste prive di intestazione X-API-Key valida, isolando l'hardware grafico da accessi non autorizzati causati da cambi repentini di topologia di rete o esposizioni UPnP.
+ 2. **Ciclo di Vita Sincrono/Asincrono:** L'introduzione dell'endpoint /api/job/:id elimina la modalità *fire-and-forget*. Il client mobile effettua chiamate di polling per tracciare lo stato transizionale del processo (waiting -> active -> completed).
+ 3. **Persistenza e Tracciabilità:** I risultati dell'elaborazione di Ollama non vengono dispersi ma associati allo stato finale del job all'interno dell'istanza Redis gestita da BullMQ, pronti per essere prelevati.
+ 4. **Resilienza ai Blocchi Hardware:** AbortController previene la saturazione dei thread del worker nel caso in cui il demone locale di Ollama smetta di rispondere o entri in loop di calcolo.

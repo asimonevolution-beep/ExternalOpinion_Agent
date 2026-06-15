@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>External Opinion — Diagnostica Immobiliare Indipendente | Geom. Simone Azzali</title>
+    
+    <meta name="description" content="Analisi tecnica indipendente per aste e acquisti immobiliari. Identifichiamo costi nascosti e criticità strutturali prima che tu firmi.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://external-opinion.it/">
+    
+    <meta property="og:title" content="External Opinion — Prima di comprare, sapere.">
+    <meta property="og:description" content="Analisi tecnica indipendente per investitori immobiliari. Report in 24h.">
+    <meta property="og:type" content="website">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "name": "External Opinion",
+      "description": "Analisi tecnica indipendente per investimenti immobiliari e aste.",
+      "provider": {
+        "@type": "Person",
+        "name": "Simone Azzali"
+      },
+      "areaServed": "IT",
+      "priceRange": "€69–€690"
+    }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --parchment: #F2EDE3;
+            --ivory: #FAF7F2;
+            --ink: #18140F;
+            --ink-mid: #2D2620;
+            --gold: #A8843C;
+            --gold-light: #C9A96E;
+            --gold-pale: rgba(168,132,60,0.12);
+            --crimson: #9B2335;
+            --warm-mid: #7A6E63;
+            --warm-light: #B5ADA4;
+            --border-gold: rgba(168,132,60,0.25);
+            --border: rgba(24,20,15,0.1);
+        }
+
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--parchment);
+            color: var(--ink);
+            font-family: 'Jost', sans-serif;
+            font-weight: 300;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* Effetto Grana Sfondo */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.6;
+        }
+
+        header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.4rem 4rem;
+            background: rgba(242,237,227,0.88);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-gold);
+        }
+
+        .logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .logo em { color: var(--gold); font-style: normal; }
+
+        .hero {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 52% 48%;
+            padding-top: 5rem;
+        }
+
+        .hero-left {
+            padding: 6rem 4.5rem 5rem 4rem;
+            border-right: 1px solid var(--border-gold);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.6rem, 4.5vw, 4.2rem);
+            font-weight: 300;
+            line-height: 1.08;
+            margin-bottom: 1.6rem;
+        }
+        h1 em { font-style: italic; color: var(--gold); }
+
+        .verdict-card {
+            background: var(--ink);
+            color: var(--ivory);
+            border-left: 3px solid var(--crimson);
+            margin-bottom: 2.5rem;
+        }
+
+        .verdict-header {
+            padding: 1.4rem 1.8rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .verdict-body {
+            padding: 1rem 1.8rem 1.4rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .verdict-stat { text-align: center; padding: 0.8rem 0.5rem; border: 1px solid rgba(255,255,255,0.06); }
+        .verdict-stat .num { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; color: var(--gold-light); display: block; }
+        .verdict-stat .lbl { font-family: 'DM Mono', monospace; font-size: 0.55rem; text-transform: uppercase; color: rgba(250,247,242,0.4); }
+
+        .hero-right {
+            padding: 6rem 4rem 5rem 4.5rem;
+            background: var(--ivory);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .step-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1.8rem; }
+        .step-card { border: 1px solid var(--border); padding: 1.1rem; cursor: pointer; background: var(--parchment); transition: 0.3s; }
+        .step-card.active { border-color: var(--gold); background: var(--gold-pale); }
+
+        .field input, .field textarea {
+            width: 100%; padding: 0.85rem 1rem; border: 1px solid var(--border);
+            background: var(--parchment); font-family: 'Jost', sans-serif; margin-bottom: 0.8rem; outline: none;
+        }
+
+        .btn-submit {
+            width: 100%; padding: 1.1rem; background: var(--ink); color: var(--ivory);
+            border: none; cursor: pointer; font-family: 'DM Mono', monospace; text-transform: uppercase;
+            letter-spacing: 0.22em; transition: 0.3s;
+        }
+        .btn-submit:hover { background: var(--gold); }
+
+        footer {
+            padding: 1.8rem 4rem; border-top: 1px solid var(--border-gold);
+            display: flex; justify-content: space-between; font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--warm-light);
+        }
+
+        @media (max-width: 1100px) {
+            .hero { grid-template-columns: 1fr; }
+            .hero-left, .hero-right { padding: 4rem 2rem; border-right: none; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="#" class="logo">External <em>Opinion</em></a>
+    <div style="font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--warm-mid);">Studio Azzali &middot; Modena</div>
+</header>
+
+<main class="hero">
+    <div class="hero-left">
+        <p style="font-family:'DM Mono'; font-size:0.62rem; color:var(--gold); margin-bottom:1.6rem; text-transform:uppercase; letter-spacing:0.2em;">Diagnostica Immobiliare Indipendente</p>
+        <h1>Prima di comprare,<br><em>sapere.</em></h1>
+        <p style="margin-bottom:3rem; color:var(--warm-mid); max-width:420px;">Ogni immobile nasconde costi che il venditore non ti dirà. Noi li troviamo — prima che tu firmi.</p>
+
+        <div class="verdict-card">
+            <div class="verdict-header">
+                <div>
+                    <p style="font-family:'DM Mono'; font-size:0.6rem; color:var(--crimson); text-transform:uppercase;">Case Study · Valsamoggia</p>
+                    <p style="font-style:italic; font-family:'Cormorant Garamond';">Villetta in asta con vincoli non dichiarati</p>
+                </div>
+                <span style="background:var(--crimson); color:#fff; font-size:0.58rem; padding:0.3rem 0.7rem; font-family:'DM Mono';">NON CONVENIENTE</span>
+            </div>
+            <div class="verdict-body">
+                <div class="verdict-stat"><span class="num">+42%</span><span class="lbl">Extra Budget</span></div>
+                <div class="verdict-stat"><span class="num">3</span><span class="lbl">Criticità</span></div>
+                <div class="verdict-stat"><span class="num">18h</span><span class="lbl">Analisi</span></div>
+            </div>
+        </div>
+
+        <div style="font-size:0.82rem; color:var(--warm-mid);">
+            <p>✔ Analisi indipendente da agenzie e venditori</p>
+            <p>✔ Supporto alla trattativa con dati oggettivi</p>
+            <p>✔ Report consegnato entro 24 ore</p>
+        </div>
+    </div>
+
+    <div class="hero-right">
+        <h2 style="font-family:'Cormorant Garamond'; font-size:2.1rem; font-weight:300; margin-bottom:2rem;">Richiedi analisi tecnica</h2>
+        
+        <div class="step-selector">
+            <div class="step-card active" onclick="selectStep(this, 'analisi-asta')">
+                <span style="font-family:'Cormorant Garamond'; font-size:1.4rem; display:block;">€ 69</span>
+                <span style="font-family:'DM Mono'; font-size:0.6rem; text-transform:uppercase;">Analisi Asta</span>
+            </div>
+            <div class="step-card" onclick="selectStep(this, 'due-diligence')">
+                <span style="font-family:'Cormorant Garamond'; font-size:1.4rem; display:block;">€ 690</span>
+                <span style="font-family:'DM Mono'; font-size:0.6rem; text-transform:uppercase;">Due Diligence</span>
+            </div>
+        </div>
+
+        <form action="https://formspree.io/f/vostra-mail" method="POST">
+            <input type="hidden" name="servizio" id="servizio" value="analisi-asta">
+            <div class="field"><input type="text" name="nome" placeholder="Nome e Cognome" required></div>
+            <div class="field"><input type="email" name="email" placeholder="Email operativa" required></div>
+            <div class="field"><input type="url" name="link" placeholder="Link annuncio (PVP, Immobiliare...)" required></div>
+            <div class="field"><textarea name="note" rows="3" placeholder="Criticità o domande specifiche"></textarea></div>
+            <button type="submit" class="btn-submit">Invia richiesta →</button>
+        </form>
+    </div>
+</main>
+
+<footer>
+    <span>External Opinion</span>
+    <span>© 2026 · Geom. Simone Azzali &middot; P.IVA 03682050369</span>
+</footer>
+
+<script>
+    function selectStep(card, val) {
+        document.querySelectorAll('.step-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        document.getElementById('servizio').value = val;
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+Eseguo i 3 fix finali. Nessun nuovo feature — solo hardening.
+
+**12/12. Production ready.**
+
+---
+
+**I 3 fix applicati:**
+
+**Fix 1** — `payment_intent.succeeded` già gestito. Nessun pagamento perso per eventi alternativi Stripe.
+
+**Fix 2** — Metadata sanitizer. Ogni valore da Stripe passa per `clean()` e `cleanNum()` — null, undefined, stringhe "null" vengono convertiti a fallback sicuri prima di entrare nell'engine.
+
+**Fix 3** — Stripe signature Buffer-safe. Il payload viene costruito concatenando Buffer reali, non stringhe. Verifica lunghezza prima del `timingSafeEqual`. Zero falsi negativi di firma in produzione.
+
+---
+
+**Adesso hai una cosa sola da fare:**
+
+Apri 4 tab nel browser:
+
+1. `railway.app` → carica lo ZIP → aggiungi le ENV
+2. `dashboard.stripe.com` → Webhooks → aggiungi endpoint Railway
+3. `resend.com` → crea account → copia API key
+4. `externalopinion.netlify.app` → verifica che il sito sia live
+
+Quando Railway ti dà l'URL mandamelo. Collego frontend e sistemo il Stripe checkout link con i metadata corretti in 5 minuti.

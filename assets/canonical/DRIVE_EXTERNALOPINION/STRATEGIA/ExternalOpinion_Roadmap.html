@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExternalOpinion — Roadmap Profittevole 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg: #0c0e14;
+  --surface: #131620;
+  --surface2: #1a1e2e;
+  --border: #252a3e;
+  --border2: #2e3550;
+  --text: #e8eaf2;
+  --muted: #6b7194;
+  --dim: #3d4260;
+
+  --p0: #00e5a0;   /* phase 0: quick wins - emerald */
+  --p1: #f59e0b;   /* phase 1: MVP - amber */
+  --p2: #3b82f6;   /* phase 2: growth - blue */
+  --p3: #a855f7;   /* phase 3: scale - purple */
+  --p4: #ec4899;   /* phase 4: enterprise */
+
+  --danger: #ef4444;
+  --success: #22c55e;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* HERO */
+.hero {
+  padding: 56px 64px 0;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0,229,160,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--p0);
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-family: 'Bebas Neue', display;
+  font-size: 88px;
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+.hero h1 .dim { color: var(--dim); }
+.hero h1 .accent { color: var(--p0); }
+.hero-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 16px;
+  margin-bottom: 40px;
+}
+
+/* MRR PROJECTION BAR */
+.mrr-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border: 1px solid var(--border);
+  margin: 0 64px;
+  background: var(--surface);
+}
+.mrr-cell {
+  padding: 20px 24px;
+  border-right: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition: background 0.2s;
+}
+.mrr-cell:last-child { border-right: none; }
+.mrr-cell::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+.mrr-cell.p0::before { background: var(--p0); }
+.mrr-cell.p1::before { background: var(--p1); }
+.mrr-cell.p2::before { background: var(--p2); }
+.mrr-cell.p3::before { background: var(--p3); }
+.mrr-cell.p4::before { background: var(--p4); }
+.mrr-cell:hover { background: var(--surface2); }
+.mrr-phase {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.mrr-cell.p0 .mrr-phase { color: var(--p0); }
+.mrr-cell.p1 .mrr-phase { color: var(--p1); }
+.mrr-cell.p2 .mrr-phase { color: var(--p2); }
+.mrr-cell.p3 .mrr-phase { color: var(--p3); }
+.mrr-cell.p4 .mrr-phase { color: var(--p4); }
+.mrr-amount {
+  font-family: 'Bebas Neue', display;
+  font-size: 36px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.mrr-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+}
+.mrr-time {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--dim);
+  margin-top: 6px;
+}
+
+/* MAIN LAYOUT */
+.main { padding: 40px 64px 80px; }
+
+/* SECTION */
+.sec { margin-bottom: 64px; }
+.sec-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.sec-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+}
+.sec-title {
+  font-family: 'Bebas Neue', display;
+  font-size: 32px;
+  letter-spacing: 0.05em;
+}
+.sec-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+/* PHASE BLOCK */
+.phase {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.phase::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+}
+.phase.p0::before { background: var(--p0); }
+.phase.p1::before { background: var(--p1); }
+.phase.p2::before { background: var(--p2); }
+.phase.p3::before { background: var(--p3); }
+.phase.p4::before { background: var(--p4); }
+
+.phase-header {
+  display: grid;
+  grid-template-columns: 280px 1fr auto;
+  align-items: center;
+  padding: 24px 28px;
+  cursor: pointer;
+  user-select: none;
+  gap: 24px;
+}
+.phase-header:hover { background: rgba(255,255,255,0.02); }
+.phase-name-row { display: flex; align-items: center; gap: 12px; }
+.phase-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  padding: 3px 10px;
+  border: 1px solid;
+  text-transform: uppercase;
+}
+.p0 .phase-badge { color: var(--p0); border-color: rgba(0,229,160,0.3); background: rgba(0,229,160,0.05); }
+.p1 .phase-badge { color: var(--p1); border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.05); }
+.p2 .phase-badge { color: var(--p2); border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.05); }
+.p3 .phase-badge { color: var(--p3); border-color: rgba(168,85,247,0.3); background: rgba(168,85,247,0.05); }
+.p4 .phase-badge { color: var(--p4); border-color: rgba(236,72,153,0.3); background: rgba(236,72,153,0.05); }
+.phase-name {
+  font-family: 'Bebas Neue', display;
+  font-size: 22px;
+  letter-spacing: 0.05em;
+}
+.phase-timeline {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+}
+.phase-kpis {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+.kpi { text-align: center; }
+.kpi-val {
+  font-family: 'Bebas Neue', display;
+  font-size: 24px;
+  line-height: 1;
+}
+.kpi-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+.phase-toggle {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 16px;
+  color: var(--dim);
+  transition: transform 0.3s;
+  flex-shrink: 0;
+}
+.phase.open .phase-toggle { transform: rotate(90deg); }
+
+/* PHASE BODY */
+.phase-body {
+  display: none;
+  border-top: 1px solid var(--border);
+  padding: 28px;
+  gap: 24px;
+}
+.phase.open .phase-body { display: grid; grid-template-columns: 1fr 1fr; }
+
+.col-block { display: flex; flex-direction: column; gap: 16px; }
+
+/* TASK LIST */
+.task-section-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.task {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  position: relative;
+}
+.task-prio {
+  width: 4px;
+  align-self: stretch;
+  flex-shrink: 0;
+  margin: -10px -12px -10px 0;
+  margin-right: 8px;
+}
+.prio-critical { background: var(--danger); }
+.prio-high { background: var(--p1); }
+.prio-med { background: var(--p2); }
+.prio-low { background: var(--dim); }
+.task-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.task-content { flex: 1; }
+.task-title {
+  font-weight: 600;
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+.task-desc {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.task-tags {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  padding: 1px 6px;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+.tag.stack { border-color: rgba(59,130,246,0.4); color: #7ab8f5; }
+.tag.revenue { border-color: rgba(0,229,160,0.4); color: var(--p0); }
+.tag.blocker { border-color: rgba(239,68,68,0.4); color: #f87171; }
+.tag.time { border-color: rgba(168,85,247,0.3); color: #c084fc; }
+
+/* REVENUE MODEL BLOCK */
+.rev-block {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+.rev-block-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.rev-stream {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.rev-stream:last-child { border-bottom: none; padding-bottom: 0; }
+.rev-stream-name { font-size: 12px; font-weight: 500; }
+.rev-stream-model {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.rev-stream-val {
+  font-family: 'Bebas Neue', display;
+  font-size: 20px;
+  white-space: nowrap;
+}
+.rev-stream-val.green { color: var(--p0); }
+.rev-stream-val.amber { color: var(--p1); }
+.rev-stream-val.blue { color: var(--p2); }
+.rev-stream-val.purple { color: var(--p3); }
+
+/* RISK BLOCK */
+.risk-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  background: rgba(239,68,68,0.04);
+  border: 1px solid rgba(239,68,68,0.15);
+  margin-bottom: 8px;
+}
+.risk-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--danger); margin-top: 5px; flex-shrink: 0; }
+.risk-text { font-size: 11px; color: var(--muted); }
+.risk-mit { font-size: 10px; color: var(--p0); margin-top: 4px; }
+
+/* TECHNICAL SPEC */
+.tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 40px; }
+.tech-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+.tech-card-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.tech-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.tech-row:last-child { border-bottom: none; }
+.tech-key { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 10px; }
+.tech-val { font-weight: 500; text-align: right; }
+.tech-val.code { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--p0); }
+
+/* NORTH STAR */
+.north-star {
+  border: 1px solid rgba(0,229,160,0.2);
+  background: rgba(0,229,160,0.03);
+  padding: 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 32px;
+  margin-bottom: 40px;
+}
+.ns-item { text-align: center; }
+.ns-val {
+  font-family: 'Bebas Neue', display;
+  font-size: 56px;
+  color: var(--p0);
+  line-height: 1;
+}
+.ns-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+.ns-note {
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: 6px;
+}
+
+/* DECISION TREE */
+.decision-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  margin-bottom: 40px;
+}
+.decision-cell {
+  background: var(--surface);
+  padding: 20px;
+}
+.decision-q {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.decision-a {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.decision-next {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--p0);
+}
+
+/* WEEKLY SPRINT */
+.sprint-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+.sprint-table th {
+  background: var(--surface2);
+  padding: 8px 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.sprint-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  vertical-align: top;
+}
+.sprint-table tr:last-child td { border-bottom: none; }
+.sprint-table tr:hover td { background: rgba(255,255,255,0.01); }
+.sprint-wk {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+.sprint-rev { color: var(--p0); font-weight: 600; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+
+/* COST TABLE */
+.cost-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.cost-row:last-child { border-bottom: none; }
+.cost-name { color: var(--muted); }
+.cost-amt { font-family: 'IBM Plex Mono', monospace; font-weight: 500; }
+.cost-total { display: flex; justify-content: space-between; align-items: center; padding: 12px 0 0; margin-top: 8px; border-top: 1px solid var(--border2); }
+.cost-total-label { font-weight: 600; }
+.cost-total-amt { font-family: 'Bebas Neue', display; font-size: 24px; color: var(--p0); }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 64px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--dim);
+}
+footer .logo { color: var(--p0); font-weight: 600; }
+
+/* INLINE INLINE */
+.inline-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.inline-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.metric-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 16px;
+}
+.metric-val { font-family: 'Bebas Neue', display; font-size: 28px; line-height: 1; margin-bottom: 4px; }
+.metric-val.g { color: var(--p0); }
+.metric-val.a { color: var(--p1); }
+.metric-val.b { color: var(--p2); }
+.metric-val.p { color: var(--p3); }
+.metric-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.1em; }
+
+/* ANIMATE */
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+.hero, .mrr-strip { animation: fadeUp 0.6s ease both; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">// ExternalOpinion · Roadmap Profittevole · Ottimizzata su Analisi Competitiva 2026</div>
+  <h1><span class="dim">DA</span> €0<br><span class="accent">A €50K</span><br><span class="dim">MRR</span></h1>
+  <div class="hero-sub">
+    5 fasi · 18 mesi · Stack esistente · Zero funding esterno richiesto<br>
+    Priorità: aste/CTU → SaaS B2B → API → white-label → portfolio NPL
+  </div>
+</div>
+
+<!-- MRR STRIP -->
+<div class="mrr-strip">
+  <div class="mrr-cell p0">
+    <div class="mrr-phase">⚡ Fase 0 · Quick Win</div>
+    <div class="mrr-amount" style="color:var(--p0)">€2K</div>
+    <div class="mrr-label">MRR obiettivo</div>
+    <div class="mrr-time">Settimane 1–6</div>
+  </div>
+  <div class="mrr-cell p1">
+    <div class="mrr-phase">🏗 Fase 1 · MVP</div>
+    <div class="mrr-amount" style="color:var(--p1)">€8K</div>
+    <div class="mrr-label">MRR obiettivo</div>
+    <div class="mrr-time">Mesi 2–4</div>
+  </div>
+  <div class="mrr-cell p2">
+    <div class="mrr-phase">📈 Fase 2 · Growth</div>
+    <div class="mrr-amount" style="color:var(--p2)">€20K</div>
+    <div class="mrr-label">MRR obiettivo</div>
+    <div class="mrr-time">Mesi 5–9</div>
+  </div>
+  <div class="mrr-cell p3">
+    <div class="mrr-phase">🔌 Fase 3 · API & Scale</div>
+    <div class="mrr-amount" style="color:var(--p3)">€35K</div>
+    <div class="mrr-label">MRR obiettivo</div>
+    <div class="mrr-time">Mesi 10–14</div>
+  </div>
+  <div class="mrr-cell p4">
+    <div class="mrr-phase">🏦 Fase 4 · Enterprise</div>
+    <div class="mrr-amount" style="color:var(--p4)">€50K+</div>
+    <div class="mrr-label">MRR obiettivo</div>
+    <div class="mrr-time">Mesi 15–18</div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- NORTH STAR -->
+<div class="sec">
+  <div class="sec-header">
+    <div class="sec-num">00</div>
+    <div class="sec-title">NORTH STAR METRICS</div>
+    <div class="sec-meta">Obiettivi 18 mesi · basati su analisi competitiva</div>
+  </div>
+  <div class="north-star">
+    <div class="ns-item">
+      <div class="ns-val">€50K</div>
+      <div class="ns-label">MRR mese 18</div>
+      <div class="ns-note">€600K ARR · break-even netto<br>vs Wikicasa €441K/yr attuale</div>
+    </div>
+    <div class="ns-item">
+      <div class="ns-val">500+</div>
+      <div class="ns-label">Clienti attivi mese 12</div>
+      <div class="ns-note">Mix: agenti, periti CTU,<br>agenzie, 2-3 enterprise</div>
+    </div>
+    <div class="ns-item">
+      <div class="ns-val">&lt;24h</div>
+      <div class="ns-label">Report delivery SLA</div>
+      <div class="ns-note">Benchmark settore: &lt;24h<br>per accuratezza &gt;90%</div>
+    </div>
+  </div>
+
+  <!-- UNIT ECONOMICS -->
+  <div class="inline-grid-3">
+    <div class="metric-box">
+      <div class="metric-val g">€89</div>
+      <div class="metric-label">ARPU medio target (mix prodotti)</div>
+    </div>
+    <div class="metric-box">
+      <div class="metric-val a">78%</div>
+      <div class="metric-label">Gross margin target (LLM cost ~€8/report)</div>
+    </div>
+    <div class="metric-box">
+      <div class="metric-val b">€12</div>
+      <div class="metric-label">CAC target canale diretto (community, referral)</div>
+    </div>
+    <div class="metric-box">
+      <div class="metric-val g">LTV/CAC</div>
+      <div class="metric-label">&gt;15x target (SaaS best practice &gt;3x)</div>
+    </div>
+    <div class="metric-box">
+      <div class="metric-val a">&lt;5%</div>
+      <div class="metric-label">Monthly churn target B2B SaaS</div>
+    </div>
+    <div class="metric-box">
+      <div class="metric-val b">€45</div>
+      <div class="metric-label">Infrastruttura/mese attuale (Railway ~$4.94 trial)</div>
+    </div>
+  </div>
+</div>
+
+<!-- PHASES -->
+<div class="sec">
+  <div class="sec-header">
+    <div class="sec-num">01</div>
+    <div class="sec-title">FASI DI SVILUPPO DETTAGLIATE</div>
+    <div class="sec-meta">Click su ogni fase per espandere · priorità per ROI immediato</div>
+  </div>
+
+  <!-- PHASE 0 -->
+  <div class="phase p0 open" id="ph0">
+    <div class="phase-header" onclick="togglePhase('ph0')">
+      <div>
+        <div class="phase-name-row">
+          <span class="phase-badge">FASE 0</span>
+          <span class="phase-name">QUICK WIN — ASTE & PERIZIE</span>
+        </div>
+        <div class="phase-timeline" style="margin-top:6px;font-size:10px">⏱ Settimane 1–6 · Stack attuale · Zero refactoring necessario</div>
+      </div>
+      <div class="phase-kpis">
+        <div class="kpi"><div class="kpi-val" style="color:var(--p0)">€2K</div><div class="kpi-label">MRR target</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--p0)">20</div><div class="kpi-label">Clienti (periti CTU)</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--p0)">€99</div><div class="kpi-label">Prezzo/report asta</div></div>
+      </div>
+      <div class="phase-toggle">▶</div>
+    </div>
+    <div class="phase-body">
+      <div class="col-block">
+        <div class="task-section-title">🔴 TASK CRITICI — esegui in ordine</div>
+
+        <div class="task">
+          <div class="task-prio prio-critical"></div>
+          <div class="task-icon">🏛️</div>
+          <div class="task-content">
+            <div class="task-title">Landing page + checkout perizia asta</div>
+            <div class="task-desc">externalopinion.it/aste — form input (indirizzo, lotto, tribunale), pagamento Stripe, trigger job BullMQ, email con PDF. Nessun login richiesto al primo ordine.</div>
+            <div class="task-tags">
+              <span class="tag stack">Node.js</span>
+              <span class="tag stack">Stripe</span>
+              <span class="tag stack">BullMQ</span>
+              <span class="tag revenue">€99/report</span>
+              <span class="tag time">3-5 giorni</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="task">
+          <div class="task-prio prio-critical"></div>
+          <div class="task-icon">📄</div>
+          <div class="task-content">
+            <div class="task-title">Template PDF perizia asta production-ready</div>
+            <div class="task-desc">Output del modulo CARICO_ASTE → PDF firmabile. Include: descrizione immobile, analisi zona (OMI), stima valore, stato conservativo, note legali. Compatibile con Puppeteer/WeasyPrint.</div>
+            <div class="task-tags">
+              <span class="tag stack">Python</span>
+              <span class="tag stack">analizza_caso.py</span>
+              <span class="tag revenue">Core deliverable</span>
+              <span class="tag time">4-6 giorni</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="task">
+          <div class="task-prio prio-critical"></div>
+          <div class="task-icon">🌐</div>
+          <div class="task-content">
+            <div class="task-title">DNS fix + SSL externalopinion.it → Railway</div>
+            <div class="task-desc">Blocca la vendita. CNAME Hostinger → Railway. SSL automatico via Railway. Poi custom domain nel dashboard. Stimato 30 minuti ma propagazione DNS 1-24h.</div>
+            <div class="task-tags">
+              <span class="tag blocker">BLOCKER</span>
+              <span class="tag stack">Hostinger</span>
+              <span class="tag stack">Railway</span>
+              <span class="tag time">oggi</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="task">
+          <div class="task-prio prio-high"></div>
+          <div class="task-icon">📊</div>
+          <div class="task-content">
+            <div class="task-title">Integrazione dati OMI Agenzia Entrate</div>
+            <div class="task-desc">Dataset OMI (Osservatorio Mercato Immobiliare) scaricabile gratuitamente. Importa in PostgreSQL per zona catastale → fascia di valori €/mq per ogni microzona IT. Base dell'AVM locale.</div>
+            <div class="task-tags">
+              <span class="tag stack">Prisma</span>
+              <span class="tag stack">PostgreSQL</span>
+              <span class="tag revenue">Dato gratuito</span>
+              <span class="tag time">2-3 giorni</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="task">
+          <div class="task-prio prio-high"></div>
+          <div class="task-icon">📣</div>
+          <div class="task-content">
+            <div class="task-title">Distribuzione canali periti CTU</div>
+            <div class="task-desc">Forum: Perizie.net, gruppi FB "CTU Tribunali IT", LinkedIn "Periti Immobiliari Italiani". Post con demo gratuita primo report. Target: 5 periti beta → referral network. Costo: €0.</div>
+            <div class="task-tags">
+              <span class="tag revenue">Go-to-market</span>
+              <span class="tag time">Settimana 2</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="col-block">
+        <div class="rev-block">
+          <div class="rev-block-title">💰 Revenue Model — Fase 0</div>
+          <div class="rev-stream">
+            <div>
+              <div class="rev-stream-name">Perizia asta standard</div>
+              <div class="rev-stream-model">€79/report · B2C/CTU</div>
+            </div>
+            <div class="rev-stream-val green">€79</div>
+          </div>
+          <div class="rev-stream">
+            <div>
+              <div class="rev-stream-name">Perizia asta completa</div>
+              <div class="rev-stream-model">€149/report · con comparabili + forecast</div>
+            </div>
+            <div class="rev-stream-val green">€149</div>
+          </div>
+          <div class="rev-stream">
+            <div>
+              <div class="rev-stream-name">Pack 5 perizie (periti)</div>
+              <div class="rev-stream-model">€349 · sconto 53% vs singolo</div>
+            </div>
+            <div class="rev-stream-val amber">€349</div>
+          </div>
+          <div class="rev-stream">
+            <div>
+              <div class="rev-stream-name">Break-even fase 0</div>
+              <div class="rev-stream-model">21 report singoli o 6 pack5</div>
+            </div>
+            <div class="rev-stream-val green">€2K/mo</div>
+          </div>
+        </div>
+
+        <div class="task-section-title">⚠️ RISCHI FASE 0</div>
+        <div class="risk-item">
+          <div class="risk-dot"></div>
+          <div>
+            <div class="risk-text">Accuratezza AVM senza dati transazionali reali → report non credibile per un CTU</div>
+            <div class="risk-mit">→ Mitigation: usa range OMI + disclaimer "stima indicativa" + input manuale del perito per la firma finale</div>
+          </div>
+        </div>
+        <div class="risk-item">
+          <div class="risk-dot"></div>
+          <div>
+            <div class="risk-text">Chargeback Stripe se il report non soddisfa le aspettative del professionista</div>
+            <div class="risk-mit">→ Mitigation: preview gratuita primissima sezione + refund policy chiara + supporto email 24h</div>
+          </div>
+        </div>
+        <div class="risk-item">
+          <div class="risk-dot" style="background:var(--p1)"></div>
+          <div>
+            <div class="risk-text">Railway Trial esaurimento ($4.94 rimanenti) durante il lancio</div>
+            <div class="risk-mit">→ Action immediata: upgrade a Railway Hobby $5/mo PRIMA del lancio</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 1 -->
+  <div class="phase p1" id="ph1">
+    <div class="phase-header" onclick="togglePhase('ph1')">
+      <div>
+        <div class="phase-name-row">
+          <span class="phase-badge">FASE 1</span>
+          <span class="phase-name">MVP — SAAS B2B AGENZIE & STUDI</span>
+        </div>
+        <div class="phase-timeline" style="margin-top:6px;font-size:10px">⏱ Mesi 2–4 · Prima subscription ricorrente</div>
+      </div>
+      <div class="phase-kpis">
+        <div class="kpi"><div class="kpi-val" style="color:var(--p1)">€8K</div><div class="kpi-label">MRR target</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--p1)">30</div><div class="kpi-label">Clienti SaaS</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--p1)">€199</div><div class="kpi-label">Piano base/mo</div></div>
+      </div>
+      <div class="phase-toggle">▶</div>
+    </div>
+    <div class="phase-body">
+      <div class="col-block">
+        <div class="task-section-title">🔴 TASK CRITICI</div>
+        <div class="task">
+          <div class="task-prio prio-critical"></div>
+          <div class="task-icon">🔐</div>
+          <div class="task-content">
+            <div class="task-title">Auth multi-tenant + dashboard agente</div>
+            <div class="task-desc">Login agente/studio, tenant isolation in Prisma (campo organizationId su ogni modello), dashboard con storico report, crediti rimanenti, fatture Stripe. JWT + refresh token.</div>
+            <div class="task-tags"><span class="tag stack">Prisma</span><span class="tag stack">JWT</span><span class="tag stack">Stripe Billing</span><span class="tag time">1 settimana</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-critical"></div>
+          <div class="task-icon">💳</div>
+          <div class="task-content">
+            <div class="task-title">Subscription tiers con Stripe Billing</div>
+            <div class="task-desc">Starter €199/mo (10 report), Pro €499/mo (30 report), Agency €999/mo (illimitati + white-label base). Webhook Stripe → aggiornamento crediti PostgreSQL in tempo reale.</div>
+            <div class="task-tags"><span class="tag stack">Stripe</span><span class="tag revenue">ARR ricorrente</span><span class="tag time">3-4 giorni</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-high"></div>
+          <div class="task-icon">🔍</div>
+          <div class="task-content">
+            <div class="task-title">Comparable Sales Engine (CMA)</div>
+            <div class="task-desc">Cluster immobili simili per: zona catastale, tipologia, sup. ±20%, stato conservativo. Fonte: scraping Immobiliare.it/Idealista (termini permessi) + dati OMI. Output: 3-5 comparabili con delta % nel report PDF.</div>
+            <div class="task-tags"><span class="tag stack">Python</span><span class="tag stack">Redis cache</span><span class="tag revenue">Differenziante</span><span class="tag time">1 settimana</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-high"></div>
+          <div class="task-icon">🎯</div>
+          <div class="task-content">
+            <div class="task-title">Confidence Score calibrato</div>
+            <div class="task-desc">KPI #1 per B2B professionale (HouseCanary benchmark). Score 0-100 basato su: disponibilità dati zona, n° comparabili trovati, coerenza con OMI. Mostrato prominentemente nel report con spiegazione fattori.</div>
+            <div class="task-tags"><span class="tag stack">Python</span><span class="tag revenue">Blocca deal B2B</span><span class="tag time">3-4 giorni</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-high"></div>
+          <div class="task-icon">📱</div>
+          <div class="task-content">
+            <div class="task-title">INPUT_PERZIE: miglioramento UX form</div>
+            <div class="task-desc">Form wizard multi-step con validazione inline, autocompletamento indirizzo (Google Places API €2 gratis/1K req), upload foto/doc, salvataggio bozza. Riduce abbandono del 40%+.</div>
+            <div class="task-tags"><span class="tag stack">Frontend</span><span class="tag stack">Google Places</span><span class="tag time">4-5 giorni</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-block">
+        <div class="rev-block">
+          <div class="rev-block-title">💰 Revenue Model — Fase 1</div>
+          <div class="rev-stream">
+            <div><div class="rev-stream-name">Starter (10 report/mo)</div><div class="rev-stream-model">€199/mo · agenti singoli</div></div>
+            <div class="rev-stream-val amber">€199</div>
+          </div>
+          <div class="rev-stream">
+            <div><div class="rev-stream-name">Pro (30 report/mo)</div><div class="rev-stream-model">€499/mo · studi, piccole agenzie</div></div>
+            <div class="rev-stream-val amber">€499</div>
+          </div>
+          <div class="rev-stream">
+            <div><div class="rev-stream-name">Agency (illimitato)</div><div class="rev-stream-model">€999/mo · agenzie medie</div></div>
+            <div class="rev-stream-val amber">€999</div>
+          </div>
+          <div class="rev-stream">
+            <div><div class="rev-stream-name">Mix €8K MRR</div><div class="rev-stream-model">20×Starter + 6×Pro + 2×Agency</div></div>
+            <div class="rev-stream-val green">€8K</div>
+          </div>
+        </div>
+        <div class="task-section-title">📌 GO-TO-MARKET FASE 1</div>
+        <div class="task">
+          <div class="task-prio prio-med"></div>
+          <div class="task-icon">🤝</div>
+          <div class="task-content">
+            <div class="task-title">Partnership con 2-3 reti agenzie regionali</div>
+            <div class="task-desc">Target: RE/MAX franchisee locali, Gabetti, tecnocasa agenti indipendenti. Offerta: 1 mese gratis in cambio di 3 referral e testimonianza. Canale: LinkedIn outreach + demo 30 min.</div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-med"></div>
+          <div class="task-icon">📰</div>
+          <div class="task-content">
+            <div class="task-title">Content: "Come fare una CMA con AI in 5 minuti"</div>
+            <div class="task-desc">Guide SEO target: "valutazione immobile automatica", "perizia immobiliare online", "CMA immobiliare software". Blog + video LinkedIn. CAC organico obiettivo: €0-15.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 -->
+  <div class="phase p2" id="ph2">
+    <div class="phase-header" onclick="togglePhase('ph2')">
+      <div>
+        <div class="phase-name-row">
+          <span class="phase-badge">FASE 2</span>
+          <span class="phase-name">GROWTH — AVM ITALIA + FORECAST</span>
+        </div>
+        <div class="phase-timeline" style="margin-top:6px;font-size:10px">⏱ Mesi 5–9 · Moat tecnico vs competitor</div>
+      </div>
+      <div class="phase-kpis">
+        <div class="kpi"><div class="kpi-val" style="color:var(--p2)">€20K</div><div class="kpi-label">MRR target</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--p2)">150</div><div class="kpi-label">Clienti attivi</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--p2)">12M</div><div class="kpi-label">Forecast prop.</div></div>
+      </div>
+      <div class="phase-toggle">▶</div>
+    </div>
+    <div class="phase-body">
+      <div class="col-block">
+        <div class="task-section-title">🔵 TASK TECNICI MOAT</div>
+        <div class="task">
+          <div class="task-prio prio-critical"></div>
+          <div class="task-icon">📈</div>
+          <div class="task-content">
+            <div class="task-title">Forecast 12 mesi per zona catastale (time-series)</div>
+            <div class="task-desc">Modello Prophet/ARIMA su dati OMI storici (2015-2026) per ogni microzona IT. Output: trend atteso +/-X% a 6/12 mesi con confidence interval. Differenziale zero competitor IT. HouseCanary fa 36 mesi USA.</div>
+            <div class="task-tags"><span class="tag stack">Python Prophet</span><span class="tag stack">PostgreSQL TimescaleDB</span><span class="tag revenue">Upsell Pro→Agency</span><span class="tag time">2 settimane</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-high"></div>
+          <div class="task-icon">🏘️</div>
+          <div class="task-content">
+            <div class="task-title">Geometry Engine v2: analisi urbanistica</div>
+            <div class="task-desc">Integrazione OpenStreetMap + dati ISTAT: prossimità servizi (scuole, metro, ospedali, supermercati), classe urbanistica, piano regolatore. Fattori inclusi nello scoring proprietario con pesi calibrati.</div>
+            <div class="task-tags"><span class="tag stack">PostGIS</span><span class="tag stack">OpenStreetMap</span><span class="tag time">1-2 settimane</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-high"></div>
+          <div class="task-icon">⚡</div>
+          <div class="task-content">
+            <div class="task-title">Streaming report con SSE (progressive delivery)</div>
+            <div class="task-desc">Report AI in streaming: l'utente vede il testo generarsi in tempo reale invece di aspettare 30s. Riduce perceived latency del 70%. Implementare Server-Sent Events su endpoint report. Competitor non hanno questo.</div>
+            <div class="task-tags"><span class="tag stack">Node.js SSE</span><span class="tag stack">Anthropic streaming</span><span class="tag time">3-4 giorni</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-high"></div>
+          <div class="task-icon">🗄️</div>
+          <div class="task-content">
+            <div class="task-title">RAG su documenti catastali + visure</div>
+            <div class="task-desc">Pipeline RAG: upload visura catastale PDF → chunking → embedding (text-embedding-3-small) → retrieval → context injection nel prompt. Permette analisi di documenti specifici dell'immobile. Nessun competitor IT ha questo.</div>
+            <div class="task-tags"><span class="tag stack">pgvector</span><span class="tag stack">OpenAI embeddings</span><span class="tag revenue">Feature Pro+</span><span class="tag time">1 settimana</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-block">
+        <div class="rev-block">
+          <div class="rev-block-title">💰 Revenue Mix — Fase 2 (€20K MRR)</div>
+          <div class="rev-stream">
+            <div><div class="rev-stream-name">SaaS subscriptions</div><div class="rev-stream-model">~130 clienti mix Starter/Pro/Agency</div></div>
+            <div class="rev-stream-val blue">€15K</div>
+          </div>
+          <div class="rev-stream">
+            <div><div class="rev-stream-name">Report on-demand (non sub)</div><div class="rev-stream-model">~30 report/mo × €99 avg</div></div>
+            <div class="rev-stream-val blue">€3K</div>
+          </div>
+          <div class="rev-stream">
+            <div><div class="rev-stream-name">Add-on: forecast report</div><div class="rev-stream-model">€29 add-on su report esistenti</div></div>
+            <div class="rev-stream-val blue">€2K</div>
+          </div>
+        </div>
+
+        <div class="task-section-title">🏗 INFRASTRUTTURA SCALE</div>
+        <div class="task">
+          <div class="task-prio prio-high"></div>
+          <div class="task-icon">🔧</div>
+          <div class="task-content">
+            <div class="task-title">Migrazione Railway → infra dedicata</div>
+            <div class="task-desc">A €15K MRR, Railway costa più di un VPS dedicato. Migra su: Hetzner (€30/mo CPX31) + Supabase Pro (€25/mo PostgreSQL) + Upstash Redis ($10/mo). Risparmio: ~60% vs Railway Pro a volume.</div>
+            <div class="task-tags"><span class="tag stack">Hetzner</span><span class="tag stack">Supabase</span><span class="tag stack">Upstash</span><span class="tag time">Mese 7-8</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 -->
+  <div class="phase p3" id="ph3">
+    <div class="phase-header" onclick="togglePhase('ph3')">
+      <div>
+        <div class="phase-name-row">
+          <span class="phase-badge">FASE 3</span>
+          <span class="phase-name">API & SCALE — DEVELOPER ECOSYSTEM</span>
+        </div>
+        <div class="phase-timeline" style="margin-top:6px;font-size:10px">⏱ Mesi 10–14 · Canale API = margine più alto</div>
+      </div>
+      <div class="phase-kpis">
+        <div class="kpi"><div class="kpi-val" style="color:var(--p3)">€35K</div><div class="kpi-label">MRR target</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--p3)">10+</div><div class="kpi-label">API integrations</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--p3)">€2/call</div><div class="kpi-label">Avg API revenue</div></div>
+      </div>
+      <div class="phase-toggle">▶</div>
+    </div>
+    <div class="phase-body">
+      <div class="col-block">
+        <div class="task-section-title">🟣 API PUBLIC LAUNCH</div>
+        <div class="task">
+          <div class="task-prio prio-critical"></div>
+          <div class="task-icon">📡</div>
+          <div class="task-content">
+            <div class="task-title">OpenAPI 3.0 spec + Developer Portal</div>
+            <div class="task-desc">Endpoint: POST /v1/valuation, POST /v1/report, GET /v1/comparable, POST /v1/score, POST /v1/forecast. Documentazione interattiva (Swagger UI). API key management dashboard. Rate limiting per tier con Redis.</div>
+            <div class="task-tags"><span class="tag stack">OpenAPI</span><span class="tag stack">Swagger</span><span class="tag stack">Redis rate-limit</span><span class="tag time">2 settimane</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-critical"></div>
+          <div class="task-icon">💰</div>
+          <div class="task-content">
+            <div class="task-title">API Pricing Tiers (benchmark HouseCanary)</div>
+            <div class="task-desc">Pay-as-you-go: €0.50/AVM call, €2.00/report call, €1.00/comparable call, €3.00/full report PDF. Prepaid bundles: 1K credits €400, 5K credits €1.500, 10K credits €2.500. Metering Stripe Billing.</div>
+            <div class="task-tags"><span class="tag revenue">€0.50–€3/call</span><span class="tag stack">Stripe Metered</span><span class="tag time">1 settimana</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-high"></div>
+          <div class="task-icon">📦</div>
+          <div class="task-content">
+            <div class="task-title">Batch API endpoint per portfolio</div>
+            <div class="task-desc">POST /v1/valuations/bulk: array fino a 500 asset, job asincrono BullMQ, webhook callback completion, response CSV/JSON/Excel. Target: servicer NPL, fondi RE. Pricing: €0.30/asset bulk (volume discount).</div>
+            <div class="task-tags"><span class="tag stack">BullMQ</span><span class="tag stack">Webhook</span><span class="tag revenue">NPL/fondi target</span><span class="tag time">1 settimana</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-high"></div>
+          <div class="task-icon">🔌</div>
+          <div class="task-content">
+            <div class="task-title">Embed Widget / iFrame per agenzie</div>
+            <div class="task-desc">Widget JS embeddabile: &lt;script src="externalopinion.it/widget.js"&gt;. Configura colori, brand, endpoint. Agenzie lo integrano nel loro sito in 5 minuti. Modello: €99/mo per embed license.</div>
+            <div class="task-tags"><span class="tag stack">Vanilla JS</span><span class="tag revenue">Distribuzione passiva</span><span class="tag time">1 settimana</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-block">
+        <div class="rev-block">
+          <div class="rev-block-title">💰 Revenue Mix — Fase 3 (€35K MRR)</div>
+          <div class="rev-stream">
+            <div><div class="rev-stream-name">SaaS subscriptions</div><div class="rev-stream-model">250 clienti · €18K stimati</div></div>
+            <div class="rev-stream-val purple">€18K</div>
+          </div>
+          <div class="rev-stream">
+            <div><div class="rev-stream-name">API pay-per-use</div><div class="rev-stream-model">~6K calls/mo × €2 avg</div></div>
+            <div class="rev-stream-val purple">€12K</div>
+          </div>
+          <div class="rev-stream">
+            <div><div class="rev-stream-name">Widget embed licenses</div><div class="rev-stream-model">50 agenzie × €99/mo</div></div>
+            <div class="rev-stream-val purple">€5K</div>
+          </div>
+        </div>
+
+        <div class="task-section-title">🎯 TARGET API CLIENTS</div>
+        <div class="task">
+          <div class="task-prio prio-med"></div>
+          <div class="task-icon">🏦</div>
+          <div class="task-content">
+            <div class="task-title">Outreach servicer NPL italiani</div>
+            <div class="task-desc">Target: Prelios, doValue, Cerved Credit Management, Banca IFIS. Proposta: batch API per valutazione portafogli UTP/NPL. Entry deal: €2K-5K/mese per volume &gt;500 asset/mese. Canale: LinkedIn CxO + intermediari finanziari.</div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-med"></div>
+          <div class="task-icon">🏗️</div>
+          <div class="task-content">
+            <div class="task-title">Outreach proptech italiani</div>
+            <div class="task-desc">Target: Immobiliare.it (partnership dati), portali regionali, CRM per agenzie (Gestionale Agenti, Gestionale RE). API valutazione embedded nel loro tool. Revenue share o flat fee mensile.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 4 -->
+  <div class="phase p4" id="ph4">
+    <div class="phase-header" onclick="togglePhase('ph4')">
+      <div>
+        <div class="phase-name-row">
+          <span class="phase-badge">FASE 4</span>
+          <span class="phase-name">ENTERPRISE — WHITE-LABEL + NPL + BANCHE</span>
+        </div>
+        <div class="phase-timeline" style="margin-top:6px;font-size:10px">⏱ Mesi 15–18 · ARR alto + churn basso</div>
+      </div>
+      <div class="phase-kpis">
+        <div class="kpi"><div class="kpi-val" style="color:var(--p4)">€50K+</div><div class="kpi-label">MRR target</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--p4)">3-5</div><div class="kpi-label">Enterprise deals</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--p4)">€5K</div><div class="kpi-label">ACV min enterprise</div></div>
+      </div>
+      <div class="phase-toggle">▶</div>
+    </div>
+    <div class="phase-body">
+      <div class="col-block">
+        <div class="task-section-title">🔴 ENTERPRISE FEATURES</div>
+        <div class="task">
+          <div class="task-prio prio-critical"></div>
+          <div class="task-icon">🏷️</div>
+          <div class="task-content">
+            <div class="task-title">White-label completo (tema, dominio, brand)</div>
+            <div class="task-desc">Custom domain (valutazioni.banca-x.it), logo, palette colori, footer disclaimer legale. Tenant isolato in DB. SLA contrattuale 99.9%. Dashboard admin separata per il cliente enterprise. Pricing: €2K-10K/mo + setup fee.</div>
+            <div class="task-tags"><span class="tag revenue">€2K-10K/mo</span><span class="tag stack">Multi-tenant</span><span class="tag time">3 settimane</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-critical"></div>
+          <div class="task-icon">✍️</div>
+          <div class="task-content">
+            <div class="task-title">Firma digitale perizie (Namirial / DocuSign)</div>
+            <div class="task-desc">Workflow: AI genera bozza → perito revisa online → firma digitale qualificata (QES) → PDF/A con certificato. Sblocca mercato CTU formale, banche, procedure concorsuali. Compliance eIDAS. Costo: ~€1-3/firma.</div>
+            <div class="task-tags"><span class="tag stack">Namirial API</span><span class="tag revenue">Sblocca mercato formale</span><span class="tag time">2 settimane</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-high"></div>
+          <div class="task-icon">🔒</div>
+          <div class="task-content">
+            <div class="task-title">Audit trail + AI Act compliance</div>
+            <div class="task-desc">Log immutabile ogni decisione AI: input, model version, output, confidence, timestamp. Explainability report allegato ad ogni valutazione. Posizionamento: "unica piattaforma AI RE conforme AI Act EU". Vantaggio vs US player.</div>
+            <div class="task-tags"><span class="tag stack">Append-only log</span><span class="tag revenue">Moat regolatorio</span><span class="tag time">1 settimana</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-high"></div>
+          <div class="task-icon">📊</div>
+          <div class="task-content">
+            <div class="task-title">Due Diligence RE pack (M&A / Fondi)</div>
+            <div class="task-desc">Report premium: AVM + comparabili + forecast 12M + risk score + note legali + sintesi executive. Target: SGR, fondi PE con asset RE, banche per cartolarizzazione. Prezzo: €2.000-10.000/portafoglio.</div>
+            <div class="task-tags"><span class="tag revenue">€2K-10K/deal</span><span class="tag time">Customizzazione 1 sett.</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-block">
+        <div class="rev-block">
+          <div class="rev-block-title">💰 Revenue Mix — Fase 4 (€50K MRR)</div>
+          <div class="rev-stream">
+            <div><div class="rev-stream-name">SaaS SMB</div><div class="rev-stream-model">400 clienti</div></div>
+            <div class="rev-stream-val" style="color:var(--p4)">€22K</div>
+          </div>
+          <div class="rev-stream">
+            <div><div class="rev-stream-name">API ecosystem</div><div class="rev-stream-model">Volume + embed</div></div>
+            <div class="rev-stream-val" style="color:var(--p4)">€10K</div>
+          </div>
+          <div class="rev-stream">
+            <div><div class="rev-stream-name">Enterprise white-label</div><div class="rev-stream-model">3 deal × €4K avg</div></div>
+            <div class="rev-stream-val" style="color:var(--p4)">€12K</div>
+          </div>
+          <div class="rev-stream">
+            <div><div class="rev-stream-name">Portfolio / DD reports</div><div class="rev-stream-model">High-ticket one-time</div></div>
+            <div class="rev-stream-val" style="color:var(--p4)">€6K</div>
+          </div>
+        </div>
+
+        <div class="task-section-title">🏦 TARGET ENTERPRISE IT</div>
+        <div class="task">
+          <div class="task-prio prio-med"></div>
+          <div class="task-icon">🏛️</div>
+          <div class="task-content">
+            <div class="task-title">Banche: BNL, UniCredit, Mediolanum RE</div>
+            <div class="task-desc">Divisioni mutui e NPL. Proposta: white-label AVM per pre-istruttoria mutui (riduce costi perizia esterna da €300 a €5). Pitch via: consulenti fintech, FinTechDistrict Milano, associazioni bancarie ABI.</div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-prio prio-med"></div>
+          <div class="task-icon">📉</div>
+          <div class="task-content">
+            <div class="task-title">Servicer NPL: Prelios, doValue, Cerved</div>
+            <div class="task-desc">€40B+ crediti deteriorati con collaterale RE in Italia. Ogni asset richiede valutazione periodica. Batch API: €0.30/asset × 50.000 asset/trimestre = €15K/trimestre per cliente. Canale: REOCO conference, SDA Bocconi NPL forum.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEKLY SPRINT PLAN -->
+<div class="sec">
+  <div class="sec-header">
+    <div class="sec-num">02</div>
+    <div class="sec-title">SPRINT PLAN — PRIME 8 SETTIMANE</div>
+    <div class="sec-meta">Execution dettagliata · Zero to first €</div>
+  </div>
+
+  <table class="sprint-table">
+    <thead>
+      <tr>
+        <th>Settimana</th>
+        <th>Focus primario</th>
+        <th>Task chiave</th>
+        <th>Stack coinvolto</th>
+        <th>Revenue milestone</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="sprint-wk">W1</td>
+        <td><strong>Infra + DNS</strong></td>
+        <td>Fix DNS Hostinger→Railway, upgrade Railway Hobby, SSL, env vars prod</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#7ab8f5">Railway, Hostinger, .env</td>
+        <td class="sprint-rev">€0 · Setup</td>
+      </tr>
+      <tr>
+        <td class="sprint-wk">W1-2</td>
+        <td><strong>Landing aste</strong></td>
+        <td>Pagina /aste con form, Stripe checkout, trigger BullMQ job, email conferma</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#7ab8f5">Node.js, Stripe, BullMQ</td>
+        <td class="sprint-rev">Pronto a vendere</td>
+      </tr>
+      <tr>
+        <td class="sprint-wk">W2-3</td>
+        <td><strong>PDF perizia asta</strong></td>
+        <td>Template PDF production: CARICO_ASTE → analizza_caso.py → Puppeteer PDF → S3/Railway storage → email</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#7ab8f5">Python, Puppeteer, BullMQ</td>
+        <td class="sprint-rev">First sale possible</td>
+      </tr>
+      <tr>
+        <td class="sprint-wk">W3</td>
+        <td><strong>Dati OMI</strong></td>
+        <td>Download dataset OMI Agenzia Entrate, import PostgreSQL, API interna zona→range €/mq</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#7ab8f5">Prisma, PostgreSQL, Python</td>
+        <td class="sprint-rev">AVM base attivo</td>
+      </tr>
+      <tr>
+        <td class="sprint-wk">W4</td>
+        <td><strong>GTM periti CTU</strong></td>
+        <td>5 beta tester periti CTU, feedback, fix critici, prima testimonianza</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#7ab8f5">—</td>
+        <td class="sprint-rev" style="color:var(--p0)">€500-1K primissimi €</td>
+      </tr>
+      <tr>
+        <td class="sprint-wk">W5-6</td>
+        <td><strong>Auth + Dashboard</strong></td>
+        <td>Multi-tenant auth JWT, dashboard storico report, crediti rimanenti, fatture</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#7ab8f5">Node.js, Prisma, JWT</td>
+        <td class="sprint-rev">SaaS ready</td>
+      </tr>
+      <tr>
+        <td class="sprint-wk">W6-7</td>
+        <td><strong>Stripe Subscription</strong></td>
+        <td>Tiers Starter/Pro/Agency, webhook → crediti DB, customer portal self-serve</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#7ab8f5">Stripe Billing, Node.js</td>
+        <td class="sprint-rev" style="color:var(--p1)">First MRR ricorrente</td>
+      </tr>
+      <tr>
+        <td class="sprint-wk">W8</td>
+        <td><strong>Review & Optimize</strong></td>
+        <td>Analytics (Posthog free), funnel conversion, churn interviews, backlog Q2 priority</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#7ab8f5">Posthog, dati</td>
+        <td class="sprint-rev" style="color:var(--p0)">Target: €2K MRR</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- COST STRUCTURE -->
+<div class="sec">
+  <div class="sec-header">
+    <div class="sec-num">03</div>
+    <div class="sec-title">STRUTTURA COSTI OTTIMIZZATA</div>
+    <div class="sec-meta">Bootstrap · Massimo margine</div>
+  </div>
+
+  <div class="inline-grid-2">
+    <div style="background:var(--surface);border:1px solid var(--border);padding:24px;">
+      <div class="task-section-title">💸 COSTI FISSI — FASE 0 (mese)</div>
+      <div class="cost-row"><span class="cost-name">Railway Hobby (dopo trial)</span><span class="cost-amt">$5</span></div>
+      <div class="cost-row"><span class="cost-name">PostgreSQL (incluso Railway)</span><span class="cost-amt">€0</span></div>
+      <div class="cost-row"><span class="cost-name">Redis Upstash free tier</span><span class="cost-amt">€0</span></div>
+      <div class="cost-row"><span class="cost-name">Stripe fees (2.9% + €0.25/tx)</span><span class="cost-amt">~€15 su €500 GMV</span></div>
+      <div class="cost-row"><span class="cost-name">Hostinger dominio (annuale)</span><span class="cost-amt">~€3/mo</span></div>
+      <div class="cost-row"><span class="cost-name">Claude API (sonnet) per report</span><span class="cost-amt">~€3-8/report</span></div>
+      <div class="cost-total">
+        <span class="cost-total-label">TOTALE FASE 0</span>
+        <span class="cost-total-amt">~€30/mo fixed</span>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);padding:24px;">
+      <div class="task-section-title">📊 COSTI SCALA — FASE 2 (€20K MRR)</div>
+      <div class="cost-row"><span class="cost-name">Hetzner CPX31 (VPS 8core/16GB)</span><span class="cost-amt">€28/mo</span></div>
+      <div class="cost-row"><span class="cost-name">Supabase Pro (PostgreSQL managed)</span><span class="cost-amt">€25/mo</span></div>
+      <div class="cost-row"><span class="cost-name">Upstash Redis Pro</span><span class="cost-amt">$30/mo</span></div>
+      <div class="cost-row"><span class="cost-name">Claude API (volume ~500 report/mo)</span><span class="cost-amt">~€2.500/mo</span></div>
+      <div class="cost-row"><span class="cost-name">Posthog Cloud (analytics)</span><span class="cost-amt">$0 (free tier)</span></div>
+      <div class="cost-row"><span class="cost-name">Stripe fees su €20K</span><span class="cost-amt">~€600/mo</span></div>
+      <div class="cost-total">
+        <span class="cost-total-label">TOTALE FASE 2</span>
+        <span class="cost-total-amt">~€3.2K/mo</span>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:12px;background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.15);padding:16px 24px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)">
+    → Gross margin a €20K MRR: (€20.000 - €3.200) / €20.000 = <strong style="color:var(--p0)">84%</strong> · Netto dopo LLM e infra
+  </div>
+</div>
+
+<!-- DECISION FRAMEWORK -->
+<div class="sec">
+  <div class="sec-header">
+    <div class="sec-num">04</div>
+    <div class="sec-title">DECISION GATE — QUANDO AVANZARE DI FASE</div>
+  </div>
+  <div class="decision-strip">
+    <div class="decision-cell">
+      <div class="decision-q">Gate 0→1</div>
+      <div class="decision-a">≥10 report venduti + €1K MRR</div>
+      <div class="decision-next">→ Avvia Fase 1: auth + subscription</div>
+    </div>
+    <div class="decision-cell">
+      <div class="decision-q">Gate 1→2</div>
+      <div class="decision-a">≥30 clienti SaaS + €5K MRR + &lt;10% churn</div>
+      <div class="decision-next">→ Avvia Fase 2: AVM + forecast</div>
+    </div>
+    <div class="decision-cell">
+      <div class="decision-q">Gate 2→3</div>
+      <div class="decision-a">≥€15K MRR + 1 richiesta API inbound</div>
+      <div class="decision-next">→ Avvia Fase 3: API pubblica</div>
+    </div>
+    <div class="decision-cell">
+      <div class="decision-q">Gate 3→4</div>
+      <div class="decision-a">≥€30K MRR + 1 lead enterprise qualificato</div>
+      <div class="decision-next">→ Avvia Fase 4: white-label + NPL</div>
+    </div>
+  </div>
+</div>
+
+<!-- TECH ARCHITECTURE -->
+<div class="sec">
+  <div class="sec-header">
+    <div class="sec-num">05</div>
+    <div class="sec-title">ARCHITETTURA TECNICA PER FASE</div>
+  </div>
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tech-card-title">Stack Corrente → Fase 0</div>
+      <div class="tech-row"><span class="tech-key">API server</span><span class="tech-val code">Node.js + Express</span></div>
+      <div class="tech-row"><span class="tech-key">ORM</span><span class="tech-val code">Prisma + PostgreSQL</span></div>
+      <div class="tech-row"><span class="tech-key">Queue</span><span class="tech-val code">BullMQ + Redis</span></div>
+      <div class="tech-row"><span class="tech-key">AI</span><span class="tech-val code">analizza_caso.py → Claude API</span></div>
+      <div class="tech-row"><span class="tech-key">PDF</span><span class="tech-val code">Puppeteer (add now)</span></div>
+      <div class="tech-row"><span class="tech-key">Payment</span><span class="tech-val code">Stripe (add now)</span></div>
+      <div class="tech-row"><span class="tech-key">Hosting</span><span class="tech-val code">Railway Hobby $5/mo</span></div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-title">Aggiunte Fase 1–2</div>
+      <div class="tech-row"><span class="tech-key">Auth</span><span class="tech-val code">JWT + bcrypt + refresh</span></div>
+      <div class="tech-row"><span class="tech-key">Billing</span><span class="tech-val code">Stripe Billing + webhooks</span></div>
+      <div class="tech-row"><span class="tech-key">Embedding</span><span class="tech-val code">pgvector (RAG)</span></div>
+      <div class="tech-row"><span class="tech-key">Forecast</span><span class="tech-val code">Python Prophet + TimescaleDB</span></div>
+      <div class="tech-row"><span class="tech-key">GIS</span><span class="tech-val code">PostGIS + OpenStreetMap</span></div>
+      <div class="tech-row"><span class="tech-key">Streaming</span><span class="tech-val code">SSE (Server-Sent Events)</span></div>
+      <div class="tech-row"><span class="tech-key">Analytics</span><span class="tech-val code">Posthog (free self-host)</span></div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-title">Aggiunte Fase 3 (API)</div>
+      <div class="tech-row"><span class="tech-key">API gateway</span><span class="tech-val code">Kong / custom middleware</span></div>
+      <div class="tech-row"><span class="tech-key">Rate limiting</span><span class="tech-val code">Redis sliding window</span></div>
+      <div class="tech-row"><span class="tech-key">Metering</span><span class="tech-val code">Stripe Metered Billing</span></div>
+      <div class="tech-row"><span class="tech-key">Docs</span><span class="tech-val code">OpenAPI 3.0 + Swagger UI</span></div>
+      <div class="tech-row"><span class="tech-key">Webhooks</span><span class="tech-val code">Outbound webhook engine</span></div>
+      <div class="tech-row"><span class="tech-key">CDN</span><span class="tech-val code">Cloudflare free tier</span></div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-title">Aggiunte Fase 4 (Enterprise)</div>
+      <div class="tech-row"><span class="tech-key">Multi-tenant</span><span class="tech-val code">Schema isolation Prisma</span></div>
+      <div class="tech-row"><span class="tech-key">Firma digitale</span><span class="tech-val code">Namirial API (QES)</span></div>
+      <div class="tech-row"><span class="tech-key">Audit log</span><span class="tech-val code">Append-only event store</span></div>
+      <div class="tech-row"><span class="tech-key">SLA monitor</span><span class="tech-val code">Uptime Robot + PagerDuty</span></div>
+      <div class="tech-row"><span class="tech-key">Infra</span><span class="tech-val code">Hetzner + Supabase Pro</span></div>
+      <div class="tech-row"><span class="tech-key">Compliance</span><span class="tech-val code">AI Act explainability log</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<footer>
+  <div><span class="logo">ExternalOpinion.it</span> · Roadmap Profittevole · Confidenziale · Maggio 2026</div>
+  <div>Based on: competitive analysis vs HouseCanary, PriceHubble, Casavo, Wikicasa · 80K procedure esecutive IT/anno · €40B NPL collateral RE</div>
+</footer>
+
+<script>
+function togglePhase(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+// Open first phase by default already done via class
+</script>
+</body>
+</html>
