@@ -12,15 +12,17 @@
 
 ---
 
-## Variabili critiche (ADESSO)
+## Stato Stripe (verificato 2026-06-15) — ✅ LIVE E OPERATIVO
 
-| Variabile | Valore corretto | Stato attuale | Azione |
+| Variabile | Valore atteso | Stato attuale | Azione |
 |-----------|----------------|---------------|--------|
-| `CORS_ORIGIN` | `https://externalopinion.netlify.app,https://externalopinion.it` | `https://externalopinion.it` solo | **AGGIORNARE** |
-| `BASE_URL` | `https://externalopinion.netlify.app` | `https://externalopinion.it` | **AGGIORNARE** |
-| `STRIPE_SECRET_KEY` | `sk_live_...` (da Stripe Dashboard) | `sk_test_...` | **SOSTITUIRE con live** |
-| `STRIPE_PUBLISHABLE_KEY` | `pk_live_...` (da Stripe Dashboard) | `pk_test_...` | **SOSTITUIRE con live** |
-| `STRIPE_WEBHOOK_SECRET` | `whsec_...` (da Stripe → Webhooks → live endpoint) | test | **SOSTITUIRE con live** |
+| `STRIPE_SECRET_KEY` | `sk_live_...` | ✅ `sk_live_...` configurata | nessuna |
+| `STRIPE_PUBLISHABLE_KEY` | `pk_live_...` | ✅ `pk_live_...` configurata | nessuna |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_...` (live endpoint) | ✅ `whsec_...` configurata | nessuna |
+| `BASE_URL` | `https://externalopinion.netlify.app` | ✅ configurata | nessuna |
+| `CORS_ORIGIN` | `https://externalopinion.netlify.app,https://externalopinion.it` | verificare entrambe le origini | verificare |
+
+Account Stripe `acct_1TYlSo...` (IT/EUR): `charges_enabled=true`, `payouts_enabled=true`, KYC completo, nessun requisito pendente. Il checkout genera sessioni `cs_live` valide e il form di pagamento si apre. Nessuna azione richiesta su Stripe.
 
 ---
 
@@ -44,7 +46,7 @@
 
 Il webhook Stripe deve puntare a:
 ```
-https://externalopinionagent-production-1f66.up.railway.app/api/webhooks/stripe
+https://externalopinionagent-production-1f66.up.railway.app/api/stripe/webhook
 ```
 
 Evento da abilitare: `checkout.session.completed`
