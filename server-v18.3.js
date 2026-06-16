@@ -1045,6 +1045,11 @@ app.get('/aste', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'aste.html'));
 });
 
+// Landing marketing (piani e prezzi) — senza estensione .html
+app.get('/landing', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+});
+
 // ============================================================================
 // API OMI LOOKUP — GET /api/v1/omi/:indirizzo
 // ============================================================================
