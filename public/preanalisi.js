@@ -83,27 +83,94 @@ async function avviaAnalisi() {
   }
 }
 
-async function pollRisultato(jobId) {
-  let tentativi = 0;
-  const intervallo = setInterval(async () => {
-    tentativi++;
-    if (tentativi > 80) {
-      clearInterval(intervallo);
-      mostraErrore('Timeout analisi. Riprova più tardi.');
+// ── Polling tollerante alle reti instabili ───────────────────────────────────
+const POLL_BASE_MS     = 3000;            // intervallo normale tra un poll e l'altro
+const POLL_MAX_MS      = 15000;           // intervallo massimo durante il backoff
+const REQ_TIMEOUT_MS   = 12000;           // timeout della singola richiesta
+const POLL_DEADLINE_MS = 6 * 60 * 1000;   // durata massima complessiva dell'analisi
+
+// Avviso discreto in pagina (creato al volo, nessuna modifica all'HTML necessaria)
+function mostraAvvisoRete(mostra, msg) {
+  let el = document.getElementById('net-warning');
+  if (!mostra) { if (el) el.style.display = 'none'; return; }
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'net-warning';
+    el.style.cssText = 'margin-top:14px;padding:9px 13px;border-radius:8px;'
+      + 'background:#fef3c7;color:#92400e;font-size:14px;text-align:center;';
+    const box = document.getElementById('progress-box');
+    if (box) box.appendChild(el);
+  }
+  el.textContent = msg || 'Connessione instabile, continuo a riprovare automaticamente…';
+  el.style.display = 'block';
+}
+
+function pollRisultato(jobId) {
+  const deadline = Date.now() + POLL_DEADLINE_MS;
+  let attesa     = POLL_BASE_MS;   // intervallo corrente (cresce in backoff)
+  let erroriRete = 0;              // fallimenti di rete consecutivi
+  let attivo     = true;
+  let timer      = null;
+  let inFlight   = false;          // evita poll paralleli
+
+  const onOffline = () => mostraAvvisoRete(true, 'Sei offline. Riprendo appena torna la connessione…');
+  const onOnline  = () => { attesa = POLL_BASE_MS; erroriRete = 0; clearTimeout(timer); tick(); };
+  window.addEventListener('offline', onOffline);
+  window.addEventListener('online', onOnline);
+
+  function stop() {
+    attivo = false;
+    clearTimeout(timer);
+    window.removeEventListener('offline', onOffline);
+    window.removeEventListener('online', onOnline);
+    mostraAvvisoRete(false);
+  }
+
+  function schedule() {
+    if (!attivo) return;
+    clearTimeout(timer);
+    timer = setTimeout(tick, attesa);
+  }
+
+  async function tick() {
+    if (!attivo || inFlight) return;
+
+    if (Date.now() > deadline) {
+      stop();
+      mostraErrore("L'analisi sta richiedendo troppo tempo. Riprova più tardi: se hai già pagato riceverai comunque il report via email.");
       resetForm();
       return;
     }
+    // Offline: non interrogo il server, aspetto l'evento 'online' per ripartire
+    if (navigator.onLine === false) {
+      mostraAvvisoRete(true, 'Sei offline. Riprendo appena torna la connessione…');
+      return;
+    }
+
+    inFlight = true;
+    const ctrl = new AbortController();
+    const reqTimeout = setTimeout(() => ctrl.abort(), REQ_TIMEOUT_MS);
     try {
-      const res  = await fetch(`${API_BASE}/api/jobs/${jobId}`);
+      const res = await fetch(`${API_BASE}/api/jobs/${jobId}`, { signal: ctrl.signal });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
-      if (!data.job) return;
+
+      // Richiesta riuscita → la rete è tornata stabile: azzero backoff e avviso
+      erroriRete = 0;
+      attesa     = POLL_BASE_MS;
+      mostraAvvisoRete(false);
+
+      if (!data.job) { schedule(); return; }
       aggiornaSteps(data.job.status);
+
       if (['COMPLETED', 'READY_FOR_PAYMENT', 'SCORED'].includes(data.job.status)) {
-        clearInterval(intervallo);
+        stop();
         document.getElementById('progress-bar').style.width = '100%';
         setTimeout(() => mostraRisultato(data.job, data.immobile), 600);
-      } else if (data.job.status === 'FAILED') {
-        clearInterval(intervallo);
+        return;
+      }
+      if (data.job.status === 'FAILED') {
+        stop();
         const raw = data.job.error || '';
         let msg = 'Analisi non completata. Riprova o contatta info@externalopinion.it.';
         if (raw.includes('ENOTFOUND') || raw.includes('ECONNREFUSED') || raw.includes('Scraping fallito'))
@@ -114,9 +181,23 @@ async function pollRisultato(jobId) {
           msg = "Dati insufficienti nell'annuncio per produrre un'analisi affidabile. Prova con un URL che contenga la perizia estimativa allegata.";
         mostraErrore(msg);
         resetForm();
+        return;
       }
-    } catch (_) {}
-  }, 3000);
+      schedule();
+    } catch (_) {
+      // Errore di rete / timeout / abort: NON è un fallimento dell'analisi.
+      // Ritento con backoff progressivo senza interrompere il job sul server.
+      erroriRete++;
+      attesa = Math.min(attesa + POLL_BASE_MS, POLL_MAX_MS);
+      if (erroriRete >= 2) mostraAvvisoRete(true);
+      schedule();
+    } finally {
+      clearTimeout(reqTimeout);
+      inFlight = false;
+    }
+  }
+
+  tick();
 }
 
 function mostraRisultato(job, immobile) {
