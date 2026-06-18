@@ -443,6 +443,20 @@ apiRouter.post(
       // Crea Stripe session
       const checkoutSession = await createCheckoutSession(jobId, tier, email);
 
+      // Salva stripeSessionId nel job per tracciabilità pre-pagamento
+      await prismaClient.jobEvent.create({
+        data: {
+          jobId,
+          eventType: 'CHECKOUT_SESSION_CREATED',
+          metadata: JSON.stringify({
+            stripeSessionId: checkoutSession.id,
+            paymentStatus:   'pending',
+            paymentAmount:   checkoutSession.amount_total / 100,
+            paymentTier:     tier,
+          }),
+        },
+      }).catch(e => console.error('[API] jobEvent CHECKOUT_SESSION_CREATED KO:', e.message));
+
       // Traccia apertura checkout Stripe
       trackLead({
         eventType: 'CHECKOUT_STARTED',

@@ -64,9 +64,9 @@ router.post('/webhook', express.raw({ type: '*/*' }), async (req, res) => {
 // CHECKOUT COMPLETATO (FIX P0: idempotency atomica + consegna manuale)
 // ============================================================================
 async function handleCheckoutCompleted(session) {
-  const reportId    = session.metadata?.reportId;
+  const reportId    = session.metadata?.reportId || session.client_reference_id;
   const clientEmail = session.customer_email;
-  if (!reportId) { console.warn('[STRIPE] reportId mancante'); return; }
+  if (!reportId) { console.warn('[STRIPE] reportId mancante — sessione non collegata a nessun caso'); return; }
   const amountEuro = session.amount_total / 100;
   const tier       = TIER_MAPPING[amountEuro] || 'TIER_4_ENTERPRISE_API';
 
@@ -278,8 +278,9 @@ async function createCheckoutSession(reportId, tier, clientEmail = null) {
     mode:          'payment',
     success_url:   `${baseUrl}/success?sessionId={CHECKOUT_SESSION_ID}&jobId=${reportId}`,
     cancel_url:    `${baseUrl}/cancel?jobId=${reportId}`,
-    customer_email: clientEmail || undefined,
-    metadata:      { reportId, tier },
+    customer_email:       clientEmail || undefined,
+    client_reference_id: reportId,
+    metadata:            { reportId, tier },
   });
 }
 
