@@ -1,6 +1,28 @@
 # Quick Intake — Script di Test
 
-## Prima di iniziare
+## Ambiente
+
+**URL produzione:** https://externalopinionagent-production-1f66.up.railway.app  
+**Route Quick Intake:** https://externalopinionagent-production-1f66.up.railway.app/quick-intake  
+**Ultima verifica end-to-end:** 2026-06-18 ✅ PASSATO
+
+## Test end-to-end eseguito (2026-06-18)
+
+```
+categoria:  Asta immobiliare
+link:       https://www.astegiudiziarie.it/aste-immobiliari/test-quick-intake-verifica
+email:      test@example.com
+note:       verifica rischio prima offerta
+
+→ caseId:      f18b3d57-0918-4927-a485-5ffac6527a28
+→ caseId breve: EO-F18B3D57
+→ DB:          job salvato, status OCR_DONE (pipeline AI avviata)
+→ Stripe:      cs_live_a1MlxzI7sAe... (€79 TIER_1_CASCADE_79)
+→ checkoutUrl: https://checkout.stripe.com/c/pay/cs_live_...
+→ Pagamento collegato al caseId via Stripe metadata.reportId ✅
+```
+
+## Prima di iniziare (test locale)
 
 Assicurarsi che il server sia running:
 ```
