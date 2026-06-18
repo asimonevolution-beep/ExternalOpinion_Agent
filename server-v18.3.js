@@ -278,11 +278,8 @@ apiRouter.post(
         source: req.get('referer') || 'direct',
       });
 
-      // ===== CREA DAG PIPELINE =====
-      await createAnalysisPipeline(jobRecord.id, jobRecord.payload, tier);
-
-      // HTTP 202 ACCEPTED - Job enqueued
-      return res.status(202).json({
+      // HTTP 202 ACCEPTED — risponde subito, pipeline avviata in background
+      res.status(202).json({
         success: true,
         jobId: jobRecord.id,
         inputHash,
@@ -292,6 +289,10 @@ apiRouter.post(
         checkoutUrl: `/api/jobs/${jobRecord.id}/checkout`,
         streamUrl: `/api/stream/${jobRecord.id}`,
       });
+
+      // ===== CREA DAG PIPELINE (fire-and-forget) =====
+      createAnalysisPipeline(jobRecord.id, jobRecord.payload, tier)
+        .catch(err => console.error(`[DAG] Pipeline failed for ${jobRecord.id}:`, err.message));
     } catch (err) {
       console.error(`[API] Error creating job:`, err.message);
       return res.status(500).json({
