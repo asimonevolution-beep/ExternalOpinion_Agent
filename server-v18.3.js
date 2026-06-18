@@ -112,6 +112,9 @@ const allowedOrigins = [
   ...(process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
     : []),
+  ...(process.env.RAILWAY_PUBLIC_DOMAIN
+    ? [`https://${process.env.RAILWAY_PUBLIC_DOMAIN}`]
+    : []),
 ];
 app.use(cors({
   origin: (origin, callback) => {
