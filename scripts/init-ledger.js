@@ -63,8 +63,8 @@ async function main() {
     }
     console.log('[LEDGER] ✓ Tabelle ledger e trigger pronti');
   } catch (err) {
-    console.error('[LEDGER] Errore inizializzazione:', err.message);
-    process.exit(1);
+    console.error('[LEDGER] Errore inizializzazione (non-fatal):', err.message);
+    // Non blocca il boot del server — le tabelle ledger sono ausiliarie
   } finally {
     await prisma.$disconnect();
   }

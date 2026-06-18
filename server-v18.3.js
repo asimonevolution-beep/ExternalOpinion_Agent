@@ -1050,6 +1050,11 @@ app.get('/landing', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'landing.html'));
 });
 
+// Quick Intake — form ingresso cliente semplificato
+app.get('/quick-intake', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'quick-intake.html'));
+});
+
 // ============================================================================
 // API OMI LOOKUP — GET /api/v1/omi/:indirizzo
 // ============================================================================

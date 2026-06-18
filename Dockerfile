@@ -6,4 +6,4 @@ RUN npm install --omit=dev --ignore-scripts
 COPY . .
 RUN npx prisma generate
 EXPOSE 3000
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node scripts/init-ledger.js && node server.js"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && (node scripts/init-ledger.js || echo '[LEDGER] init non-fatal, skip') && node server.js"]

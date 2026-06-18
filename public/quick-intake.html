@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>External Opinion — Avvia Screening</title>
+<meta name="description" content="Prima di fare un'offerta o comprare un immobile, scopri dove sono i rischi.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F5F0E8;
+  --ink: #1A1612;
+  --warm-gray: #8C8279;
+  --accent: #C8A96E;
+  --accent-dark: #9E7E45;
+  --red: #C0392B;
+  --green: #1E8449;
+  --border: rgba(26,22,18,0.12);
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Instrument Sans', sans-serif;
+  min-height: 100vh;
+}
+
+/* NAV */
+nav {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid var(--border);
+  background: rgba(245,240,232,0.97);
+}
+.nav-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  text-decoration: none; color: var(--ink);
+}
+.nav-back {
+  font-size: 0.8rem; color: var(--warm-gray);
+  text-decoration: none; letter-spacing: 0.05em;
+}
+.nav-back:hover { color: var(--ink); }
+
+/* MAIN */
+main {
+  max-width: 680px; margin: 0 auto;
+  padding: 3.5rem 2rem 5rem;
+}
+
+/* HERO */
+.hero-tag {
+  font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--warm-gray); margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.hero-tag::before {
+  content: ''; display: block; width: 28px; height: 1px; background: var(--accent);
+}
+.hero h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 400; line-height: 1.15; margin-bottom: 1rem;
+}
+.hero p {
+  font-size: 1rem; color: var(--warm-gray); line-height: 1.6; margin-bottom: 2.5rem;
+}
+
+/* STEP INDICATOR */
+.steps {
+  display: flex; gap: 0.5rem; margin-bottom: 2.5rem; align-items: center;
+}
+.step {
+  font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--warm-gray); display: flex; align-items: center; gap: 0.4rem;
+}
+.step.active { color: var(--ink); font-weight: 600; }
+.step.done { color: var(--accent-dark); }
+.step-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border);
+}
+.step.active .step-dot { background: var(--ink); }
+.step.done .step-dot { background: var(--accent); }
+.step-sep { width: 24px; height: 1px; background: var(--border); }
+
+/* CATEGORIE */
+.section-label {
+  font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--warm-gray); margin-bottom: 1rem;
+}
+.categories {
+  display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 2rem;
+}
+.cat-btn {
+  display: flex; flex-direction: column;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  background: white; cursor: pointer;
+  text-align: left; transition: border-color 0.15s, background 0.15s;
+  min-height: 44px;
+}
+.cat-btn:hover { border-color: var(--accent); }
+.cat-btn.selected {
+  border-color: var(--ink); background: var(--ink); color: var(--cream);
+}
+.cat-btn .cat-name {
+  font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem;
+}
+.cat-btn .cat-desc {
+  font-size: 0.8rem; color: var(--warm-gray); line-height: 1.4;
+}
+.cat-btn.selected .cat-desc { color: rgba(245,240,232,0.7); }
+
+/* FORM */
+#intake-form { display: none; margin-top: 0.5rem; }
+#intake-form.visible { display: block; }
+
+.field { margin-bottom: 1.5rem; }
+.field label {
+  display: block; font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.field label span { color: var(--warm-gray); font-weight: 400; text-transform: none; letter-spacing: 0; }
+.field input, .field textarea {
+  width: 100%; padding: 0.85rem 1rem;
+  border: 1px solid var(--border); background: white;
+  font-family: 'Instrument Sans', sans-serif; font-size: 0.95rem;
+  color: var(--ink); outline: none;
+  transition: border-color 0.15s;
+}
+.field input:focus, .field textarea:focus { border-color: var(--ink); }
+.field textarea { resize: vertical; min-height: 80px; }
+.field .hint { font-size: 0.75rem; color: var(--warm-gray); margin-top: 0.4rem; }
+.field .error {
+  font-size: 0.78rem; color: var(--red);
+  margin-top: 0.4rem; display: none;
+}
+.field.has-error input, .field.has-error textarea { border-color: var(--red); }
+.field.has-error .error { display: block; }
+
+.submit-btn {
+  width: 100%; padding: 1rem;
+  background: var(--ink); color: var(--cream);
+  border: none; cursor: pointer;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 0.9rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  transition: background 0.15s;
+  min-height: 52px;
+}
+.submit-btn:hover { background: #333; }
+.submit-btn:disabled { background: var(--warm-gray); cursor: not-allowed; }
+
+/* CONFERMA */
+#confirm-panel { display: none; }
+#confirm-panel.visible { display: block; }
+
+.confirm-box {
+  border: 1px solid var(--border); padding: 2rem; background: white; margin-bottom: 1.5rem;
+}
+.confirm-tag {
+  font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--green); margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.confirm-tag::before {
+  content: ''; display: block; width: 8px; height: 8px;
+  border-radius: 50%; background: var(--green);
+}
+.case-id {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem; font-weight: 600; letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+.case-id-copy {
+  font-size: 0.75rem; color: var(--warm-gray); cursor: pointer;
+  text-decoration: underline; text-decoration-style: dotted;
+}
+.case-id-copy:hover { color: var(--ink); }
+
+.confirm-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+.confirm-section h3 {
+  font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--warm-gray); margin-bottom: 0.75rem;
+}
+.confirm-section p { font-size: 0.9rem; line-height: 1.6; color: var(--ink); }
+
+.confirm-summary { list-style: none; }
+.confirm-summary li {
+  font-size: 0.88rem; padding: 0.35rem 0;
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 0.75rem;
+}
+.confirm-summary li:last-child { border-bottom: none; }
+.confirm-summary .lbl { color: var(--warm-gray); min-width: 90px; }
+
+.checkout-btn {
+  display: block; width: 100%; padding: 1rem;
+  background: var(--accent-dark); color: white;
+  text-align: center; text-decoration: none;
+  font-weight: 600; font-size: 0.9rem;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  transition: background 0.15s; margin-bottom: 0.75rem;
+  min-height: 52px; line-height: 2.2;
+}
+.checkout-btn:hover { background: var(--ink); }
+
+.new-case-btn {
+  display: block; width: 100%; padding: 0.75rem;
+  background: transparent; color: var(--warm-gray);
+  text-align: center; font-size: 0.82rem;
+  border: 1px solid var(--border); cursor: pointer;
+  font-family: 'Instrument Sans', sans-serif;
+}
+.new-case-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ERROR GLOBAL */
+.global-error {
+  border: 1px solid var(--red); padding: 1rem; background: #fff5f5;
+  color: var(--red); font-size: 0.88rem; margin-bottom: 1rem;
+  display: none; line-height: 1.5;
+}
+.global-error.visible { display: block; }
+
+/* LOADING */
+.loading-state { display: none; }
+.loading-state.visible {
+  display: flex; align-items: center; gap: 0.75rem;
+  color: var(--warm-gray); font-size: 0.88rem; margin: 1rem 0;
+}
+.spinner {
+  width: 18px; height: 18px; border: 2px solid var(--border);
+  border-top-color: var(--ink); border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 480px) {
+  main { padding: 2.5rem 1.25rem 4rem; }
+  nav { padding: 1rem 1.25rem; }
+  .hero h1 { font-size: 1.9rem; }
+  .steps { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">External Opinion</a>
+  <a class="nav-back" href="/landing.html">← Torna alla home</a>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">Screening Iniziale</div>
+    <h1>Prima di fare un'offerta o comprare un immobile, scopri dove sono i rischi.</h1>
+    <p>Scegli il caso, incolla il link, ricevi uno screening iniziale.</p>
+  </div>
+
+  <!-- STEP INDICATOR -->
+  <div class="steps" id="steps">
+    <span class="step active" id="step-1">
+      <span class="step-dot"></span>
+      Tipo di caso
+    </span>
+    <span class="step-sep"></span>
+    <span class="step" id="step-2">
+      <span class="step-dot"></span>
+      Link e contatto
+    </span>
+    <span class="step-sep"></span>
+    <span class="step" id="step-3">
+      <span class="step-dot"></span>
+      Conferma
+    </span>
+  </div>
+
+  <!-- STEP 1: CATEGORIE -->
+  <div id="cat-section">
+    <div class="section-label">Seleziona il tipo di caso</div>
+    <div class="categories">
+
+      <button class="cat-btn" data-service="prima-casa" data-label="Prima casa" type="button">
+        <span class="cat-name">Prima casa</span>
+        <span class="cat-desc">Voglio capire se la casa che sto guardando è sicura prima di comprare.</span>
+      </button>
+
+      <button class="cat-btn" data-service="investimento" data-label="Investimento immobiliare" type="button">
+        <span class="cat-name">Investimento immobiliare</span>
+        <span class="cat-desc">Voglio capire se l'immobile ha senso come investimento.</span>
+      </button>
+
+      <button class="cat-btn" data-service="asta" data-label="Asta immobiliare" type="button">
+        <span class="cat-name">Asta immobiliare</span>
+        <span class="cat-desc">Voglio capire i rischi prima di fare offerta.</span>
+      </button>
+
+      <button class="cat-btn" data-service="compravendita" data-label="Compravendita immobiliare" type="button">
+        <span class="cat-name">Compravendita immobiliare</span>
+        <span class="cat-desc">Sto comprando o vendendo e voglio una verifica prima di procedere.</span>
+      </button>
+
+      <button class="cat-btn" data-service="analisi-tecnica" data-label="Analisi tecnica / normativa" type="button">
+        <span class="cat-name">Analisi tecnica / normativa</span>
+        <span class="cat-desc">Voglio verificare vizi, difformità, abusi, conformità, documenti o criticità tecniche.</span>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- STEP 2: FORM -->
+  <div id="intake-form">
+
+    <div class="global-error" id="global-error"></div>
+
+    <div class="field" id="field-url">
+      <label>Link immobile / asta / annuncio</label>
+      <input
+        type="url"
+        id="input-url"
+        placeholder="https://www.immobiliare.it/annunci/... oppure link portale aste"
+        autocomplete="off"
+      >
+      <div class="hint">Portali accettati: immobiliare.it, idealista, casa.it, astegiudiziarie.it, pvp.giustizia.it, qualsiasi URL pubblico</div>
+      <div class="error" id="error-url">Inserisci un link valido (inizia con http:// o https://)</div>
+    </div>
+
+    <div class="field" id="field-contact">
+      <label>Email o telefono <span>(per ricevere il codice caso)</span></label>
+      <input
+        type="text"
+        id="input-contact"
+        placeholder="email@esempio.it oppure +39 333 123 4567"
+        autocomplete="email"
+      >
+      <div class="error" id="error-contact">Inserisci email o telefono</div>
+    </div>
+
+    <div class="field">
+      <label>Note <span>(facoltativo)</span></label>
+      <textarea
+        id="input-note"
+        placeholder="Informazioni aggiuntive: prezzo base d'asta, zone di interesse, documenti già disponibili..."
+      ></textarea>
+    </div>
+
+    <div class="loading-state" id="loading-state">
+      <div class="spinner"></div>
+      <span>Creazione caso in corso...</span>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" type="button">
+      Avvia screening
+    </button>
+
+  </div>
+
+  <!-- STEP 3: CONFERMA -->
+  <div id="confirm-panel">
+
+    <div class="confirm-box">
+      <div class="confirm-tag">Caso ricevuto</div>
+      <div class="case-id" id="display-case-id">EO---------</div>
+      <div class="case-id-copy" id="copy-btn">Copia codice</div>
+
+      <div class="confirm-section">
+        <h3>Dati ricevuti</h3>
+        <ul class="confirm-summary" id="confirm-summary">
+          <li><span class="lbl">Tipo</span><span id="summary-tipo">—</span></li>
+          <li><span class="lbl">Link</span><span id="summary-url">—</span></li>
+          <li><span class="lbl">Contatto</span><span id="summary-contact">—</span></li>
+        </ul>
+      </div>
+
+      <div class="confirm-section">
+        <h3>Prossima fase</h3>
+        <p>
+          Procedi al pagamento per avviare l'analisi completa.
+          Il report sarà disponibile entro 24–48 ore.
+        </p>
+      </div>
+
+      <div class="confirm-section">
+        <h3>Documenti facoltativi</h3>
+        <p>
+          Se hai perizia, planimetria, APE, visure o foto,
+          inviaci i documenti a <strong>documents@externalopinion.it</strong>
+          indicando il codice caso.
+        </p>
+      </div>
+    </div>
+
+    <a class="checkout-btn" id="checkout-btn" href="#" target="_blank">
+      Procedi al pagamento →
+    </a>
+
+    <button class="new-case-btn" id="new-case-btn" type="button">
+      Inizia un nuovo caso
+    </button>
+
+  </div>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  // Stato
+  var state = {
+    service: null,
+    label: null,
+    jobId: null,
+    checkoutUrl: null,
+  };
+
+  // Refs
+  var catBtns      = document.querySelectorAll('.cat-btn');
+  var intakeForm   = document.getElementById('intake-form');
+  var inputUrl     = document.getElementById('input-url');
+  var inputContact = document.getElementById('input-contact');
+  var inputNote    = document.getElementById('input-note');
+  var submitBtn    = document.getElementById('submit-btn');
+  var loadingState = document.getElementById('loading-state');
+  var globalError  = document.getElementById('global-error');
+  var confirmPanel = document.getElementById('confirm-panel');
+  var catSection   = document.getElementById('cat-section');
+  var displayCase  = document.getElementById('display-case-id');
+  var copyBtn      = document.getElementById('copy-btn');
+  var checkoutBtn  = document.getElementById('checkout-btn');
+  var newCaseBtn   = document.getElementById('new-case-btn');
+  var step1        = document.getElementById('step-1');
+  var step2        = document.getElementById('step-2');
+  var step3        = document.getElementById('step-3');
+
+  // Selezione categoria
+  catBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      catBtns.forEach(function (b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      state.service = btn.dataset.service;
+      state.label   = btn.dataset.label;
+      intakeForm.classList.add('visible');
+      step1.classList.remove('active'); step1.classList.add('done');
+      step2.classList.add('active');
+      // Scroll smooth al form
+      intakeForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
+
+  // Validazione
+  function validateUrl(val) {
+    try { new URL(val); return true; } catch (_) { return false; }
+  }
+  function validateContact(val) {
+    return val && val.trim().length >= 5;
+  }
+
+  function showFieldError(fieldId, errorId, show) {
+    var f = document.getElementById(fieldId);
+    var e = document.getElementById(errorId);
+    if (show) { f.classList.add('has-error'); e.style.display = 'block'; }
+    else       { f.classList.remove('has-error'); e.style.display = 'none'; }
+  }
+
+  function clearErrors() {
+    showFieldError('field-url', 'error-url', false);
+    showFieldError('field-contact', 'error-contact', false);
+    globalError.classList.remove('visible');
+  }
+
+  // Submit
+  submitBtn.addEventListener('click', function () {
+    clearErrors();
+
+    var urlVal     = inputUrl.value.trim();
+    var contactVal = inputContact.value.trim();
+    var noteVal    = inputNote.value.trim();
+    var valid      = true;
+
+    if (!validateUrl(urlVal)) {
+      showFieldError('field-url', 'error-url', true);
+      valid = false;
+    }
+    if (!validateContact(contactVal)) {
+      showFieldError('field-contact', 'error-contact', true);
+      valid = false;
+    }
+    if (!state.service) {
+      // Non dovrebbe mai succedere (form nascosto senza selezione), ma per sicurezza
+      globalError.textContent = 'Seleziona un tipo di caso prima di procedere.';
+      globalError.classList.add('visible');
+      valid = false;
+    }
+    if (!valid) return;
+
+    // Rileva se è email o telefono
+    var isEmail = contactVal.indexOf('@') !== -1;
+
+    var payload = {
+      urlAsta:  urlVal,
+      email:    isEmail ? contactVal : contactVal, // campo email usato per entrambi
+      service:  state.service,
+      tier:     'TIER_1_CASCADE_79',
+      zonaDati: {
+        categoria: state.label,
+        note:      noteVal || null,
+        telefono:  !isEmail ? contactVal : null,
+        source:    'quick-intake',
+      },
+    };
+
+    // Loading
+    submitBtn.disabled = true;
+    loadingState.classList.add('visible');
+
+    var emailForCheckout = (contactVal.indexOf('@') !== -1) ? contactVal : '';
+
+    fetch('/api/analyze', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    })
+    .then(function (res) { return res.json().then(function (data) { return { status: res.status, data: data }; }); })
+    .then(function (result) {
+      if (!result.data.success && result.status >= 400) {
+        loadingState.classList.remove('visible');
+        submitBtn.disabled = false;
+        var msg = result.data.error || 'Errore durante la creazione del caso. Riprova tra qualche istante.';
+        globalError.textContent = msg;
+        globalError.classList.add('visible');
+        return;
+      }
+
+      var jobId = result.data.jobId;
+      state.jobId = jobId;
+
+      // Chiama checkout per ottenere URL Stripe reale (caseId nei metadata)
+      return fetch('/api/jobs/' + jobId + '/checkout', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ tier: 'TIER_1_CASCADE_79', email: emailForCheckout }),
+      })
+      .then(function (r) { return r.json().then(function (d) { return { jobId: jobId, checkout: d }; }); })
+      .catch(function () { return { jobId: jobId, checkout: null }; })
+      .then(function (res2) {
+        loadingState.classList.remove('visible');
+        submitBtn.disabled = false;
+
+        var shortId = res2.jobId ? res2.jobId.toString().slice(0, 8) : 'XXXXXXXX';
+
+        // Popola conferma
+        displayCase.textContent = 'EO-' + shortId.toUpperCase();
+        document.getElementById('summary-tipo').textContent    = state.label || '—';
+        document.getElementById('summary-url').textContent     = urlVal.length > 50 ? urlVal.slice(0, 50) + '…' : urlVal;
+        document.getElementById('summary-contact').textContent = contactVal;
+
+        // Checkout button: URL Stripe con caseId nei metadata
+        if (res2.checkout && res2.checkout.checkoutUrl) {
+          checkoutBtn.href = res2.checkout.checkoutUrl;
+          checkoutBtn.textContent = 'Procedi al pagamento →';
+        } else {
+          // Fallback manuale: il caseId è salvato, il pagamento va abbinato manualmente
+          checkoutBtn.href = '/landing.html#piani';
+          checkoutBtn.textContent = 'Scegli il piano (indica codice caso) →';
+          checkoutBtn.title = 'Copia il codice caso e indicalo nel pagamento';
+        }
+
+        // Mostra conferma
+        intakeForm.classList.remove('visible');
+        catSection.style.display = 'none';
+        document.getElementById('steps').style.display = 'none';
+        confirmPanel.classList.add('visible');
+      });
+    })
+    .catch(function (err) {
+      loadingState.classList.remove('visible');
+      submitBtn.disabled = false;
+      globalError.textContent = 'Connessione non riuscita. Verifica la connessione e riprova.';
+      globalError.classList.add('visible');
+      console.error('[QuickIntake]', err);
+    });
+  });
+
+  // Copia caseId
+  copyBtn.addEventListener('click', function () {
+    var text = displayCase.textContent;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(function () {
+        copyBtn.textContent = 'Copiato!';
+        setTimeout(function () { copyBtn.textContent = 'Copia codice'; }, 2000);
+      });
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+      copyBtn.textContent = 'Copiato!';
+      setTimeout(function () { copyBtn.textContent = 'Copia codice'; }, 2000);
+    }
+  });
+
+  // Nuovo caso
+  newCaseBtn.addEventListener('click', function () {
+    state = { service: null, label: null, jobId: null, checkoutUrl: null };
+    catBtns.forEach(function (b) { b.classList.remove('selected'); });
+    inputUrl.value = ''; inputContact.value = ''; inputNote.value = '';
+    clearErrors();
+    intakeForm.classList.remove('visible');
+    catSection.style.display = '';
+    document.getElementById('steps').style.display = '';
+    confirmPanel.classList.remove('visible');
+    step1.classList.add('active'); step1.classList.remove('done');
+    step2.classList.remove('active'); step2.classList.remove('done');
+    step3.classList.remove('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+})();
+</script>
+</body>
+</html>
