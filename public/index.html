@@ -3,1232 +3,786 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>External Opinion — Parere Tecnico Indipendente Prima della Firma</title>
+<title>External Opinion — Prima di muovere soldi, guarda cosa rischi.</title>
+<meta name="description" content="Analisi tecnica indipendente per aste giudiziarie, investimenti e compravendite immobiliari. Semaforo di rischio in 24 ore. Da €69.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --cream: #F5F0E8;
-    --ink: #1A1612;
-    --warm-gray: #8C8279;
-    --accent: #C8A96E;
-    --accent-dark: #9E7E45;
-    --red: #C0392B;
-    --yellow: #D4AC0D;
-    --green: #1E8449;
-    --border: rgba(26,22,18,0.12);
-    --border-accent: rgba(200,169,110,0.4);
-  }
-
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--cream);
-    color: var(--ink);
-    font-family: 'Instrument Sans', sans-serif;
-    font-weight: 400;
-    overflow-x: hidden;
-  }
-
-  /* ── NOISE TEXTURE OVERLAY ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.4;
-  }
-
-  /* ── HEADER ── */
-  header {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem 3rem;
-    background: rgba(245,240,232,0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    color: var(--ink);
-    text-decoration: none;
-  }
-
-  .logo span {
-    color: var(--accent-dark);
-  }
-
-  nav {
-    display: flex;
-    gap: 2rem;
-    align-items: center;
-  }
-
-  nav a {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--warm-gray);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-
-  nav a:hover { color: var(--ink); }
-
-  .nav-cta {
-    background: var(--ink) !important;
-    color: var(--cream) !important;
-    padding: 0.55rem 1.2rem;
-    border-radius: 2px;
-    transition: background 0.2s !important;
-  }
-
-  .nav-cta:hover { background: var(--accent-dark) !important; }
-
-  /* ── HERO ── */
-  .hero {
-    min-height: 100vh;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding-top: 4.5rem;
-    position: relative;
-  }
-
-  .hero-left {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 5rem 3rem 5rem 3rem;
-    border-right: 1px solid var(--border);
-  }
-
-  .hero-tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--accent-dark);
-    margin-bottom: 2rem;
-    opacity: 0;
-    animation: fadeUp 0.8s 0.2s forwards;
-  }
-
-  .hero h1 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(3rem, 5vw, 5.5rem);
-    font-weight: 300;
-    line-height: 1.05;
-    letter-spacing: -0.01em;
-    margin-bottom: 1.5rem;
-    opacity: 0;
-    animation: fadeUp 0.8s 0.35s forwards;
-  }
-
-  .hero h1 em {
-    font-style: italic;
-    color: var(--accent-dark);
-  }
-
-  .hero-sub {
-    font-size: 1.05rem;
-    line-height: 1.7;
-    color: var(--warm-gray);
-    max-width: 420px;
-    margin-bottom: 3rem;
-    opacity: 0;
-    animation: fadeUp 0.8s 0.5s forwards;
-  }
-
-  .hero-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    opacity: 0;
-    animation: fadeUp 0.8s 0.65s forwards;
-  }
-
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--ink);
-    color: var(--cream);
-    padding: 1.1rem 1.5rem;
-    border-radius: 3px;
-    text-decoration: none;
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: background 0.25s, transform 0.2s;
-    max-width: 380px;
-  }
-
-  .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
-
-  .btn-primary .price-tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.8rem;
-    background: rgba(255,255,255,0.15);
-    padding: 0.2rem 0.5rem;
-    border-radius: 2px;
-  }
-
-  .btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: space-between;
-    background: transparent;
-    color: var(--ink);
-    padding: 1.1rem 1.5rem;
-    border-radius: 3px;
-    border: 1px solid var(--border-accent);
-    text-decoration: none;
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: border-color 0.25s, background 0.25s;
-    max-width: 380px;
-  }
-
-  .btn-secondary:hover { border-color: var(--accent); background: rgba(200,169,110,0.05); }
-
-  .btn-secondary .price-tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.8rem;
-    color: var(--accent-dark);
-  }
-
-  .btn-label-small {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--warm-gray);
-    margin-top: 0.3rem;
-    padding-left: 1.5rem;
-  }
-
-  /* ── HERO RIGHT ── */
-  .hero-right {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 5rem 3rem 3rem;
-    position: relative;
-  }
-
-  .hero-visual {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 260px;
-    height: 260px;
-    opacity: 0;
-    animation: fadeIn 1s 0.8s forwards;
-  }
-
-  .circle-diagram {
-    width: 260px;
-    height: 260px;
-    border-radius: 50%;
-    border: 1px solid var(--border-accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
-
-  .circle-diagram::before {
-    content: '';
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-  }
-
-  .circle-diagram::after {
-    content: '';
-    position: absolute;
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    background: rgba(200,169,110,0.08);
-    border: 1px solid var(--border-accent);
-  }
-
-  .circle-core {
-    position: relative;
-    z-index: 2;
-    text-align: center;
-  }
-
-  .circle-core .verdict {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--accent-dark);
-  }
-
-  .circle-core .verdict-value {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: var(--ink);
-    margin-top: 0.2rem;
-  }
-
-  .stats-bottom {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-    border-top: none;
-    margin-top: auto;
-    opacity: 0;
-    animation: fadeUp 0.8s 1s forwards;
-  }
-
-  .stat-cell {
-    background: var(--cream);
-    padding: 1.5rem;
-  }
-
-  .stat-num {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 2.2rem;
-    font-weight: 300;
-    color: var(--ink);
-    line-height: 1;
-  }
-
-  .stat-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--warm-gray);
-    margin-top: 0.4rem;
-  }
-
-  /* ── SECTION COMUNE ── */
-  section {
-    position: relative;
-    z-index: 1;
-  }
-
-  .section-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--accent-dark);
-    margin-bottom: 1rem;
-  }
-
-  .section-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(2rem, 3.5vw, 3.2rem);
-    font-weight: 300;
-    line-height: 1.1;
-  }
-
-  /* ── PROBLEMA ── */
-  .problem {
-    padding: 6rem 3rem;
-    border-bottom: 1px solid var(--border);
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
-    align-items: center;
-  }
-
-  .problem-quote {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(1.6rem, 2.5vw, 2.4rem);
-    font-weight: 300;
-    line-height: 1.3;
-    font-style: italic;
-    color: var(--ink);
-    border-left: 2px solid var(--accent);
-    padding-left: 2rem;
-  }
-
-  .problem-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-  }
-
-  .problem-list li {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: #3A3530;
-  }
-
-  .problem-list .icon {
-    color: var(--red);
-    font-size: 1rem;
-    flex-shrink: 0;
-    margin-top: 0.1rem;
-  }
-
-  /* ── PRODOTTI ── */
-  .products {
-    padding: 6rem 3rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .products-header {
-    margin-bottom: 3rem;
-  }
-
-  .products-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-  }
-
-  .product-card {
-    background: var(--cream);
-    padding: 2.5rem;
-    position: relative;
-    transition: background 0.3s;
-  }
-
-  .product-card:hover { background: #F0EAE0; }
-
-  .product-card.featured {
-    background: var(--ink);
-    color: var(--cream);
-  }
-
-  .product-card.featured:hover { background: #2A2420; }
-
-  .product-badge {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    display: inline-block;
-    padding: 0.3rem 0.7rem;
-    border-radius: 2px;
-    margin-bottom: 1.5rem;
-  }
-
-  .product-card:not(.featured) .product-badge {
-    background: rgba(200,169,110,0.15);
-    color: var(--accent-dark);
-  }
-
-  .product-card.featured .product-badge {
-    background: rgba(200,169,110,0.2);
-    color: var(--accent);
-  }
-
-  .product-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.8rem;
-    font-weight: 300;
-    margin-bottom: 0.5rem;
-  }
-
-  .product-card.featured .product-name { color: var(--cream); }
-
-  .product-tagline {
-    font-size: 0.85rem;
-    line-height: 1.6;
-    margin-bottom: 2rem;
-  }
-
-  .product-card:not(.featured) .product-tagline { color: var(--warm-gray); }
-  .product-card.featured .product-tagline { color: rgba(245,240,232,0.7); }
-
-  .product-features {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-    margin-bottom: 2.5rem;
-  }
-
-  .product-features li {
-    display: flex;
-    gap: 0.7rem;
-    font-size: 0.88rem;
-    line-height: 1.5;
-  }
-
-  .product-card:not(.featured) .product-features li { color: #3A3530; }
-  .product-card.featured .product-features li { color: rgba(245,240,232,0.85); }
-
-  .feat-dot {
-    color: var(--accent);
-    flex-shrink: 0;
-    margin-top: 0.15rem;
-  }
-
-  .product-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding-top: 2rem;
-    border-top: 1px solid var(--border);
-  }
-
-  .product-card.featured .product-footer {
-    border-top-color: rgba(245,240,232,0.15);
-  }
-
-  .product-price {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 2.5rem;
-    font-weight: 300;
-    line-height: 1;
-  }
-
-  .product-card.featured .product-price { color: var(--accent); }
-
-  .product-price-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--warm-gray);
-    margin-top: 0.3rem;
-  }
-
-  .product-card.featured .product-price-label { color: rgba(245,240,232,0.5); }
-
-  .product-cta {
-    display: inline-block;
-    padding: 0.75rem 1.4rem;
-    border-radius: 2px;
-    font-size: 0.82rem;
-    font-weight: 500;
-    text-decoration: none;
-    transition: all 0.2s;
-  }
-
-  .product-card:not(.featured) .product-cta {
-    background: var(--ink);
-    color: var(--cream);
-  }
-
-  .product-card:not(.featured) .product-cta:hover { background: var(--accent-dark); }
-
-  .product-card.featured .product-cta {
-    background: var(--accent);
-    color: var(--ink);
-  }
-
-  .product-card.featured .product-cta:hover { background: #DDB97E; }
-
-  /* ── COME FUNZIONA ── */
-  .process {
-    padding: 6rem 3rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .process-steps {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-    margin-top: 3rem;
-  }
-
-  .step {
-    background: var(--cream);
-    padding: 2rem;
-    position: relative;
-  }
-
-  .step-num {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 3rem;
-    font-weight: 300;
-    color: rgba(26,22,18,0.1);
-    line-height: 1;
-    margin-bottom: 1rem;
-  }
-
-  .step-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.2rem;
-    font-weight: 400;
-    margin-bottom: 0.6rem;
-  }
-
-  .step-desc {
-    font-size: 0.82rem;
-    line-height: 1.65;
-    color: var(--warm-gray);
-  }
-
-  .step-time {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--accent-dark);
-    margin-top: 1rem;
-  }
-
-  /* ── SEMAFORO REPORT ── */
-  .report-preview {
-    padding: 6rem 3rem;
-    border-bottom: 1px solid var(--border);
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5rem;
-    align-items: center;
-  }
-
-  .semaphore {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .sem-item {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 1.2rem 1.5rem;
-    border: 1px solid var(--border);
-    border-radius: 3px;
-  }
-
-  .sem-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .sem-dot.green { background: var(--green); box-shadow: 0 0 8px rgba(30,132,73,0.4); }
-  .sem-dot.yellow { background: var(--yellow); box-shadow: 0 0 8px rgba(212,172,13,0.4); }
-  .sem-dot.red { background: var(--red); box-shadow: 0 0 8px rgba(192,57,43,0.4); }
-
-  .sem-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .sem-desc {
-    font-size: 0.82rem;
-    color: var(--warm-gray);
-    line-height: 1.5;
-  }
-
-  .sem-item.active-green { border-color: rgba(30,132,73,0.3); background: rgba(30,132,73,0.04); }
-  .sem-item.active-yellow { border-color: rgba(212,172,13,0.3); background: rgba(212,172,13,0.04); }
-  .sem-item.active-red { border-color: rgba(192,57,43,0.3); background: rgba(192,57,43,0.04); }
-
-  /* ── CHI È SIMONE ── */
-  .about {
-    padding: 6rem 3rem;
-    border-bottom: 1px solid var(--border);
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5rem;
-    align-items: center;
-  }
-
-  .about-quote {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(1.4rem, 2vw, 2rem);
-    font-weight: 300;
-    font-style: italic;
-    line-height: 1.45;
-    color: var(--ink);
-  }
-
-  .about-meta {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--accent-dark);
-    margin-top: 1.5rem;
-  }
-
-  .about-text {
-    font-size: 0.95rem;
-    line-height: 1.8;
-    color: #3A3530;
-  }
-
-  .about-text p + p { margin-top: 1rem; }
-
-  .about-principle {
-    margin-top: 2rem;
-    padding: 1.2rem 1.5rem;
-    border-left: 2px solid var(--accent);
-    background: rgba(200,169,110,0.06);
-  }
-
-  .about-principle p {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.1rem;
-    font-style: italic;
-    color: var(--ink);
-  }
-
-  .about-principle span {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--warm-gray);
-    margin-top: 0.4rem;
-    display: block;
-  }
-
-  /* ── GARANZIA ── */
-  .guarantee {
-    padding: 5rem 3rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--ink);
-    color: var(--cream);
-    text-align: center;
-  }
-
-  .guarantee .section-label { color: var(--accent); }
-
-  .guarantee .section-title {
-    color: var(--cream);
-    margin-bottom: 1.5rem;
-  }
-
-  .guarantee p {
-    max-width: 600px;
-    margin: 0 auto;
-    font-size: 0.95rem;
-    line-height: 1.8;
-    color: rgba(245,240,232,0.75);
-  }
-
-  /* ── FINAL CTA ── */
-  .final-cta {
-    padding: 7rem 3rem;
-    text-align: center;
-  }
-
-  .final-cta .section-title {
-    margin-bottom: 1rem;
-  }
-
-  .final-cta .sub {
-    font-size: 0.95rem;
-    color: var(--warm-gray);
-    margin-bottom: 3rem;
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 1.7;
-  }
-
-  .final-cta-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  /* ── FOOTER ── */
-  footer {
-    padding: 2rem 3rem;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  footer .logo { font-size: 0.9rem; }
-
-  .footer-meta {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--warm-gray);
-  }
-
-  /* ── ANIMATIONS ── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  /* Scroll reveal */
-  .reveal {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
-  }
-
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 768px) {
-    header { padding: 1rem 1.5rem; }
-    nav { display: none; }
-    .hero { grid-template-columns: 1fr; }
-    .hero-right { display: none; }
-    .hero-left { padding: 3rem 1.5rem; }
-    .problem, .products-grid, .process-steps, .report-preview, .about { grid-template-columns: 1fr; }
-    section, .process, .report-preview, .about, .guarantee, .final-cta { padding: 4rem 1.5rem; }
-    .problem { padding: 4rem 1.5rem; }
-    footer { flex-direction: column; gap: 1rem; text-align: center; }
-  }
+:root {
+  --bg:          #0F0F0F;
+  --bg-card:     #181818;
+  --gold:        #C9A84C;
+  --gold-light:  #E2C97A;
+  --gold-dim:    rgba(201,168,76,0.12);
+  --gold-border: rgba(201,168,76,0.32);
+  --white:       #F0EDE6;
+  --white-dim:   rgba(240,237,230,0.55);
+  --white-faint: rgba(240,237,230,0.22);
+  --green:       #27AE60;
+  --yellow:      #E2A515;
+  --red:         #C0392B;
+  --border:      rgba(201,168,76,0.2);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 2rem 1rem;
+  position: relative;
+}
+
+.logo-globe {
+  width: 110px;
+  height: 110px;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 0 28px rgba(201,168,76,0.55));
+}
+
+.logo-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--white-dim);
+}
+
+.star-deco {
+  position: absolute;
+  color: var(--gold);
+  opacity: 0.5;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.star-deco.tl { top: 2rem; left: 2rem; }
+.star-deco.tr { top: 2rem; right: 2rem; }
+
+/* ── HERO ── */
+.hero {
+  text-align: center;
+  padding: 2.5rem 1.5rem 1.5rem;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.hero h1 {
+  font-family: 'Oswald', sans-serif;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  text-shadow: 0 0 60px rgba(201,168,76,0.2);
+}
+
+/* ── VERDICT SAMPLE ── */
+.verdict-sample {
+  max-width: 680px;
+  margin: 2rem auto;
+  padding: 1.4rem 1.8rem;
+  background: var(--bg-card);
+  border: 1px solid var(--gold-border);
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.verdict-left { display: flex; flex-direction: column; gap: 0.45rem; }
+
+.semaforo-lights { display: flex; gap: 0.45rem; margin-bottom: 0.15rem; }
+
+.sem-light { width: 14px; height: 14px; border-radius: 50%; }
+.sem-light.g { background: var(--green); box-shadow: 0 0 7px rgba(39,174,96,0.7); }
+.sem-light.y { background: var(--yellow); box-shadow: 0 0 7px rgba(226,165,21,0.7); }
+.sem-light.r { background: var(--red); box-shadow: 0 0 7px rgba(192,57,43,0.7); }
+
+.verdict-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: var(--yellow);
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.verdict-sub { font-size: 0.78rem; color: var(--white-dim); }
+.verdict-sub span { color: var(--gold); }
+
+.verdict-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; }
+
+.verdict-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--white-dim);
+  text-align: right;
+}
+
+.verdict-metrics strong { color: var(--white); }
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 28px;
+  margin-top: 0.5rem;
+}
+
+.chart-bar {
+  width: 4px;
+  background: var(--gold);
+  border-radius: 2px;
+  opacity: 0.65;
+}
+
+/* ── CATEGORIE ── */
+.categories {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  padding: 1.5rem 1.5rem;
+  flex-wrap: wrap;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.cat-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--gold-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  min-width: 105px;
+  color: var(--white);
+  font-family: inherit;
+}
+
+.cat-btn:hover,
+.cat-btn.active {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+  transform: translateY(-2px);
+}
+
+.cat-icon { width: 34px; height: 34px; color: var(--gold); }
+
+.cat-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.67rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--white);
+}
+
+/* ── STEPS ── */
+.steps-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1.2rem 1.5rem 1.5rem;
+  flex-wrap: wrap;
+}
+
+.step-bubble {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.83rem;
+  color: var(--white-dim);
+}
+
+.step-num-circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.step-arrow { color: var(--white-faint); font-size: 1.1rem; }
+
+/* ── FORM SECTION ── */
+#analisi-form {
+  max-width: 680px;
+  margin: 0.5rem auto 5rem;
+  padding: 0 1.5rem;
+}
+
+/* Form principale */
+#form-box {
+  background: var(--bg-card);
+  border: 1px solid var(--gold-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.form-inner {
+  padding: 1.8rem 1.8rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--white-dim);
+  margin-bottom: 0.4rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(201,168,76,0.22);
+  color: var(--white);
+  font-size: 0.9rem;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  border-radius: 6px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.form-input:focus {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.06);
+}
+
+.form-input::placeholder { color: var(--white-faint); }
+
+/* CTA bottom bar */
+.form-cta-bar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  background: rgba(201,168,76,0.06);
+  border-top: 1px solid var(--gold-border);
+  padding: 1rem 1.5rem;
+  gap: 1rem;
+}
+
+.form-price-label { font-size: 0.88rem; color: var(--white-dim); }
+.form-price-label strong { color: var(--white); font-size: 1rem; }
+
+.btn-inizia {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--gold);
+  color: #0F0F0F;
+  padding: 0.8rem 1.5rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.btn-inizia:hover { background: var(--gold-light); transform: translateX(2px); }
+.btn-inizia:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ── PROGRESS ── */
+#progress-box {
+  background: var(--bg-card);
+  border: 1px solid var(--gold-border);
+  border-radius: 10px;
+  padding: 2rem;
+  display: none;
+}
+
+.progress-track {
+  width: 100%;
+  height: 2px;
+  background: rgba(201,168,76,0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 1.8rem;
+}
+
+#progress-bar {
+  height: 100%;
+  background: var(--gold);
+  width: 0;
+  transition: width 1s ease;
+  border-radius: 2px;
+}
+
+#pipeline-steps { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.pipe-step { display: flex; align-items: center; gap: 0.75rem; }
+
+.step-icon {
+  font-size: 0.9rem;
+  width: 1.2rem;
+  text-align: center;
+  color: var(--white-faint);
+  transition: color 0.3s;
+}
+
+.pipe-step .step-text {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--white-faint);
+  transition: color 0.3s;
+}
+
+.pipe-step.active .step-icon { color: var(--gold); }
+.pipe-step.active .step-text { color: var(--white); }
+.pipe-step.done   .step-icon { color: var(--green); }
+.pipe-step.done   .step-text { color: var(--green); }
+
+/* ── RESULT ── */
+#result-box {
+  background: var(--bg-card);
+  border: 1px solid var(--gold-border);
+  border-radius: 10px;
+  overflow: hidden;
+  display: none;
+}
+
+#semaforo-banner {
+  padding: 2rem 2rem 1.5rem;
+  text-align: center;
+}
+
+.result-esito-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--white-faint);
+  margin-bottom: 0.8rem;
+}
+
+#semaforo-dot {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  margin: 0 auto 0.8rem;
+  background: #888;
+}
+
+#semaforo-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--white);
+  margin-bottom: 0.4rem;
+}
+
+#semaforo-desc {
+  font-size: 0.85rem;
+  color: var(--white-dim);
+  max-width: 380px;
+  margin: 0 auto;
+  line-height: 1.55;
+}
+
+#metrics-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.metric-cell { padding: 1.2rem; text-align: center; }
+.metric-cell + .metric-cell { border-left: 1px solid var(--border); }
+
+.metric-val {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.metric-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--white-dim);
+  margin-top: 0.3rem;
+}
+
+.result-cta-box { padding: 1.5rem 1.8rem; background: rgba(201,168,76,0.05); }
+
+.result-cta-tag {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+.result-cta-text {
+  font-size: 0.83rem;
+  line-height: 1.6;
+  color: var(--white-dim);
+  margin-bottom: 1.2rem;
+}
+
+#btnPaga {
+  width: 100%;
+  padding: 1rem;
+  background: var(--gold);
+  color: #0F0F0F;
+  border: none;
+  cursor: pointer;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+#btnPaga:hover { background: var(--gold-light); }
+#btnPaga:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── ERROR ── */
+#error-box {
+  background: rgba(192,57,43,0.08);
+  border: 1px solid rgba(192,57,43,0.35);
+  border-radius: 10px;
+  padding: 1.2rem 1.5rem;
+  display: none;
+  margin-top: 1rem;
+}
+
+#error-msg { font-size: 0.88rem; color: #E74C3C; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2.5rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footer-logo {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  color: var(--white-dim);
+  text-transform: uppercase;
+}
+
+.footer-note { font-size: 0.7rem; color: var(--white-faint); line-height: 1.6; max-width: 480px; }
+
+/* ── REVEAL ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 580px) {
+  .hero h1 { font-size: 2rem; }
+  .verdict-sample { grid-template-columns: 1fr; }
+  .verdict-right { align-items: flex-start; }
+  .chart-bars { display: none; }
+  .categories { gap: 0.5rem; }
+  .cat-btn { min-width: 86px; padding: 0.8rem 0.7rem; }
+  .form-cta-bar { grid-template-columns: 1fr; }
+  .btn-inizia { width: 100%; justify-content: center; }
+  .star-deco { display: none; }
+}
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
 <header>
-  <a href="#" class="logo">External <span>Opinion</span></a>
-  <nav>
-    <a href="#come-funziona">Come funziona</a>
-    <a href="#prodotti">Servizi</a>
-    <a href="#chi-siamo">Chi siamo</a>
-    <a href="#analisi-form" class="nav-cta">Richiedi analisi</a>
-  </nav>
+  <span class="star-deco tl">✦</span>
+  <span class="star-deco tr">✦</span>
+
+  <svg class="logo-globe" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="sg" cx="38%" cy="32%" r="62%">
+        <stop offset="0%"   stop-color="#F0D98A"/>
+        <stop offset="45%"  stop-color="#C9A84C"/>
+        <stop offset="100%" stop-color="#6B4A14"/>
+      </radialGradient>
+      <radialGradient id="gg" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="#C9A84C" stop-opacity="0.28"/>
+        <stop offset="100%" stop-color="#C9A84C" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <circle cx="60" cy="60" r="58" fill="url(#gg)"/>
+    <circle cx="60" cy="60" r="38" fill="url(#sg)"/>
+    <ellipse cx="60" cy="60" rx="15"  ry="38" stroke="#FBE9A8" stroke-width="0.8" fill="none" opacity="0.4"/>
+    <ellipse cx="60" cy="60" rx="28"  ry="38" stroke="#FBE9A8" stroke-width="0.6" fill="none" opacity="0.28"/>
+    <line x1="22" y1="60" x2="98" y2="60"     stroke="#FBE9A8" stroke-width="0.7" opacity="0.38"/>
+    <ellipse cx="60" cy="47" rx="34" ry="8"    stroke="#FBE9A8" stroke-width="0.6" fill="none" opacity="0.26"/>
+    <ellipse cx="60" cy="73" rx="34" ry="8"    stroke="#FBE9A8" stroke-width="0.6" fill="none" opacity="0.26"/>
+    <ellipse cx="47" cy="46" rx="7"  ry="4.5"  fill="#FFFCE0" opacity="0.28" transform="rotate(-22 47 46)"/>
+    <ellipse cx="60" cy="60" rx="55" ry="19" stroke="#C9A84C" stroke-width="1.1" fill="none" opacity="0.5" transform="rotate(-14 60 60)"/>
+    <ellipse cx="60" cy="60" rx="52" ry="14" stroke="#C9A84C" stroke-width="0.7" fill="none" opacity="0.32" transform="rotate(32 60 60)"/>
+    <circle r="3" fill="#E2C97A" opacity="0.9" transform="translate(60,60) rotate(-14) translate(55,0)"/>
+    <circle r="2" fill="#C9A84C" opacity="0.6" transform="translate(60,60) rotate(32) translate(-52,0)"/>
+  </svg>
+
+  <p class="logo-name">External Opinion</p>
 </header>
 
 <!-- HERO -->
-<section class="hero">
-  <div class="hero-left">
-    <p class="hero-tag">Parere Tecnico Indipendente · Pre-Firma</p>
-    <h1>Stai per<br>comprare<br><em>casa?</em></h1>
-    <p class="hero-sub">Prima di firmare, ottieni un parere esterno e neutro. Analisi tecnica indipendente in 48 ore per evitare errori da decine di migliaia di euro.</p>
-    <div class="hero-actions">
+<section class="hero reveal">
+  <h1>Prima di muovere soldi,<br>guarda cosa rischi.</h1>
+</section>
+
+<!-- VERDICT SAMPLE -->
+<div class="verdict-sample reveal">
+  <div class="verdict-left">
+    <div class="semaforo-lights">
+      <div class="sem-light g"></div>
+      <div class="sem-light y"></div>
+      <div class="sem-light r"></div>
+    </div>
+    <div class="verdict-name">GIALLO</div>
+    <div class="verdict-sub">
+      Livello di rischio <span>Medio</span> &nbsp;|&nbsp; Verifiche procedurali necessarie
+    </div>
+  </div>
+  <div class="verdict-right">
+    <div class="verdict-metrics">
+      <div>📈 <small>ROI STIMATO:</small> <strong>+18%</strong></div>
+      <div>🏷 <small>VALORE ATTUALE:</small> <strong>€142.000</strong></div>
+      <div>📊 <small>COERENZA:</small> <strong>0,61</strong></div>
+    </div>
+    <div class="chart-bars">
+      <div class="chart-bar" style="height:10px"></div>
+      <div class="chart-bar" style="height:16px"></div>
+      <div class="chart-bar" style="height:11px"></div>
+      <div class="chart-bar" style="height:22px"></div>
+      <div class="chart-bar" style="height:17px"></div>
+      <div class="chart-bar" style="height:26px"></div>
+      <div class="chart-bar" style="height:20px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORIE -->
+<div class="categories reveal">
+
+  <button class="cat-btn active" data-scroll-to="analisi-form">
+    <svg class="cat-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 16L18 5l13 11v13a2 2 0 01-2 2H7a2 2 0 01-2-2V16z"/>
+      <path d="M13 31V20h10v11"/>
+    </svg>
+    <span class="cat-label">Prima casa</span>
+  </button>
+
+  <button class="cat-btn" data-scroll-to="analisi-form">
+    <svg class="cat-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="4,27 13,18 19,23 27,12 32,17"/>
+      <polyline points="27,12 32,12 32,17"/>
+      <line x1="4" y1="30" x2="32" y2="30"/>
+    </svg>
+    <span class="cat-label">Investimento</span>
+  </button>
+
+  <button class="cat-btn" data-scroll-to="analisi-form">
+    <svg class="cat-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 28l3-7 5 3.5 5-8.5 3 5"/>
+      <line x1="10" y1="31" x2="26" y2="31"/>
+      <path d="M18 9V7"/>
+      <path d="M11 13l-1.5-1.5"/>
+      <path d="M25 13l1.5-1.5"/>
+      <circle cx="18" cy="13" r="3"/>
+    </svg>
+    <span class="cat-label">Aste immobiliari</span>
+  </button>
+
+  <button class="cat-btn" data-scroll-to="analisi-form">
+    <svg class="cat-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 22c0 0 2-3 10-3s10 3 10 3"/>
+      <path d="M5 22c0 6 5.8 10 13 10s13-4 13-10"/>
+      <path d="M12 15a6 6 0 0112 0"/>
+      <line x1="18" y1="15" x2="18" y2="19"/>
+    </svg>
+    <span class="cat-label">Compravendita</span>
+  </button>
+
+  <button class="cat-btn" data-scroll-to="analisi-form">
+    <svg class="cat-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 6L31 28H5L18 6z"/>
+      <line x1="18" y1="17" x2="18" y2="23"/>
+      <circle cx="18" cy="26.5" r="0.9" fill="currentColor"/>
+    </svg>
+    <span class="cat-label">Difformità</span>
+  </button>
+
+</div>
+
+<!-- STEPS -->
+<div class="steps-bar reveal">
+  <div class="step-bubble">
+    <div class="step-num-circle">1</div>
+    <span>Scegli il caso</span>
+  </div>
+  <span class="step-arrow">›</span>
+  <div class="step-bubble">
+    <div class="step-num-circle">2</div>
+    <span>Incolla il link</span>
+  </div>
+  <span class="step-arrow">›</span>
+  <div class="step-bubble">
+    <div class="step-num-circle">3</div>
+    <span>Ricevi il verdetto</span>
+  </div>
+</div>
+
+<!-- FORM / ANALISI -->
+<section id="analisi-form" class="reveal">
+
+  <!-- Form -->
+  <div id="form-box">
+    <div class="form-inner">
       <div>
-        <a href="mailto:info@externalopinion.it?subject=Richiesta%20Due%20Diligence%20Tecnica" class="btn-primary">
-          Due Diligence Completa
-          <span class="price-tag">€ 690</span>
-        </a>
-        <p class="btn-label-small">Analisi completa · Report in 48h · Validata da Simone Azzali</p>
+        <label class="form-label" for="urlAsta">Link immobile / asta / annuncio</label>
+        <input id="urlAsta" class="form-input" type="url"
+               placeholder="https://www.immobiliare.it/... oppure link portale aste"
+               autocomplete="off" spellcheck="false">
       </div>
       <div>
-        <a href="#analisi-form" class="btn-secondary">
-          Screening Asta Automatico
-          <span class="price-tag">€ 69</span>
-        </a>
-        <p class="btn-label-small">Semaforo rischio in 10 min · AI + motore deterministico · Paghi dopo il preview</p>
+        <label class="form-label" for="emailInput">Contatto email</label>
+        <input id="emailInput" class="form-input" type="email"
+               placeholder="email@esempio.it"
+               autocomplete="email">
       </div>
     </div>
-  </div>
-  <div class="hero-right">
-    <div class="hero-visual">
-      <div class="circle-diagram">
-        <div class="circle-core">
-          <p class="verdict">Esito</p>
-          <p class="verdict-value">Verde</p>
-        </div>
-      </div>
-    </div>
-    <div class="stats-bottom">
-      <div class="stat-cell">
-        <div class="stat-num">48h</div>
-        <div class="stat-label">Consegna report</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-num">100%</div>
-        <div class="stat-label">Neutrale e indipendente</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-num">A.I.</div>
-        <div class="stat-label">Visione artificiale</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-num">+€0</div>
-        <div class="stat-label">Interessi nell'affare</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PROBLEMA -->
-<section class="problem reveal">
-  <div>
-    <p class="section-label">Il problema</p>
-    <blockquote class="problem-quote">
-      "Chi vende ha tutte le informazioni.<br>Chi compra spesso no."
-    </blockquote>
-  </div>
-  <div>
-    <ul class="problem-list">
-      <li>
-        <span class="icon">✕</span>
-        <span>L'agenzia è pagata dal venditore — non è neutrale per definizione</span>
-      </li>
-      <li>
-        <span class="icon">✕</span>
-        <span>La planimetria catastale può non corrispondere allo stato reale dell'immobile</span>
-      </li>
-      <li>
-        <span class="icon">✕</span>
-        <span>Irregolarità non rilevate possono costare 30.000–80.000 € dopo la firma</span>
-      </li>
-      <li>
-        <span class="icon">✕</span>
-        <span>Le aste immobiliari nascondono rischi tecnici e normativi spesso ignorati</span>
-      </li>
-      <li>
-        <span class="icon">✕</span>
-        <span>Un rogito firmato è difficilmente reversibile — il danno è permanente</span>
-      </li>
-    </ul>
-  </div>
-</section>
-
-<!-- PRODOTTI -->
-<section class="products reveal" id="prodotti">
-  <div class="products-header">
-    <p class="section-label">I servizi</p>
-    <h2 class="section-title">Due livelli di analisi.<br>Un unico obiettivo.</h2>
-  </div>
-  <div class="products-grid">
-    <!-- Card 1: Asta -->
-    <div class="product-card">
-      <span class="product-badge">Entry · Investitori</span>
-      <h3 class="product-name">Analisi Investimento Asta</h3>
-      <p class="product-tagline">Valutazione costi/rendimento completa prima di partecipare a un'asta immobiliare. Capisci se l'affare è conveniente prima di offrire.</p>
-      <ul class="product-features">
-        <li><span class="feat-dot">◆</span> Analisi costi di acquisto e ristrutturazione stimata</li>
-        <li><span class="feat-dot">◆</span> Calcolo valore di mercato post-intervento</li>
-        <li><span class="feat-dot">◆</span> Identificazione criticità normative (altezze, classe energetica)</li>
-        <li><span class="feat-dot">◆</span> Verdetto chiaro: conveniente / da evitare</li>
-        <li><span class="feat-dot">◆</span> Report PDF strutturato entro 24 ore</li>
-      </ul>
-      <div class="product-footer">
-        <div>
-          <div class="product-price">€ 69</div>
-          <div class="product-price-label">Report singolo · 24h</div>
-        </div>
-        <button type="button" class="product-cta" data-scroll-to="analisi-form">Richiedi ora →</button>
-      </div>
-    </div>
-
-    <!-- Card 2: Due Diligence (FEATURED) -->
-    <div class="product-card featured">
-      <span class="product-badge">Core · Pre-Firma</span>
-      <h3 class="product-name">Due Diligence Tecnica</h3>
-      <p class="product-tagline">Analisi completa prima del rogito. Visione artificiale + validazione esperta per sapere esattamente cosa stai comprando.</p>
-      <ul class="product-features">
-        <li><span class="feat-dot">◆</span> Analisi coerenza spaziale (geometrie, allineamenti, proporzioni)</li>
-        <li><span class="feat-dot">◆</span> Verifica congruenza planimetria ↔ stato reale da video</li>
-        <li><span class="feat-dot">◆</span> Risk assessment con impatto economico stimato</li>
-        <li><span class="feat-dot">◆</span> Valutazione coerenza evolutiva dell'immobile</li>
-        <li><span class="feat-dot">◆</span> Report semaforico Verde / Giallo / Rosso</li>
-        <li><span class="feat-dot">◆</span> Validato personalmente da Simone Azzali</li>
-      </ul>
-      <div class="product-footer">
-        <div>
-          <div class="product-price">€ 690</div>
-          <div class="product-price-label">Analisi completa · 48h</div>
-        </div>
-        <a href="mailto:info@externalopinion.it?subject=Due%20Diligence%20Tecnica%20-%20Richiesta" class="product-cta">Richiedi ora →</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FORM ANALISI API -->
-<section id="analisi-form" style="padding:4rem 1.5rem; max-width:700px; margin:0 auto;">
-  <p class="section-label">Avvia analisi</p>
-  <h2 class="section-title" style="margin-bottom:1.5rem;">Inserisci l'asta.<br>Il sistema lavora per te.</h2>
-  <div id="form-box" style="background:#fff; border:1px solid var(--border); padding:2rem;">
-    <div style="margin-bottom:1rem;">
-      <label style="display:block; font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--warm-gray); margin-bottom:0.4rem;">URL Annuncio Asta *</label>
-      <input id="urlAsta" type="url" placeholder="https://www.astevendo.com/..." style="width:100%; padding:0.8rem 1rem; border:1px solid var(--border); background:var(--cream); font-size:0.9rem; outline:none;" required>
-    </div>
-    <div style="margin-bottom:1.5rem;">
-      <label style="display:block; font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--warm-gray); margin-bottom:0.4rem;">Email per il report *</label>
-      <input id="emailInput" type="email" placeholder="tua@email.it" style="width:100%; padding:0.8rem 1rem; border:1px solid var(--border); background:var(--cream); font-size:0.9rem; outline:none;" required>
-    </div>
-    <button id="btnAnalizza" style="width:100%; padding:1rem; background:var(--ink); color:#fff; border:none; cursor:pointer; font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase;">
-      Avvia Screening → € 69
-    </button>
-    <p style="font-size:0.72rem; color:var(--warm-gray); margin-top:0.8rem; text-align:center;">Analisi AI + semaforo di rischio · Report PDF completo in 24h · Pagamento solo dopo preview</p>
-  </div>
-
-  <!-- Progress -->
-  <div id="progress-box" style="display:none; margin-top:1.5rem; padding:1.5rem 2rem; background:#fff; border:1px solid var(--border);">
-    <div style="width:100%; height:2px; background:var(--border); overflow:hidden; margin-bottom:1.5rem;">
-      <div id="progress-bar" style="height:100%; background:var(--accent-dark); width:0; transition:width 1s ease;"></div>
-    </div>
-    <div id="pipeline-steps" style="display:flex; flex-direction:column; gap:0.5rem;">
-      <div class="pipe-step" id="step-scrape">
-        <span class="step-icon">○</span>
-        <span style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--warm-gray);">Acquisizione dati asta</span>
-      </div>
-      <div class="pipe-step" id="step-ocr">
-        <span class="step-icon">○</span>
-        <span style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--warm-gray);">Estrazione testo e documenti</span>
-      </div>
-      <div class="pipe-step" id="step-llm">
-        <span class="step-icon">○</span>
-        <span style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--warm-gray);">Analisi AI (Claude)</span>
-      </div>
-      <div class="pipe-step" id="step-scoring">
-        <span class="step-icon">○</span>
-        <span style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--warm-gray);">Scoring deterministico e ROI</span>
-      </div>
-    </div>
-  </div>
-  <style>
-    .pipe-step { display:flex; align-items:center; gap:0.75rem; }
-    .step-icon { font-size:0.9rem; width:1rem; text-align:center; transition:all 0.3s; }
-    .pipe-step.active .step-icon { color:var(--accent-dark); }
-    .pipe-step.done .step-icon { color:var(--green); }
-    .pipe-step.active span:last-child { color:var(--ink) !important; font-weight:500; }
-    .pipe-step.done span:last-child { color:var(--green) !important; }
-  </style>
-
-  <!-- Result -->
-  <div id="result-box" style="display:none; margin-top:1.5rem;">
-    <!-- Semaforo banner -->
-    <div id="semaforo-banner" style="padding:1.5rem 2rem; margin-bottom:1px; text-align:center;">
-      <p style="font-family:'DM Mono',monospace; font-size:0.5rem; letter-spacing:0.18em; text-transform:uppercase; margin-bottom:0.6rem; opacity:0.6;">Esito Screening</p>
-      <div id="semaforo-dot" style="width:3rem; height:3rem; border-radius:50%; margin:0 auto 0.8rem; background:#888;"></div>
-      <div id="semaforo-label" style="font-family:'Cormorant Garamond',serif; font-size:2.2rem; font-weight:300; line-height:1.2; margin-bottom:0.3rem;">—</div>
-      <div id="semaforo-desc" style="font-size:0.82rem; opacity:0.7; max-width:360px; margin:0 auto;"></div>
-    </div>
-    <!-- Metriche -->
-    <div id="metrics-row" style="display:grid; grid-template-columns:1fr 1fr 1fr; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:1.5rem;">
-      <div style="padding:1rem; text-align:center; border-right:1px solid var(--border);">
-        <div id="m-coerenza" style="font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:300;">—</div>
-        <div style="font-family:'DM Mono',monospace; font-size:0.5rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--warm-gray); margin-top:0.3rem;">Coerenza</div>
-      </div>
-      <div style="padding:1rem; text-align:center; border-right:1px solid var(--border);">
-        <div id="m-roi" style="font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:300;">—</div>
-        <div style="font-family:'DM Mono',monospace; font-size:0.5rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--warm-gray); margin-top:0.3rem;">ROI Stimato</div>
-      </div>
-      <div style="padding:1rem; text-align:center;">
-        <div id="m-valore" style="font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:300;">—</div>
-        <div style="font-family:'DM Mono',monospace; font-size:0.5rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--warm-gray); margin-top:0.3rem;">Valore Attuale</div>
-      </div>
-    </div>
-    <!-- CTA pagamento -->
-    <div style="padding:1.5rem 2rem; background:var(--ink); color:#fff;">
-      <p style="font-family:'DM Mono',monospace; font-size:0.5rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin-bottom:0.5rem;">Report completo</p>
-      <p style="font-size:0.85rem; line-height:1.6; color:rgba(245,240,232,0.7); margin-bottom:1.2rem;">Il PDF include: tutti i rischi dettagliati, criticità normative, stima costi nascosti, ROI completo e raccomandazione finale firmata da Simone Azzali.</p>
-      <button id="btnPaga" style="width:100%; padding:1rem; background:var(--accent-dark); color:#fff; border:none; cursor:pointer; font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase;">
-        Sblocca Report PDF Completo — € 69 →
+    <div class="form-cta-bar">
+      <span class="form-price-label">Screening iniziale da <strong>€ 69</strong></span>
+      <button id="btnAnalizza" class="btn-inizia">
+        Inizia Analisi &nbsp;›
       </button>
     </div>
   </div>
 
+  <!-- Progress -->
+  <div id="progress-box">
+    <div class="progress-track">
+      <div id="progress-bar"></div>
+    </div>
+    <div id="pipeline-steps">
+      <div class="pipe-step" id="step-scrape">
+        <span class="step-icon">○</span>
+        <span class="step-text">Acquisizione dati asta</span>
+      </div>
+      <div class="pipe-step" id="step-ocr">
+        <span class="step-icon">○</span>
+        <span class="step-text">Estrazione testo e documenti</span>
+      </div>
+      <div class="pipe-step" id="step-llm">
+        <span class="step-icon">○</span>
+        <span class="step-text">Analisi AI</span>
+      </div>
+      <div class="pipe-step" id="step-scoring">
+        <span class="step-icon">○</span>
+        <span class="step-text">Scoring deterministico e ROI</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div id="result-box">
+    <div id="semaforo-banner">
+      <p class="result-esito-label">Esito Screening</p>
+      <div id="semaforo-dot"></div>
+      <div id="semaforo-label">—</div>
+      <div id="semaforo-desc"></div>
+    </div>
+    <div id="metrics-row">
+      <div class="metric-cell">
+        <div id="m-coerenza" class="metric-val">—</div>
+        <div class="metric-label">Coerenza</div>
+      </div>
+      <div class="metric-cell">
+        <div id="m-roi" class="metric-val">—</div>
+        <div class="metric-label">ROI Stimato</div>
+      </div>
+      <div class="metric-cell">
+        <div id="m-valore" class="metric-val">—</div>
+        <div class="metric-label">Valore Attuale</div>
+      </div>
+    </div>
+    <div class="result-cta-box">
+      <p class="result-cta-tag">Report completo</p>
+      <p class="result-cta-text">Il PDF include: tutti i rischi dettagliati, criticità normative, stima costi nascosti, ROI completo e raccomandazione finale firmata da Simone Azzali.</p>
+      <button id="btnPaga">Sblocca Report PDF Completo — € 69 →</button>
+    </div>
+  </div>
+
   <!-- Error -->
-  <div id="error-box" style="display:none; margin-top:1.5rem; padding:1.5rem; background:#fff; border:1px solid rgba(192,57,43,0.3); color:var(--red);">
-    <p id="error-msg" style="font-size:0.85rem;"></p>
+  <div id="error-box">
+    <p id="error-msg"></p>
   </div>
-</section>
 
-<style>
-  #urlAsta:focus, #emailInput:focus { border-color:var(--accent); background:#fff; }
-  #btnAnalizza:hover { background:var(--accent-dark); }
-</style>
-
-<!-- COME FUNZIONA -->
-<section class="process reveal" id="come-funziona">
-  <p class="section-label">Il processo</p>
-  <h2 class="section-title">Quattro passi.<br>Quarantotto ore.</h2>
-  <div class="process-steps">
-    <div class="step">
-      <div class="step-num">01</div>
-      <h4 class="step-title">Invii i materiali</h4>
-      <p class="step-desc">Indirizzo immobile, planimetria catastale e video dell'appartamento. Bastano questi tre elementi.</p>
-      <p class="step-time">→ 5 minuti</p>
-    </div>
-    <div class="step">
-      <div class="step-num">02</div>
-      <h4 class="step-title">Analisi A.I.</h4>
-      <p class="step-desc">Il sistema di visione artificiale analizza geometrie, allineamenti, proporzioni e anomalie strutturali nel dettaglio.</p>
-      <p class="step-time">→ Automatico</p>
-    </div>
-    <div class="step">
-      <div class="step-num">03</div>
-      <h4 class="step-title">Validazione esperta</h4>
-      <p class="step-desc">Simone Azzali verifica, integra e firma ogni analisi prima della consegna. Nessun report esce non validato.</p>
-      <p class="step-time">→ Garanzia umana</p>
-    </div>
-    <div class="step">
-      <div class="step-num">04</div>
-      <h4 class="step-title">Report in 48h</h4>
-      <p class="step-desc">Ricevi il documento strutturato via email con esito chiaro, rischi quantificati e raccomandazione finale.</p>
-      <p class="step-time">→ Entro 48 ore</p>
-    </div>
-  </div>
-</section>
-
-<!-- REPORT SEMAFORO -->
-<section class="report-preview reveal">
-  <div>
-    <p class="section-label">Il report</p>
-    <h2 class="section-title">Un esito.<br>Nessuna ambiguità.</h2>
-    <p style="margin-top:1.2rem; font-size:0.9rem; line-height:1.7; color:var(--warm-gray); max-width:380px;">Ogni report si conclude con un giudizio diretto. Non "dipende". Non "valutare caso per caso". Un semaforo chiaro, motivato punto per punto.</p>
-  </div>
-  <div class="semaphore">
-    <div class="sem-item active-green">
-      <div class="sem-dot green"></div>
-      <div>
-        <div class="sem-label">Verde — Coerente</div>
-        <div class="sem-desc">L'immobile è regolare. Nessuna criticità rilevante. Puoi procedere con consapevolezza.</div>
-      </div>
-    </div>
-    <div class="sem-item active-yellow">
-      <div class="sem-dot yellow"></div>
-      <div>
-        <div class="sem-label">Giallo — Attenzione</div>
-        <div class="sem-desc">Presenti alcune anomalie da approfondire. Il report indica cosa verificare prima della firma.</div>
-      </div>
-    </div>
-    <div class="sem-item active-red">
-      <div class="sem-dot red"></div>
-      <div>
-        <div class="sem-label">Rosso — Criticità elevata</div>
-        <div class="sem-desc">Rischi tecnici o documentali significativi rilevati. Fortemente sconsigliato procedere senza accertamenti.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CHI È SIMONE -->
-<section class="about reveal" id="chi-siamo">
-  <div>
-    <p class="section-label">Chi firma ogni analisi</p>
-    <blockquote class="about-quote">
-      "La mia firma su ogni report non è un dettaglio. È la garanzia che qualcuno con esperienza reale si è preso la responsabilità di dirti la verità."
-    </blockquote>
-    <p class="about-meta">— Simone Azzali, Fondatore</p>
-  </div>
-  <div>
-    <div class="about-text">
-      <p>External Opinion nasce da una convinzione semplice: chi compra casa ha diritto a un parere neutro, da qualcuno che non ha nulla da guadagnare dalla vendita.</p>
-      <p>Non siamo un'agenzia. Non vendiamo immobili. Non abbiamo interesse in nessun affare. Il nostro unico cliente sei tu — e il nostro unico obiettivo è dirti la verità su quello che stai per comprare.</p>
-      <p>Ogni analisi combina visione artificiale avanzata con supervisione tecnica diretta. Non è un algoritmo lasciato solo. È uno strumento potente nelle mani di chi sa cosa cercare.</p>
-    </div>
-    <div class="about-principle">
-      <p>"Coerenza tra progetto e stato reale."</p>
-      <span>Principio tecnico fondante di ogni analisi</span>
-    </div>
-  </div>
-</section>
-
-<!-- GARANZIA -->
-<section class="guarantee reveal">
-  <p class="section-label">La nostra posizione</p>
-  <h2 class="section-title">Neutralità assoluta.<br>Senza eccezioni.</h2>
-  <p style="margin-top:1.5rem;">Non riceviamo provvigioni. Non abbiamo accordi con agenzie o venditori. Non siamo legati a nessun immobile che analizziamo. Ogni parere è prodotto nell'unico interesse di chi lo commissiona.</p>
-</section>
-
-<!-- FAQ -->
-<section class="reveal" style="padding:5rem 3rem; max-width:760px; margin:0 auto; border-bottom:1px solid var(--border);">
-  <p class="section-label">Domande frequenti</p>
-  <h2 class="section-title" style="margin-bottom:2.5rem;">Quello che i clienti<br>chiedono prima di partire.</h2>
-  <div style="display:flex; flex-direction:column; gap:0;">
-    <details style="border-top:1px solid var(--border); padding:1.2rem 0;">
-      <summary style="cursor:pointer; font-family:'Instrument Sans',sans-serif; font-size:0.9rem; font-weight:500; list-style:none; display:flex; justify-content:space-between; align-items:center;">
-        Come funziona lo screening automatico a € 69?
-        <span style="font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--accent-dark);">+</span>
-      </summary>
-      <p style="margin-top:0.8rem; font-size:0.87rem; line-height:1.7; color:var(--warm-gray);">Inserisci l'URL dell'annuncio di asta giudiziaria (es. astevendo.com, astegiudiziarie.it). Il sistema scarica automaticamente tutti i documenti allegati, li elabora con OCR e AI, calcola il punteggio di rischio e ti mostra il semaforo in tempo reale. <strong>Paghi solo dopo aver visto il risultato.</strong></p>
-    </details>
-    <details style="border-top:1px solid var(--border); padding:1.2rem 0;">
-      <summary style="cursor:pointer; font-family:'Instrument Sans',sans-serif; font-size:0.9rem; font-weight:500; list-style:none; display:flex; justify-content:space-between; align-items:center;">
-        Quali portali di aste sono supportati?
-        <span style="font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--accent-dark);">+</span>
-      </summary>
-      <p style="margin-top:0.8rem; font-size:0.87rem; line-height:1.7; color:var(--warm-gray);">Il sistema supporta i principali portali italiani: astevendo.com, astegiudiziarie.it, tribunale.it e portali dei tribunali locali. Se il tuo portale non è elencato, prova comunque — funziona con qualsiasi pagina pubblica che contenga allegati PDF.</p>
-    </details>
-    <details style="border-top:1px solid var(--border); padding:1.2rem 0;">
-      <summary style="cursor:pointer; font-family:'Instrument Sans',sans-serif; font-size:0.9rem; font-weight:500; list-style:none; display:flex; justify-content:space-between; align-items:center;">
-        Cosa contiene il report PDF completo?
-        <span style="font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--accent-dark);">+</span>
-      </summary>
-      <p style="margin-top:0.8rem; font-size:0.87rem; line-height:1.7; color:var(--warm-gray);">Il PDF include: dati estratti dall'asta (prezzo base, superficie, ubicazione), indice di coerenza documentale, stima ROI e valore di mercato, criticità normative identificate, costi nascosti stimati e raccomandazione finale. Validato e firmato personalmente da Simone Azzali prima della consegna.</p>
-    </details>
-    <details style="border-top:1px solid var(--border); padding:1.2rem 0;">
-      <summary style="cursor:pointer; font-family:'Instrument Sans',sans-serif; font-size:0.9rem; font-weight:500; list-style:none; display:flex; justify-content:space-between; align-items:center;">
-        Quanto tempo ci vuole per ricevere il report?
-        <span style="font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--accent-dark);">+</span>
-      </summary>
-      <p style="margin-top:0.8rem; font-size:0.87rem; line-height:1.7; color:var(--warm-gray);">Lo screening AI con semaforo è disponibile in 5–15 minuti. Il PDF completo validato da Simone viene consegnato entro 24–48 ore via email. In caso di asta imminente, contattaci per urgenza: <a href="mailto:info@externalopinion.it" style="color:var(--accent-dark);">info@externalopinion.it</a>.</p>
-    </details>
-    <details style="border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:1.2rem 0;">
-      <summary style="cursor:pointer; font-family:'Instrument Sans',sans-serif; font-size:0.9rem; font-weight:500; list-style:none; display:flex; justify-content:space-between; align-items:center;">
-        Cosa succede se il semaforo è Rosso? Vale comunque la pena pagare?
-        <span style="font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--accent-dark);">+</span>
-      </summary>
-      <p style="margin-top:0.8rem; font-size:0.87rem; line-height:1.7; color:var(--warm-gray);">Sì — il semaforo Rosso è spesso il risultato più prezioso. Ti dice esattamente perché quell'asta è rischiosa e cosa potrebbe costarti dopo la firma. € 69 per scoprire un problema da € 30.000 è un'ottima protezione. Il report dettagliato spiega ogni criticità nel concreto.</p>
-    </details>
-  </div>
-</section>
-
-<!-- FINAL CTA -->
-<section class="final-cta reveal" id="contatto">
-  <p class="section-label">Prossimo passo</p>
-  <h2 class="section-title">Prima di firmare,<br>chiedi un parere esterno.</h2>
-  <p class="sub">Invia i materiali adesso. Ricevi il report in 48 ore. Firma — o non firmare — con piena consapevolezza.</p>
-  <div class="final-cta-buttons">
-    <a href="mailto:info@externalopinion.it?subject=Due%20Diligence%20Tecnica" class="btn-primary" style="max-width:none;">
-      Due Diligence Completa
-      <span class="price-tag">€ 690</span>
-    </a>
-    <a href="#analisi-form" class="btn-secondary" style="max-width:none;">
-      Screening Asta Automatico
-      <span class="price-tag">€ 69</span>
-    </a>
-  </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-  <a href="#" class="logo">External <span>Opinion</span></a>
-  <p class="footer-meta">Parere tecnico indipendente · Fondato da Simone Azzali · Italia</p>
-  <p class="footer-meta" style="font-size:0.78rem; margin-top:0.4rem; opacity:0.7;">Analisi tecnica di parte a scopo informativo. Non costituisce perizia né consulenza d'ufficio.</p>
+  <p class="footer-logo">External Opinion</p>
+  <p class="footer-note">Analisi tecnica indipendente · Fondato da Simone Azzali · Italia</p>
+  <p class="footer-note">Analisi tecnica di parte a scopo informativo. Non costituisce perizia né consulenza d'ufficio.</p>
+  <p style="color:var(--gold);font-size:1.3rem;margin-top:0.4rem;opacity:0.5;">✦</p>
 </footer>
 
 <script src="/preanalisi.js"></script>
-
 </body>
 </html>
