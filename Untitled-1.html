@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>External Opinion / CASCADE — Open Road Parallel V2</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080a0f;
+  --panel:#111521;
+  --panel2:#171d2c;
+  --line:#2b334a;
+  --text:#edf2ff;
+  --muted:#7d86a8;
+  --dim:#48506c;
+  --green:#00e5a0;
+  --gold:#f5b942;
+  --blue:#3b82f6;
+  --violet:#a855f7;
+  --red:#ef4444;
+  --pink:#ec4899;
+  --cyan:#22d3ee;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(circle at 75% 0%, rgba(0,229,160,.08), transparent 35%),
+    radial-gradient(circle at 10% 20%, rgba(59,130,246,.06), transparent 28%),
+    var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  line-height:1.55;
+}
+a{color:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 34px}
+.topbar{
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(18px);
+  background:rgba(8,10,15,.84);
+  border-bottom:1px solid var(--line);
+}
+.nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--green)}
+.navlinks{display:flex;gap:18px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.navlinks a{text-decoration:none}.navlinks a:hover{color:var(--green)}
+.hero{padding:70px 0 36px;border-bottom:1px solid var(--line)}
+.kicker{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.25em;color:var(--green);text-transform:uppercase;margin-bottom:22px}
+h1{
+  font-family:'Bebas Neue',display;
+  font-size:clamp(58px,10vw,132px);
+  line-height:.88;
+  letter-spacing:.025em;
+  max-width:1050px;
+}
+h1 .dim{color:var(--dim)}
+h1 .accent{color:var(--green)}
+.subtitle{
+  margin-top:26px;
+  max-width:840px;
+  color:var(--muted);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+}
+.law{
+  margin-top:34px;
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);
+}
+.law span{
+  background:var(--panel);
+  padding:14px 8px;
+  text-align:center;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  color:var(--text);
+  min-height:58px;
+  display:flex;align-items:center;justify-content:center;
+}
+.law span:first-child,.law span:last-child{color:var(--green)}
+.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:28px}
+.cell{background:var(--panel);padding:20px 18px;position:relative;min-height:132px}
+.cell:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--green)}
+.cell.p1:after{background:var(--gold)}.cell.p2:after{background:var(--blue)}.cell.p3:after{background:var(--violet)}.cell.p4:after{background:var(--pink)}
+.cell small{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+.cell .big{font-family:'Bebas Neue',display;font-size:38px;line-height:1;margin:10px 0 4px}
+.cell .note{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim)}
+section{padding:54px 0;border-bottom:1px solid var(--line)}
+.head{display:flex;align-items:end;gap:16px;margin-bottom:26px}
+.num{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.14em}
+.title{font-family:'Bebas Neue',display;font-size:40px;letter-spacing:.05em}
+.meta{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);text-align:right}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{
+  background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.005)),var(--panel);
+  border:1px solid var(--line);
+  padding:24px;
+}
+.card.hot{border-color:rgba(0,229,160,.35);background:linear-gradient(180deg,rgba(0,229,160,.06),rgba(0,229,160,.015)),var(--panel)}
+.label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;margin-bottom:12px}
+.metric{font-family:'Bebas Neue',display;font-size:56px;line-height:1;color:var(--green)}
+.metric.gold{color:var(--gold)}.metric.blue{color:var(--blue)}.metric.red{color:var(--red)}
+.desc{color:var(--muted);font-size:13px;margin-top:10px}
+.phase{border:1px solid var(--line);background:var(--panel);margin-bottom:14px;overflow:hidden}
+.phasehead{display:grid;grid-template-columns:260px 1fr 230px;gap:20px;align-items:center;padding:22px 24px;border-bottom:1px solid var(--line)}
+.badge{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;border:1px solid rgba(0,229,160,.35);color:var(--green);padding:4px 9px;display:inline-block;margin-bottom:8px}
+.phname{font-family:'Bebas Neue',display;font-size:26px;letter-spacing:.05em}
+.phcopy{color:var(--muted);font-size:12px}
+.gate{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--green);border-left:3px solid var(--green);padding-left:12px}
+.phasebody{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;padding:22px 24px}
+.tasks{display:flex;flex-direction:column;gap:10px}
+.task{background:var(--panel2);border:1px solid var(--line);padding:14px 16px;display:grid;grid-template-columns:6px 1fr;gap:12px}
+.prio{background:var(--green);min-height:100%}.prio.red{background:var(--red)}.prio.gold{background:var(--gold)}.prio.blue{background:var(--blue)}
+.task b{display:block;font-size:13px;margin-bottom:4px}
+.task p{color:var(--muted);font-size:12px}
+.tags{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);border:1px solid var(--line);padding:2px 6px}
+.tag.ok{color:var(--green);border-color:rgba(0,229,160,.35)}
+.tag.block{color:var(--red);border-color:rgba(239,68,68,.35)}
+.pipeline{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--line);border:1px solid var(--line)
+}
+.pipe{background:var(--panel);padding:18px 12px;min-height:126px}
+.pipe .n{font-family:'Bebas Neue',display;font-size:32px;color:var(--green)}
+.pipe .t{font-weight:700;margin-bottom:5px}
+.pipe .d{color:var(--muted);font-size:12px}
+.table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line)}
+.table th,.table td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:12px;vertical-align:top}
+.table th{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);background:var(--panel2)}
+.table td:last-child{color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:10px}
+.footer{padding:32px 0 60px;color:var(--dim);font-family:'IBM Plex Mono',monospace;font-size:10px}
+.notice{border:1px solid rgba(245,185,66,.35);background:rgba(245,185,66,.05);padding:18px 20px;color:#e8c374;font-family:'IBM Plex Mono',monospace;font-size:11px;margin-top:18px}
+@media(max-width:900px){
+  .law,.strip,.grid3,.grid4,.grid2,.pipeline{grid-template-columns:1fr}
+  .phasehead,.phasebody{grid-template-columns:1fr}
+  .meta{margin-left:0;text-align:left}
+  .head{display:block}
+  .navlinks{display:none}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap nav">
+    <div class="brand">External Opinion / CASCADE · Open Road Parallel V2</div>
+    <nav class="navlinks">
+      <a href="#foundation">Fondamento</a>
+      <a href="#ecosistema">Ecosistema</a>
+      <a href="#fase0">Fase 0</a>
+      <a href="#gate">Gate</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <div class="kicker">// Modello parallelo potenziato · non sostituisce la Roadmap Madre</div>
+    <h1><span class="dim">OPEN ROAD</span><br><span class="accent">PARALLEL V2</span><br><span class="dim">RINASCITA OPERATIVA</span></h1>
+    <p class="subtitle">
+      Versione parallela del sistema External Opinion / CASCADE: stessa base economica della Roadmap Madre,
+      ma riscritta come ecosistema operativo misurabile. Obiettivo: proteggere la forma vincente,
+      integrare gli sviluppi tecnici già creati e riportare ogni energia verso incasso reale.
+    </p>
+
+    <div class="law" aria-label="legge operativa">
+      <span>CLIENTE</span>
+      <span>PROBLEMA</span>
+      <span>TRAFFICO</span>
+      <span>LEAD</span>
+      <span>PAGAMENTO</span>
+      <span>REPORT</span>
+      <span>INCASSO</span>
+    </div>
+
+    <div class="strip">
+      <div class="cell"><small>Fase 0 · comando</small><div class="big" style="color:var(--green)">Primo €</div><div class="note">Landing · pagamento · report</div></div>
+      <div class="cell p1"><small>Fase 1 · validazione</small><div class="big" style="color:var(--gold)">€1K MRR</div><div class="note">10 report venduti</div></div>
+      <div class="cell p2"><small>Fase 2 · ricorrenza</small><div class="big" style="color:var(--blue)">SaaS</div><div class="note">solo dopo domanda reale</div></div>
+      <div class="cell p3"><small>Fase 3 · integrazione</small><div class="big" style="color:var(--violet)">API</div><div class="note">solo con richiesta partner</div></div>
+      <div class="cell p4"><small>Fase 4 · scala</small><div class="big" style="color:var(--pink)">50K+</div><div class="note">enterprise · NPL · white-label</div></div>
+    </div>
+  </div>
+
+  <section id="foundation">
+    <div class="wrap">
+      <div class="head">
+        <div class="num">00</div>
+        <div class="title">FONDAMENTO DEL MODELLO</div>
+        <div class="meta">Business prima · architettura seconda · incasso come verifica</div>
+      </div>
+      <div class="grid4">
+        <div class="card hot">
+          <div class="label">Legge madre</div>
+          <div class="metric">Fase 0</div>
+          <p class="desc">Comanda finché non esiste incasso reale. Nessun salto a SaaS/API/enterprise prima della validazione economica.</p>
+        </div>
+        <div class="card">
+          <div class="label">Asset protetto</div>
+          <div class="metric gold">Road</div>
+          <p class="desc">La Roadmap Economica Madre resta la base visiva e strategica. Questa versione è parallela, non distruttiva.</p>
+        </div>
+        <div class="card">
+          <div class="label">Motore subordinato</div>
+          <div class="metric blue">CASCADE</div>
+          <p class="desc">CASCADE non guida la direzione commerciale. Serve il funnel, automatizza la consegna e aumenta potenza quando l’incasso lo richiede.</p>
+        </div>
+        <div class="card hot">
+          <div class="label">Invariabile</div>
+          <div class="metric">PTS</div>
+          <p class="desc"><b>Progresso Tecnologico Semplificato.</b> Ogni tecnologia entra solo se SEMPLIFICA la catena verso l’incasso: meno passi, meno costo, meno attrito. Si copiano percorsi già validati da altri, non si inventa. Minimizzare per massimizzare. Una tecnologia che aggiunge complessità senza togliere passi al cliente è vietata, anche se potente.</p>
+        </div>
+      </div>
+      <div class="notice">
+        REGOLA: questa versione parallela non modifica il lavoro già fatto. Lo ordina. INVARIABILE PTS: ogni proposta tecnica passa il doppio gate — «avvicina un cliente a pagare?» e «semplifica o complica?» Se complica, va in archivio anche se geniale.
+        La base rimane protetta; l’integrazione evolve; il cliente paga; il report consegna valore.
+      </div>
+    </div>
+  </section>
+
+  <section id="ecosistema">
+    <div class="wrap">
+      <div class="head">
+        <div class="num">01</div>
+        <div class="title">ECOSISTEMA OPERATIVO</div>
+        <div class="meta">parametri · obiettivi · caratteristiche · controllo</div>
+      </div>
+      <div class="pipeline">
+        <div class="pipe"><div class="n">01</div><div class="t">Landing</div><div class="d">Index commerciale, promessa chiara, CTA, pre-analisi, pagamento.</div></div>
+        <div class="pipe"><div class="n">02</div><div class="t">Lead</div><div class="d">Formspree / form interno, email, dati immobile, sorgente traffico.</div></div>
+        <div class="pipe"><div class="n">03</div><div class="t">Paywall</div><div class="d">Stripe LIVE attivo e verificato (CORS ✓ · 09.06.2026). PayPal/bonifico come canale di riserva.</div></div>
+        <div class="pipe"><div class="n">04</div><div class="t">Engine</div><div class="d">Risk Engine frontend + backend Railway da verificare/attivare.</div></div>
+        <div class="pipe"><div class="n">05</div><div class="t">Report</div><div class="d">PDF minimo consegnabile: diagnosi, rischio, costo, esito operativo.</div></div>
+        <div class="pipe"><div class="n">06</div><div class="t">Incasso</div><div class="d">Pagamento verificato, cliente servito, feedback, iterazione.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="fase0">
+    <div class="wrap">
+      <div class="head">
+        <div class="num">02</div>
+        <div class="title">FASE 0 — PRIMO INCASSO / REPORT VENDIBILE</div>
+        <div class="meta">comando operativo attuale</div>
+      </div>
+      <div class="phase">
+        <div class="phasehead">
+          <div>
+            <span class="badge">FASE 0</span>
+            <div class="phname">Vendere prima di espandere</div>
+          </div>
+          <div class="phcopy">
+            La Fase 0 non è una versione minore: è la prova che il sistema produce valore pagabile.
+            Tutto il resto resta pronto, ma fermo al cancello.
+          </div>
+          <div class="gate">GATE DI USCITA<br>10 report venduti oppure €1K MRR reale</div>
+        </div>
+        <div class="phasebody">
+          <div class="tasks">
+            <div class="task"><div class="prio red"></div><div><b>Landing corretta online</b><p>Pubblicare la versione commerciale giusta, non una vecchia release. Netlify/dominio devono mostrare il file corretto.</p><div class="tags"><span class="tag block">bloccante</span><span class="tag ok">Fase 0</span></div></div></div>
+            <div class="task"><div class="prio red"></div><div><b>Pagamento reale verificato — FATTO</b><p>Stripe live attivo, CORS corretto su tutti i domini, pagamento di test €79 completato. Resta da eseguire solo il test cliente end-to-end completo.</p><div class="tags"><span class="tag block">incasso</span><span class="tag">Stripe</span></div></div></div>
+            <div class="task"><div class="prio gold"></div><div><b>Report PDF minimo</b><p>Non serve il report perfetto: serve un report consegnabile che contenga diagnosi, criticità, impatto economico e decisione operativa.</p><div class="tags"><span class="tag ok">deliverable</span></div></div></div>
+            <div class="task"><div class="prio"></div><div><b>Test cliente end-to-end</b><p>Simone come cliente simulato: entra, compila, paga, riceve output. Tutto ciò che si blocca diventa priorità.</p><div class="tags"><span class="tag ok">validazione</span></div></div></div>
+          </div>
+          <div class="card hot">
+            <div class="label">Output cliente</div>
+            <div class="metric">PDF</div>
+            <p class="desc">Il cliente non compra CASCADE. Compra una risposta: rischio, costo nascosto, soglia, azione. Il PDF è la forma vendibile della potenza interna.</p>
+            <br>
+            <div class="label">Formula prodotto</div>
+            <p class="desc"><b>Diagnosi tecnica indipendente prima dell’offerta.</b><br>Non parere generico. Non opinione. Output operativo supportato da evidenze.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="gate">
+    <div class="wrap">
+      <div class="head">
+        <div class="num">03</div>
+        <div class="title">CANCELLI ECONOMICI</div>
+        <div class="meta">nessuna fase si attiva per entusiasmo</div>
+      </div>
+      <table class="table">
+        <thead>
+          <tr><th>Passaggio</th><th>Condizione oggettiva</th><th>Cosa resta fermo finché manca il gate</th><th>Esito</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Fase 0 → Fase 1</td><td>10 report venduti oppure €1K MRR reale</td><td>SaaS, dashboard, subscription, multi-tenant</td><td>Attiva abbonamenti</td></tr>
+          <tr><td>Fase 1 → Fase 2</td><td>Clienti ricorrenti + domanda reale di precisione dati</td><td>AVM evoluto, forecast, RAG documentale</td><td>Attiva motore dati</td></tr>
+          <tr><td>Fase 2 → Fase 3</td><td>Richiesta API da cliente/partner reale</td><td>Developer portal, API pubbliche, widget embed</td><td>Attiva integrazioni</td></tr>
+          <tr><td>Fase 3 → Fase 4</td><td>MRR stabile + lead enterprise qualificato</td><td>White-label, banche, NPL, portfolio massivi</td><td>Attiva enterprise</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head">
+        <div class="num">04</div>
+        <div class="title">MODELLO PARALLELO POTENZIATO</div>
+        <div class="meta">cosa cambia rispetto ai tentativi precedenti</div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="label">Prima</div>
+          <div class="metric red">Spinta</div>
+          <p class="desc">Molti moduli potenti aperti insieme: CASCADE, L2, worker, API, SaaS, deploy, Stripe, automazioni. Energia alta, ma direzione dispersa.</p>
+        </div>
+        <div class="card hot">
+          <div class="label">Ora</div>
+          <div class="metric">Reattore</div>
+          <p class="desc">La potenza viene compressa su una sola uscita: Fase 0. Primo cliente, primo pagamento, primo report, primo incasso. Poi scala.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap footer">
+    External Opinion / CASCADE · Open Road Parallel V2 · generato come versione parallela non distruttiva · 
+    Fase 0 comanda finché il mercato non paga.
+  </div>
+</main>
+</body>
+</html>
