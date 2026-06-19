@@ -194,6 +194,13 @@ async function tryClaude(testoGrezzo, timeoutMs = 45000) {
       ],
     });
 
+    // Guardia: classificatori di sicurezza possono restituire stop_reason "refusal"
+    // (HTTP 200, content vuoto o parziale). Va intercettato PRIMA di leggere content[0].
+    if (response.stop_reason === 'refusal') {
+      const cat = response.stop_details?.category || 'sconosciuta';
+      throw new Error(`Claude refusal (categoria: ${cat})`);
+    }
+
     // Cost tracking (con cache: input cached = $0.025/Mtok invece di $0.25/Mtok)
     const outputTokens = response.usage?.output_tokens || 0;
     const cacheRead    = response.usage?.cache_read_input_tokens || 0;
@@ -207,7 +214,12 @@ async function tryClaude(testoGrezzo, timeoutMs = 45000) {
     console.log(`[AI-COST] Claude Haiku: ~${inputTokenEstimate} in + ${outputTokens} out = $${costUsd.toFixed(5)}${cacheLabel}`);
 
     // Estrai JSON dalla risposta (gestisce markdown code blocks e testo libero)
-    let rawText = response.content[0].text.trim();
+    // Cerca il primo blocco di tipo "text" invece di assumere content[0]
+    const textBlock = response.content?.find?.((b) => b.type === 'text');
+    if (!textBlock || !textBlock.text) {
+      throw new Error('Risposta Claude senza blocco di testo');
+    }
+    let rawText = textBlock.text.trim();
     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('Nessun JSON trovato nella risposta Claude');
     rawText = jsonMatch[0];
