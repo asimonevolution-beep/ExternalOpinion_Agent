@@ -419,6 +419,14 @@ document.querySelectorAll('.hot.cat-btn').forEach(function (btn) {
     btn.classList.toggle('sel', btn.classList.contains('selected'));
   }).observe(btn, { attributes: true, attributeFilter: ['class'] });
 });
+
+// Fix selezione esclusiva: rimuove .sel da tutti prima che il MutationObserver
+// lo riassegni solo al pulsante cliccato (evita doppio highlight con stato iniziale)
+document.querySelectorAll('.hot.cat-btn').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    document.querySelectorAll('.hot.cat-btn').forEach(function (b) { b.classList.remove('sel'); });
+  });
+});
 </script>
 </body>
 </html>
