@@ -1,15 +1,14 @@
 (function () {
   'use strict';
 
-  // Stato
   var state = {
     service: null,
     label: null,
     jobId: null,
     checkoutUrl: null,
+    allegati: [],
   };
 
-  // Refs
   var catBtns      = document.querySelectorAll('.cat-btn');
   var intakeForm   = document.getElementById('intake-form');
   var inputUrl     = document.getElementById('input-url');
@@ -27,18 +26,44 @@
   var step1        = document.getElementById('step-1');
   var step2        = document.getElementById('step-2');
   var step3        = document.getElementById('step-3');
+  var formCatIcon  = document.getElementById('form-cat-icon');
+  var tipoBadge    = document.getElementById('tipo-badge');
 
   // Selezione categoria
   catBtns.forEach(function (btn) {
     btn.addEventListener('click', function () {
-      catBtns.forEach(function (b) { b.classList.remove('selected'); });
+      catBtns.forEach(function (b) {
+        b.classList.remove('selected');
+        b.setAttribute('aria-pressed', 'false');
+      });
       btn.classList.add('selected');
+      btn.setAttribute('aria-pressed', 'true');
+
       state.service = btn.dataset.service;
       state.label   = btn.dataset.label;
+
+      if (tipoBadge) tipoBadge.textContent = state.label;
+      if (formCatIcon) formCatIcon.textContent = btn.dataset.icon || '📋';
+
       intakeForm.classList.add('visible');
       step1.classList.remove('active'); step1.classList.add('done');
       step2.classList.add('active');
-      intakeForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      // Scroll al form con un piccolo ritardo per attendere l'animazione
+      setTimeout(function () {
+        intakeForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 80);
+    });
+  });
+
+  // Chip documenti
+  document.querySelectorAll('.a-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      chip.classList.toggle('sel');
+      var doc = chip.dataset.doc;
+      var i = state.allegati.indexOf(doc);
+      if (i === -1) { state.allegati.push(doc); }
+      else          { state.allegati.splice(i, 1); }
     });
   });
 
@@ -53,12 +78,13 @@
   function showFieldError(fieldId, errorId, show) {
     var f = document.getElementById(fieldId);
     var e = document.getElementById(errorId);
+    if (!f || !e) return;
     if (show) { f.classList.add('has-error'); e.style.display = 'block'; }
     else       { f.classList.remove('has-error'); e.style.display = 'none'; }
   }
 
   function clearErrors() {
-    showFieldError('field-url', 'error-url', false);
+    showFieldError('field-url',     'error-url',     false);
     showFieldError('field-contact', 'error-contact', false);
     globalError.classList.remove('visible');
   }
@@ -96,10 +122,11 @@
       service:  state.service,
       tier:     'TIER_1_CASCADE_79',
       zonaDati: {
-        categoria: state.label,
-        note:      noteVal || null,
-        telefono:  !isEmail ? contactVal : null,
-        source:    'quick-intake',
+        categoria:          state.label,
+        note:               noteVal || null,
+        telefono:           !isEmail ? contactVal : null,
+        allegatiDichiarati: state.allegati.length ? state.allegati.slice() : null,
+        source:             'quick-intake',
       },
     };
 
@@ -111,7 +138,9 @@
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(payload),
     })
-    .then(function (res) { return res.json().then(function (data) { return { status: res.status, data: data }; }); })
+    .then(function (res) {
+      return res.json().then(function (data) { return { status: res.status, data: data }; });
+    })
     .then(function (result) {
       if (!result.data.success && result.status >= 400) {
         loadingState.classList.remove('visible');
@@ -125,7 +154,6 @@
       var jobId = result.data.jobId;
       state.jobId = jobId;
 
-      // Chiama checkout per URL Stripe reale con caseId nei metadata
       return fetch('/api/jobs/' + jobId + '/checkout', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -138,7 +166,6 @@
         submitBtn.disabled = false;
 
         var shortId = res2.jobId ? res2.jobId.toString().slice(0, 8) : 'XXXXXXXX';
-
         displayCase.textContent = 'EO-' + shortId.toUpperCase();
         document.getElementById('summary-tipo').textContent    = state.label || '—';
         document.getElementById('summary-url').textContent     = urlVal.length > 50 ? urlVal.slice(0, 50) + '…' : urlVal;
@@ -157,12 +184,17 @@
         catSection.style.display = 'none';
         document.getElementById('steps').style.display = 'none';
         confirmPanel.classList.add('visible');
+        confirmPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        step1.classList.remove('active'); step1.classList.add('done');
+        step2.classList.remove('active'); step2.classList.add('done');
+        step3.classList.add('active');
       });
     })
     .catch(function (err) {
       loadingState.classList.remove('visible');
       submitBtn.disabled = false;
-      globalError.textContent = 'Connessione non riuscita. Verifica la connessione e riprova.';
+      globalError.textContent = 'Impossibile raggiungere il server. Verifica la connessione e riprova.';
       globalError.classList.add('visible');
       console.error('[QuickIntake]', err);
     });
@@ -187,16 +219,20 @@
 
   // Nuovo caso
   newCaseBtn.addEventListener('click', function () {
-    state = { service: null, label: null, jobId: null, checkoutUrl: null };
-    catBtns.forEach(function (b) { b.classList.remove('selected'); });
+    state = { service: null, label: null, jobId: null, checkoutUrl: null, allegati: [] };
+    catBtns.forEach(function (b) {
+      b.classList.remove('selected');
+      b.setAttribute('aria-pressed', 'false');
+    });
     inputUrl.value = ''; inputContact.value = ''; inputNote.value = '';
+    document.querySelectorAll('.a-chip').forEach(function (c) { c.classList.remove('sel'); });
     clearErrors();
     intakeForm.classList.remove('visible');
     catSection.style.display = '';
     document.getElementById('steps').style.display = '';
     confirmPanel.classList.remove('visible');
     step1.classList.add('active'); step1.classList.remove('done');
-    step2.classList.remove('active'); step2.classList.remove('done');
+    step2.classList.remove('active', 'done');
     step3.classList.remove('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });

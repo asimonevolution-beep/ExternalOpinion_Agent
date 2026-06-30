@@ -53,8 +53,10 @@ async function avviaAnalisi() {
   if (!email.includes('@'))        { mostraErrore('Email non valida.'); return; }
 
   currentEmail = email;
+  document.getElementById('form-modal').classList.remove('open');
+  const btnSub = document.getElementById('btnSubmitModal');
+  btnSub.disabled = true; btnSub.textContent = 'Avvio in corso...';
   document.getElementById('btnAnalizza').disabled = true;
-  document.getElementById('btnAnalizza').textContent = 'Avvio...';
   document.getElementById('form-box').style.display     = 'none';
   document.getElementById('progress-box').style.display = 'block';
   document.getElementById('result-box').style.display   = 'none';
@@ -265,7 +267,9 @@ function mostraErrore(msg) {
 function resetForm() {
   document.getElementById('form-box').style.display    = 'block';
   document.getElementById('btnAnalizza').disabled      = false;
-  document.getElementById('btnAnalizza').textContent   = 'Avvia Screening → € 69';
+  document.getElementById('btnAnalizza').innerHTML     = 'INIZIA<br>ANALISI&nbsp;›';
+  const btnSub = document.getElementById('btnSubmitModal');
+  if (btnSub) { btnSub.disabled = false; btnSub.textContent = 'AVVIA ANALISI — € 69 ›'; }
   document.getElementById('progress-bar').style.width  = '0';
 }
 
@@ -316,6 +320,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrollReveal();
   initScrollToButtons();
   initLeadTracking();
-  document.getElementById('btnAnalizza').addEventListener('click', avviaAnalisi);
+  const modal = document.getElementById('form-modal');
+  document.getElementById('btnAnalizza').addEventListener('click', () => {
+    modal.classList.add('open');
+    setTimeout(() => document.getElementById('urlAsta').focus(), 100);
+  });
+  document.getElementById('btnCloseModal').addEventListener('click', () => modal.classList.remove('open'));
+  modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
+  document.getElementById('btnSubmitModal').addEventListener('click', avviaAnalisi);
   document.getElementById('btnPaga').addEventListener('click', avviaPagamento);
 });
