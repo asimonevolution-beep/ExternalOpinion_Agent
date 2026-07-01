@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>External Opinion — Cruscotto Analisi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@300;400&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:           #0D0B08;
+  --bg2:          #161310;
+  --bg3:          #1C1813;
+  --cream:        #F2EDE4;
+  --dim:          #7A7269;
+  --gold:         #C8A96E;
+  --gold-d:       #9E7E45;
+  --gold-glow:    rgba(200,169,110,0.10);
+  --green:        #1E8449;
+  --green-glow:   rgba(30,132,73,0.14);
+  --yellow:       #D4AC0D;
+  --yellow-glow:  rgba(212,172,13,0.14);
+  --red:          #C0392B;
+  --red-glow:     rgba(192,57,43,0.14);
+  --border:       rgba(200,169,110,0.14);
+  --border-dim:   rgba(242,237,228,0.05);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: 'Instrument Sans', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ── HEADER ── */
+header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.3rem 3rem;
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cream);
+  text-decoration: none;
+}
+.logo em { font-style: normal; color: var(--gold); }
+.header-right {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* ── MAIN ── */
+main {
+  width: 100%;
+  max-width: 640px;
+  padding: 2.8rem 1.5rem 4rem;
+  flex: 1;
+}
+
+/* ── CRUSCOTTO ── */
+.cruscotto {
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  position: relative;
+  overflow: hidden;
+}
+.cruscotto::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  background: var(--gold-glow);
+  pointer-events: none;
+  filter: blur(40px);
+}
+
+/* Intestazione cruscotto */
+.crush-head {
+  padding: 1.5rem 2rem 1.3rem;
+  border-bottom: 1px solid var(--border-dim);
+}
+.crush-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-d);
+  margin-bottom: 0.35rem;
+}
+.crush-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.45rem;
+  font-weight: 300;
+  color: var(--cream);
+  line-height: 1.2;
+}
+
+/* ── 5 PULSANTI TIPO CASO ── */
+.tipo-row {
+  display: flex;
+  gap: 0.45rem;
+  padding: 1.3rem 2rem;
+  border-bottom: 1px solid var(--border-dim);
+  flex-wrap: wrap;
+}
+.tipo-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.6rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.tipo-btn:hover {
+  border-color: rgba(200,169,110,0.45);
+  color: var(--cream);
+}
+.tipo-btn.sel {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--gold-glow);
+}
+
+/* ── FIELDS ── */
+.fields-section {
+  padding: 1.3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border-dim);
+}
+.f-label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 0.4rem;
+}
+.f-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--cream);
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.f-input::placeholder { color: rgba(122,114,105,0.55); font-size: 0.8rem; }
+.f-input:focus { border-color: rgba(200,169,110,0.5); }
+.f-input.err { border-color: var(--red); }
+
+/* ── ALLEGATI ── */
+.allegati-section {
+  padding: 1.2rem 2rem 1.3rem;
+  border-bottom: 1px solid var(--border-dim);
+}
+.a-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 0.7rem;
+}
+.a-hint {
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+  color: rgba(122,114,105,0.45);
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 400;
+  margin-left: 0.4rem;
+}
+.allegati-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+}
+.a-chip {
+  padding: 0.32rem 0.7rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--dim);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: border-color 0.15s, color 0.15s;
+}
+.a-chip::before {
+  content: '';
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(122,114,105,0.4);
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.a-chip:hover { border-color: rgba(200,169,110,0.4); color: var(--cream); }
+.a-chip:hover::before { background: var(--gold-d); }
+.a-chip.sel { border-color: var(--gold); color: var(--gold); }
+.a-chip.sel::before { background: var(--gold); }
+
+/* ── FORM BODY (nascosto fino a click categoria) ── */
+.form-body     { display: none; }
+.form-body.vis { display: block; }
+
+/* ── CTA ── */
+.cta-section { padding: 1.3rem 2rem; }
+.cta-btn {
+  width: 100%;
+  padding: 0.95rem 1.4rem;
+  background: var(--gold);
+  color: var(--bg);
+  border: none;
+  cursor: pointer;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+}
+.cta-btn:hover:not(:disabled) { background: #DDB97E; }
+.cta-btn:disabled { background: rgba(122,114,105,0.5); cursor: not-allowed; }
+.cta-arrow { font-family: 'DM Mono', monospace; font-size: 0.9rem; }
+
+/* ── ERROR ── */
+.error-strip {
+  display: none;
+  padding: 0.75rem 2rem;
+  background: rgba(192,57,43,0.07);
+  border-top: 1px solid rgba(192,57,43,0.2);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: var(--red);
+}
+.error-strip.vis { display: block; }
+
+/* ── LOADING ── */
+.loading-strip {
+  display: none;
+  padding: 0.9rem 2rem;
+  border-top: 1px solid var(--border-dim);
+  align-items: center;
+  gap: 1rem;
+}
+.loading-strip.vis { display: flex; }
+.loading-track {
+  flex: 1; height: 1px;
+  background: var(--border);
+  position: relative; overflow: hidden;
+}
+.loading-track::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 55%;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  animation: sweep 1.5s ease-in-out infinite;
+}
+@keyframes sweep {
+  from { left: -55%; }
+  to   { left: 100%; }
+}
+.loading-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+/* ── VERDETTO ── */
+.verdetto-wrap {
+  display: none;
+  margin-top: 1px;
+}
+.verdetto-wrap.vis { display: block; }
+
+.semaforo-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-top: none;
+}
+.sem-block {
+  background: var(--bg2);
+  padding: 1rem 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  opacity: 0.3;
+  transition: opacity 0.35s, background 0.35s, border-color 0.35s;
+}
+.sem-block.active-green  { background: var(--green-glow);  border: 1px solid rgba(30,132,73,0.45);   opacity: 1; }
+.sem-block.active-yellow { background: var(--yellow-glow); border: 1px solid rgba(212,172,13,0.45);  opacity: 1; }
+.sem-block.active-red    { background: var(--red-glow);    border: 1px solid rgba(192,57,43,0.45);   opacity: 1; }
+.sem-block.pending       { opacity: 0.55; }
+
+.sem-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.green-side  .sem-dot { background: var(--green); }
+.yellow-side .sem-dot { background: var(--yellow); }
+.red-side    .sem-dot { background: var(--red); }
+.active-green  .sem-dot { box-shadow: 0 0 7px rgba(30,132,73,0.85); }
+.active-yellow .sem-dot { box-shadow: 0 0 7px rgba(212,172,13,0.85); }
+.active-red    .sem-dot { box-shadow: 0 0 7px rgba(192,57,43,0.85); }
+
+.sem-txt { display: flex; flex-direction: column; gap: 0.12rem; }
+.sem-name {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+.sem-sub { font-size: 0.7rem; color: var(--dim); line-height: 1.3; }
+
+/* ── CARD RISULTATO ── */
+.result-card {
+  border: 1px solid var(--border);
+  border-top: none;
+  background: var(--bg3);
+  padding: 1.5rem 2rem;
+}
+.r-caseid {
+  font-family: 'DM Mono', monospace;
+  font-size: 1.55rem;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  cursor: pointer;
+  margin-bottom: 0.2rem;
+  transition: opacity 0.15s;
+}
+.r-caseid:hover { opacity: 0.75; }
+.r-copy {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  text-decoration: underline dotted;
+  cursor: pointer;
+  margin-bottom: 1.1rem;
+  transition: color 0.15s;
+}
+.r-copy:hover { color: var(--cream); }
+.r-status {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 0.35rem;
+}
+.r-action {
+  font-size: 0.83rem;
+  line-height: 1.65;
+  color: rgba(242,237,228,0.6);
+  margin-bottom: 1.25rem;
+}
+.r-checkout {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0.85rem 1.2rem;
+  background: var(--gold);
+  color: var(--bg);
+  text-decoration: none;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 0.87rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: background 0.15s;
+}
+.r-checkout:hover { background: #DDB97E; }
+.r-reset {
+  display: block;
+  margin-top: 0.7rem;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.r-reset:hover { color: var(--cream); }
+
+/* ── FOOTER ── */
+footer {
+  width: 100%;
+  padding: 1.1rem 3rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.footer-txt {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  header { padding: 1rem 1.25rem; }
+  main { padding: 1.5rem 0.5rem 3rem; }
+  .crush-head,
+  .tipo-row,
+  .fields-section,
+  .allegati-section,
+  .cta-section,
+  .error-strip,
+  .loading-strip { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .result-card { padding: 1.2rem 1.25rem; }
+  .tipo-btn { flex: none; width: calc(50% - 0.25rem); }
+  .semaforo-strip { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 0.5rem; text-align: center; padding: 1rem 1.25rem; }
+  .r-caseid { font-size: 1.2rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a href="/" class="logo">External <em>Opinion</em></a>
+  <span class="header-right">CASCADE · Motore Analitico</span>
+</header>
+
+<!-- MAIN -->
+<main>
+
+  <!-- CRUSCOTTO -->
+  <div class="cruscotto" id="cruscotto">
+
+    <!-- Intestazione -->
+    <div class="crush-head">
+      <div class="crush-eyebrow">External Opinion · Sistema CASCADE</div>
+      <div class="crush-title">Analisi oggettiva integrata</div>
+    </div>
+
+    <!-- 5 Pulsanti tipo caso -->
+    <div class="tipo-row">
+      <button class="tipo-btn" data-service="prima-casa"     data-label="Prima casa"          type="button">Prima casa</button>
+      <button class="tipo-btn" data-service="investimento"   data-label="Investimento"         type="button">Investimento</button>
+      <button class="tipo-btn" data-service="asta"           data-label="Asta immobiliare"     type="button">Asta</button>
+      <button class="tipo-btn" data-service="compravendita"  data-label="Compravendita"        type="button">Compravendita</button>
+      <button class="tipo-btn" data-service="analisi-tecnica" data-label="Analisi tecnica"    type="button">Tecnica</button>
+    </div>
+
+    <!-- Form body: nascosto fino al click categoria -->
+    <div class="form-body" id="form-body">
+
+    <!-- Link + Contatto -->
+    <div class="fields-section">
+      <div>
+        <label class="f-label" for="inp-url">Link immobile / asta / annuncio</label>
+        <input class="f-input" id="inp-url" type="url"
+          placeholder="https://www.immobiliare.it/... oppure link portale aste"
+          autocomplete="off">
+      </div>
+      <div>
+        <label class="f-label" for="inp-contact">Contatto
+          <span style="font-style:italic;text-transform:none;letter-spacing:0;font-family:'Instrument Sans',sans-serif;font-size:0.7rem;color:rgba(122,114,105,0.45);margin-left:0.35rem;">email o telefono</span>
+        </label>
+        <input class="f-input" id="inp-contact" type="text"
+          placeholder="email@esempio.it oppure +39 333 ..."
+          autocomplete="email">
+      </div>
+    </div>
+
+    <!-- Allegati -->
+    <div class="allegati-section">
+      <div class="a-label">
+        Documenti disponibili
+        <span class="a-hint">opzionale — invia via email al codice caso</span>
+      </div>
+      <div class="allegati-grid">
+        <button class="a-chip" data-doc="planimetria"    type="button">Planimetria</button>
+        <button class="a-chip" data-doc="foto"           type="button">Foto</button>
+        <button class="a-chip" data-doc="perizia"        type="button">Perizia</button>
+        <button class="a-chip" data-doc="visura"         type="button">Visura</button>
+        <button class="a-chip" data-doc="ape"            type="button">APE</button>
+        <button class="a-chip" data-doc="documenti-asta" type="button">Doc. Asta</button>
+        <button class="a-chip" data-doc="computo"        type="button">Computo</button>
+        <button class="a-chip" data-doc="note-cliente"   type="button">Note</button>
+      </div>
+    </div>
+
+    <!-- CTA principale -->
+    <div class="cta-section">
+      <button class="cta-btn" id="cta-btn" type="button">
+        Avvia Analisi Oggettiva
+        <span class="cta-arrow">→</span>
+      </button>
+    </div>
+
+    </div><!-- /form-body -->
+
+    <!-- Errore -->
+    <div class="error-strip" id="error-strip"></div>
+
+    <!-- Loading -->
+    <div class="loading-strip" id="loading-strip">
+      <span class="loading-label">Acquisizione caso</span>
+      <div class="loading-track"></div>
+    </div>
+
+  </div><!-- /cruscotto -->
+
+  <!-- VERDETTO -->
+  <div class="verdetto-wrap" id="verdetto-wrap">
+
+    <!-- Striscia semaforo -->
+    <div class="semaforo-strip">
+      <div class="sem-block green-side  pending" id="sem-verde">
+        <div class="sem-dot"></div>
+        <div class="sem-txt">
+          <span class="sem-name">Verde</span>
+          <span class="sem-sub">Coerente. Procedi.</span>
+        </div>
+      </div>
+      <div class="sem-block yellow-side pending" id="sem-giallo">
+        <div class="sem-dot"></div>
+        <div class="sem-txt">
+          <span class="sem-name">Giallo</span>
+          <span class="sem-sub">Attenzione. Verifica.</span>
+        </div>
+      </div>
+      <div class="sem-block red-side    pending" id="sem-rosso">
+        <div class="sem-dot"></div>
+        <div class="sem-txt">
+          <span class="sem-name">Rosso</span>
+          <span class="sem-sub">Critico. Non procedere.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card risultato -->
+    <div class="result-card">
+      <div class="r-caseid" id="r-caseid">EO—————</div>
+      <span class="r-copy" id="r-copy">Copia codice caso</span>
+      <div class="r-status">Caso ricevuto · Analisi in elaborazione</div>
+      <div class="r-action">
+        Il motore CASCADE ha acquisito il caso e avviato l'analisi. Procedi al pagamento per ricevere il report completo entro 24–48 ore.<br>
+        Documenti allegati: invia a <strong style="color:var(--gold)">documents@externalopinion.it</strong> con il codice caso in oggetto.
+      </div>
+      <a class="r-checkout" id="r-checkout" href="#" target="_blank">
+        Procedi al pagamento — € 79
+        <span>→</span>
+      </a>
+      <span class="r-reset" id="r-reset">Nuovo caso →</span>
+    </div>
+
+  </div><!-- /verdetto -->
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-txt">External Opinion · CASCADE</span>
+  <span class="footer-txt">Analisi tecnica indipendente · IT</span>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var state = { service: null, label: null, allegati: [] };
+
+  /* tipo caso */
+  var tipoBtns = document.querySelectorAll('.tipo-btn');
+  tipoBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      tipoBtns.forEach(function (b) { b.classList.remove('sel'); });
+      btn.classList.add('sel');
+      state.service = btn.dataset.service;
+      state.label   = btn.dataset.label;
+      var fb = document.getElementById('form-body');
+      fb.classList.add('vis');
+      fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
+
+  /* allegati */
+  var aChips = document.querySelectorAll('.a-chip');
+  aChips.forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      chip.classList.toggle('sel');
+      var doc = chip.dataset.doc;
+      var i = state.allegati.indexOf(doc);
+      if (i === -1) { state.allegati.push(doc); }
+      else           { state.allegati.splice(i, 1); }
+    });
+  });
+
+  /* refs */
+  var inpUrl     = document.getElementById('inp-url');
+  var inpContact = document.getElementById('inp-contact');
+  var ctaBtn     = document.getElementById('cta-btn');
+  var errStrip   = document.getElementById('error-strip');
+  var loadStrip  = document.getElementById('loading-strip');
+  var verdWrap   = document.getElementById('verdetto-wrap');
+  var rCaseId    = document.getElementById('r-caseid');
+  var rCopy      = document.getElementById('r-copy');
+  var rCheckout  = document.getElementById('r-checkout');
+  var rReset     = document.getElementById('r-reset');
+
+  function showErr(msg) {
+    errStrip.textContent = msg;
+    errStrip.classList.add('vis');
+  }
+  function clearErr() {
+    errStrip.classList.remove('vis');
+    inpUrl.classList.remove('err');
+    inpContact.classList.remove('err');
+  }
+
+  /* submit */
+  ctaBtn.addEventListener('click', function () {
+    clearErr();
+
+    var urlVal  = inpUrl.value.trim();
+    var conVal  = inpContact.value.trim();
+    var ok = true;
+
+    if (!state.service) {
+      showErr('Seleziona il tipo di caso.');
+      ok = false;
+    }
+    if (!urlVal || !urlVal.startsWith('http')) {
+      inpUrl.classList.add('err');
+      if (ok) showErr('Inserisci un link valido (https://...).');
+      ok = false;
+    }
+    if (!conVal || conVal.length < 5) {
+      inpContact.classList.add('err');
+      if (ok) showErr('Inserisci email o telefono.');
+      ok = false;
+    }
+    if (!ok) return;
+
+    var isEmail = conVal.indexOf('@') !== -1;
+    var payload = {
+      urlAsta: urlVal,
+      email:   conVal,
+      service: state.service,
+      tier:    'TIER_1_CASCADE_79',
+      zonaDati: {
+        categoria:          state.label,
+        allegatiDichiarati: state.allegati.length ? state.allegati.slice() : null,
+        telefono:           !isEmail ? conVal : null,
+        source:             'gioiello',
+      },
+    };
+
+    ctaBtn.disabled = true;
+    loadStrip.classList.add('vis');
+
+    fetch('/api/analyze', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    })
+    .then(function (res) {
+      return res.json().then(function (d) { return { s: res.status, d: d }; });
+    })
+    .then(function (r) {
+      if (!r.d.success && r.s >= 400) {
+        loadStrip.classList.remove('vis');
+        ctaBtn.disabled = false;
+        showErr(r.d.error || 'Errore creazione caso. Riprova.');
+        return;
+      }
+
+      var jobId   = r.d.jobId;
+      var shortId = jobId ? String(jobId).slice(0, 8).toUpperCase() : '--------';
+      rCaseId.textContent = 'EO-' + shortId;
+
+      return fetch('/api/jobs/' + jobId + '/checkout', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ tier: 'TIER_1_CASCADE_79', email: isEmail ? conVal : '' }),
+      })
+      .then(function (r2) { return r2.json().catch(function () { return null; }); })
+      .catch(function ()  { return null; })
+      .then(function (co) {
+        loadStrip.classList.remove('vis');
+        ctaBtn.disabled = false;
+
+        rCheckout.href = (co && co.checkoutUrl) ? co.checkoutUrl : '/landing.html#piani';
+
+        /* semaforo in stato attesa */
+        ['sem-verde', 'sem-giallo', 'sem-rosso'].forEach(function (id) {
+          document.getElementById(id).classList.add('pending');
+        });
+
+        verdWrap.classList.add('vis');
+        verdWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    })
+    .catch(function (err) {
+      loadStrip.classList.remove('vis');
+      ctaBtn.disabled = false;
+      showErr('Connessione non riuscita. Verifica la rete e riprova.');
+      console.error('[Gioiello]', err);
+    });
+  });
+
+  /* copia caseId */
+  function copyCaseId() {
+    var t = rCaseId.textContent;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(t).then(function () {
+        rCopy.textContent = 'Copiato ✓';
+        setTimeout(function () { rCopy.textContent = 'Copia codice caso'; }, 2000);
+      });
+    }
+  }
+  rCopy.addEventListener('click', copyCaseId);
+  rCaseId.addEventListener('click', copyCaseId);
+
+  /* reset */
+  rReset.addEventListener('click', function () {
+    state.service  = null;
+    state.label    = null;
+    state.allegati = [];
+    tipoBtns.forEach(function (b) { b.classList.remove('sel'); });
+    aChips.forEach(function (c)   { c.classList.remove('sel'); });
+    inpUrl.value    = '';
+    inpContact.value = '';
+    clearErr();
+    verdWrap.classList.remove('vis');
+    ['sem-verde', 'sem-giallo', 'sem-rosso'].forEach(function (id) {
+      var el = document.getElementById(id);
+      el.classList.remove('active-green', 'active-yellow', 'active-red', 'pending');
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+})();
+</script>
+</body>
+</html>

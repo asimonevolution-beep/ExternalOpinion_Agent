@@ -1,8 +1,6 @@
 (function () {
   'use strict';
 
-  var PAYMENT_LINK = 'https://buy.stripe.com/6oUeV54fFbZ16jdfJ9ffy06';
-
   // Stato
   var state = {
     service: null,
@@ -142,25 +140,39 @@
       var jobId = result.data.jobId;
       state.jobId = jobId;
 
-      loadingState.classList.remove('visible');
-      submitBtn.disabled = false;
+      // Chiama checkout per URL Stripe reale con caseId nei metadata
+      return fetch('/api/jobs/' + jobId + '/checkout', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ tier: 'TIER_1_CASCADE_79', email: emailForCheckout }),
+      })
+      .then(function (r) { return r.json().then(function (d) { return { jobId: jobId, checkout: d }; }); })
+      .catch(function () { return { jobId: jobId, checkout: null }; })
+      .then(function (res2) {
+        loadingState.classList.remove('visible');
+        submitBtn.disabled = false;
 
-      var shortId  = jobId ? jobId.toString().slice(0, 8) : 'XXXXXXXX';
-      var caseCode = 'EO-' + shortId.toUpperCase();
+        var shortId = res2.jobId ? res2.jobId.toString().slice(0, 8) : 'XXXXXXXX';
 
-      displayCase.textContent = caseCode;
-      document.getElementById('summary-tipo').textContent    = state.label || '—';
-      document.getElementById('summary-url').textContent     = urlVal.length > 50 ? urlVal.slice(0, 50) + '…' : urlVal;
-      document.getElementById('summary-contact').textContent = contactVal;
+        displayCase.textContent = 'EO-' + shortId.toUpperCase();
+        document.getElementById('summary-tipo').textContent    = state.label || '—';
+        document.getElementById('summary-url').textContent     = urlVal.length > 50 ? urlVal.slice(0, 50) + '…' : urlVal;
+        document.getElementById('summary-contact').textContent = contactVal;
 
-      // Payment Link Stripe: il caso viene collegato al pagamento tramite client_reference_id
-      checkoutBtn.href        = PAYMENT_LINK + '?client_reference_id=' + encodeURIComponent(caseCode);
-      checkoutBtn.textContent = 'Procedi al pagamento →';
+        if (res2.checkout && res2.checkout.checkoutUrl) {
+          checkoutBtn.href        = res2.checkout.checkoutUrl;
+          checkoutBtn.textContent = 'Procedi al pagamento →';
+        } else {
+          checkoutBtn.href        = '/landing.html#piani';
+          checkoutBtn.textContent = 'Scegli il piano (indica codice caso) →';
+          checkoutBtn.title       = 'Copia il codice caso e indicalo nel pagamento';
+        }
 
-      intakeForm.classList.remove('visible');
-      catSection.style.display = 'none';
-      document.getElementById('steps').style.display = 'none';
-      confirmPanel.classList.add('visible');
+        intakeForm.classList.remove('visible');
+        catSection.style.display = 'none';
+        document.getElementById('steps').style.display = 'none';
+        confirmPanel.classList.add('visible');
+      });
     })
     .catch(function (err) {
       loadingState.classList.remove('visible');

@@ -42,3 +42,5 @@ build/
 
 # Local Netlify folder
 .netlify
+
+claude-external-opinion-chat.txt

@@ -1,0 +1,10 @@
+{
+  "lastCost": 0,
+  "lastAuthorizedCost": 0,
+  "costCeiling": 100,
+  "contextCeiling": 95,
+  "contextPct": 0,
+  "toolCount": 0,
+  "maxConsecutive": 25,
+  "bypassOnce": false
+}

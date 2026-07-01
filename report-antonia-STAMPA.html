@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Report Immobiliare — Proprietà Antonia — Ravarino (MO)</title>
+<style>
+  @page {
+    size: A4;
+    margin: 22mm 18mm 22mm 18mm;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Georgia", "Times New Roman", serif;
+    font-size: 10.5pt;
+    color: #1a1a1a;
+    line-height: 1.65;
+    background: #fff;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 32px 40px 48px;
+  }
+
+  /* ─── INTESTAZIONE ─── */
+  .header {
+    border-bottom: 2.5px solid #1a1a1a;
+    padding-bottom: 14px;
+    margin-bottom: 22px;
+  }
+  .header-brand {
+    font-size: 9pt;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 6px;
+  }
+  .header-title {
+    font-size: 18pt;
+    font-weight: bold;
+    letter-spacing: -0.01em;
+    color: #111;
+    line-height: 1.2;
+  }
+  .header-sub {
+    font-size: 10.5pt;
+    color: #444;
+    margin-top: 5px;
+  }
+  .header-meta {
+    margin-top: 10px;
+    font-size: 9pt;
+    color: #888;
+    display: flex;
+    gap: 24px;
+  }
+
+  /* ─── NOTA METODOLOGICA ─── */
+  .nota-metodologica {
+    background: #fffbe6;
+    border-left: 4px solid #e6a800;
+    border-radius: 2px;
+    padding: 12px 16px;
+    margin-bottom: 22px;
+    font-size: 9.5pt;
+    color: #5a4500;
+  }
+  .nota-metodologica strong { color: #7a5000; }
+  .nota-metodologica .campi-da-compilare {
+    margin-top: 8px;
+    padding-left: 12px;
+  }
+  .nota-metodologica .campi-da-compilare li {
+    list-style: disc;
+    margin-bottom: 3px;
+  }
+
+  /* ─── SEZIONI ─── */
+  h2 {
+    font-size: 12.5pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #111;
+    margin-top: 26px;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #ccc;
+  }
+  h3 {
+    font-size: 10.5pt;
+    font-weight: bold;
+    color: #222;
+    margin-top: 16px;
+    margin-bottom: 7px;
+  }
+  p { margin-bottom: 9px; }
+  ul, ol {
+    margin-left: 18px;
+    margin-bottom: 9px;
+  }
+  li { margin-bottom: 4px; }
+
+  /* ─── TABELLE ─── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th {
+    background: #f0f0f0;
+    font-weight: bold;
+    text-align: left;
+    padding: 7px 10px;
+    border: 1px solid #ccc;
+    font-size: 9pt;
+    letter-spacing: 0.04em;
+  }
+  td {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #fafafa; }
+  td strong { color: #111; }
+
+  /* ─── CALLOUT VALORE ─── */
+  .valore-box {
+    background: #f5f5f5;
+    border: 1.5px solid #999;
+    border-radius: 3px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 10pt;
+    page-break-inside: avoid;
+  }
+  .valore-box .valore-principale {
+    font-size: 15pt;
+    font-weight: bold;
+    color: #111;
+  }
+  .valore-box .valore-label {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #666;
+    margin-bottom: 4px;
+  }
+
+  /* ─── SCENARI ─── */
+  .scenario {
+    border-left: 3px solid #555;
+    padding: 8px 14px;
+    margin: 12px 0;
+    background: #fafafa;
+    page-break-inside: avoid;
+  }
+  .scenario.a { border-color: #2a7a2a; }
+  .scenario.b { border-color: #2a5a9a; }
+  .scenario.c { border-color: #8a6a00; }
+  .scenario.d { border-color: #7a2a7a; }
+  .scenario h3 { margin-top: 0; }
+
+  /* ─── RACCOMANDAZIONE FINALE ─── */
+  .raccomandazione {
+    background: #f9f9f9;
+    border: 2px solid #1a1a1a;
+    border-radius: 2px;
+    padding: 14px 18px;
+    margin-top: 22px;
+    page-break-inside: avoid;
+  }
+  .raccomandazione h3 {
+    font-size: 11pt;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 10px;
+  }
+  .raccomandazione ol { margin-left: 20px; }
+  .raccomandazione li { margin-bottom: 8px; }
+
+  /* ─── SEGNALI ─── */
+  .positivo { color: #1a6a1a; font-weight: bold; }
+  .attenzione { color: #8a5000; font-weight: bold; }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    margin-top: 36px;
+    padding-top: 12px;
+    border-top: 1px solid #ccc;
+    font-size: 8.5pt;
+    color: #888;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* ─── PRINT ─── */
+  @media print {
+    body { padding: 0; }
+    .nota-metodologica { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .scenario { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .valore-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tr:nth-child(even) td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  /* ─── NO-PRINT BANNER ─── */
+  .print-banner {
+    background: #1a1a1a;
+    color: #fff;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 9.5pt;
+    font-family: system-ui, sans-serif;
+    border-radius: 4px;
+    margin-bottom: 28px;
+    cursor: pointer;
+  }
+  .print-banner strong { color: #ffd700; }
+  @media print { .print-banner { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="print-banner" onclick="window.print()">
+  Clicca qui oppure premi <strong>Ctrl+P</strong> e scegli <strong>"Salva come PDF"</strong> per esportare il report
+</div>
+
+<!-- INTESTAZIONE -->
+<div class="header">
+  <div class="header-brand">External Opinion — Analisi Immobiliare</div>
+  <div class="header-title">Report Immobiliare — Proprietà Antonia</div>
+  <div class="header-sub">Casa + laboratorio/studio — Ravarino (MO), zona via Vandini / via degli Argini</div>
+  <div class="header-meta">
+    <span>Data analisi: 14 giugno 2026</span>
+    <span>Annuncio: immobiliare.it/annunci/120944848/</span>
+    <span>Tipologia: mista — abitazione + laboratorio</span>
+  </div>
+</div>
+
+<!-- NOTA METODOLOGICA -->
+<div class="nota-metodologica">
+  <strong>⚠ NOTA METODOLOGICA — DATI DA CONFERMARE</strong><br>
+  Il portale immobiliare.it blocca l'estrazione automatica della scheda (errore 403). I seguenti campi vanno letti direttamente dalla pagina live e inseriti prima della consegna:
+  <ul class="campi-da-compilare">
+    <li>Prezzo richiesto attuale: <strong>______ €</strong></li>
+    <li>Superficie: abitazione <strong>___ mq</strong> / laboratorio <strong>___ mq</strong> / area cortiliva-giardino <strong>___ mq</strong></li>
+    <li>Numero foto e data ultimo ribasso: <strong>______</strong></li>
+  </ul>
+  Tutta l'analisi è costruita su comparabili reali e verificati di Ravarino. Dove serve un numero della proprietà, viene usata un'ipotesi di lavoro etichettata come tale.
+</div>
+
+
+<!-- SEZIONE 0: DATI MERCATO -->
+<h2>Dati di mercato — Ravarino (giugno 2026)</h2>
+
+<table>
+  <tr>
+    <th>Indicatore</th>
+    <th>Valore</th>
+    <th>Fonte</th>
+  </tr>
+  <tr>
+    <td>Prezzo medio richiesto</td>
+    <td><strong>€ 1.332/mq</strong></td>
+    <td>RealAdvisor</td>
+  </tr>
+  <tr>
+    <td>Case indipendenti / ville</td>
+    <td>€ 1.269/mq</td>
+    <td>RealAdvisor</td>
+  </tr>
+  <tr>
+    <td>Appartamenti</td>
+    <td>€ 1.390/mq</td>
+    <td>RealAdvisor</td>
+  </tr>
+  <tr>
+    <td>Prezzo medio comune (apr. 2026)</td>
+    <td>€ 1.299/mq <span class="positivo">(+8,5% su 2025)</span></td>
+    <td>Immobiliare.it</td>
+  </tr>
+  <tr>
+    <td>Valore mediano casa</td>
+    <td>€ 207.418 (range €53k – €476k)</td>
+    <td>RealAdvisor</td>
+  </tr>
+  <tr>
+    <td>Valore mediano appartamento</td>
+    <td>€ 132.052</td>
+    <td>RealAdvisor</td>
+  </tr>
+  <tr>
+    <td>Canone medio casa</td>
+    <td>€ 1.198/mese</td>
+    <td>RealAdvisor</td>
+  </tr>
+  <tr>
+    <td>Canone medio appartamento</td>
+    <td>€ 838/mese (≈ €106/mq/anno)</td>
+    <td>RealAdvisor</td>
+  </tr>
+  <tr>
+    <td>Trend case (4 anni)</td>
+    <td><span class="attenzione">−2,8%</span></td>
+    <td>RealAdvisor</td>
+  </tr>
+  <tr>
+    <td>Trend appartamenti (4 anni)</td>
+    <td><span class="positivo">+29,9%</span></td>
+    <td>RealAdvisor</td>
+  </tr>
+</table>
+
+<h3>Comparabili laboratori — Provincia di Modena</h3>
+<table>
+  <tr><th>Immobile</th><th>Superficie</th><th>Prezzo</th><th>€/mq</th></tr>
+  <tr><td>Laboratorio, Modena Est</td><td>268 mq</td><td>€ 158.000</td><td>≈ €590/mq</td></tr>
+  <tr><td>Laboratorio/ufficio, Modena centro</td><td>91 mq</td><td>€ 35.000</td><td>≈ €385/mq</td></tr>
+  <tr><td>Complesso via Vandini, Ravarino</td><td>285 mq lab + 1.050 mq fabbricato + 1.500 mq cortile</td><td>—</td><td>zona produttiva/agricola</td></tr>
+  <tr><td>Soluzione tipo Ravarino</td><td>60 mq ab. + 40 mq lab./magazzino</td><td>—</td><td>Tempocasa Nonantola</td></tr>
+</table>
+
+<p><strong>Lettura:</strong> il laboratorio in zona periferica/agricola come Ravarino vale <strong>€ 350–600/mq</strong>, cioè 1/2 ÷ 1/3 del residenziale. Questo è il cuore del problema di vendita.</p>
+
+
+<!-- SEZIONE 1: PERCHÉ NON SI VENDE -->
+<h2>1 — Perché non si vende</h2>
+
+<h3>1.1 — Tipologia mista: pubblico dimezzato</h3>
+<p>È il fattore numero uno. Una "casa + laboratorio" non parla a nessuno dei due mercati principali:</p>
+<ul>
+  <li><strong>Chi cerca casa</strong> vede metratura "sprecata" in un laboratorio che non gli serve, non finanziabile come abitazione, con costi di gestione aggiuntivi.</li>
+  <li><strong>Chi cerca laboratorio</strong> non vuole pagare anche un'abitazione, e la domanda artigianale a Ravarino è sottile.</li>
+</ul>
+<p>Il compratore naturale — artigiano o professionista che vuole abitare e lavorare nello stesso posto — è una nicchia molto ristretta.</p>
+
+<h3>1.2 — Prezzo: l'errore classico della somma piena</h3>
+<p>Quasi certamente il prezzo è stato costruito come <strong>valore casa pieno + valore laboratorio pieno</strong>. Il mercato invece:</p>
+<ul>
+  <li>sconta la parte laboratorio a <strong>€ 350–600/mq</strong> (non a valore residenziale);</li>
+  <li>applica uno <strong>sconto-illiquidità</strong> sulla tipologia mista, difficile da rivendere e da finanziare con mutuo prima casa.</li>
+</ul>
+<p><em>Da verificare appena disponibile il prezzo richiesto: se il €/mq medio risultante supera €1.300–1.400, l'immobile è fuori mercato del 15–30%.</em></p>
+
+<h3>1.3 — Posizionamento: via Vandini / argini</h3>
+<p>Zona ai margini dell'abitato (frazioni Rami/Stuffione, lungo gli argini): contesto rurale, tranquillo, ma poco appetibile per chi cerca servizi e centro. Penalizza la parte abitativa; per la parte laboratorio, la viabilità conta più della centralità.</p>
+
+<h3>1.4 — "Ex proprietà familiare" + ferma da tempo</h3>
+<ul>
+  <li>Immobili familiari spesso hanno personalizzazioni e stato datato (impianti, finiture anni '60–'90) che il mercato legge come "da ristrutturare".</li>
+  <li>Un annuncio <strong>fermo da mesi</strong> genera il sospetto "c'è qualcosa che non va / il prezzo è gonfiato": più resta online, più il potenziale acquirente tratta al ribasso a prescindere.</li>
+</ul>
+
+<h3>1.5 — Qualità dell'annuncio (da verificare sulla scheda live)</h3>
+<p>Controllare e correggere: numero foto (se &lt;10–15, senza foto del laboratorio e degli esterni → grave), planimetria assente, descrizione che non chiarisce la separabilità delle due unità, classe energetica mancante. Un annuncio mediocre su tipologia già difficile equivale a invisibilità.</p>
+
+
+<!-- SEZIONE 2: VALORE DI MERCATO -->
+<h2>2 — Valore di mercato attuale realistico</h2>
+
+<p>Metodo: valorizzazione <strong>separata</strong> delle componenti (è così che ragiona il compratore reale), non somma piena.</p>
+<p><em>Ipotesi di lavoro — da rimpiazzare con i mq reali della scheda: abitazione ~120 mq · laboratorio ~80 mq · cortile/giardino accessorio.</em></p>
+
+<table>
+  <tr>
+    <th>Componente</th>
+    <th>Criterio</th>
+    <th>Valore stimato</th>
+  </tr>
+  <tr>
+    <td>Abitazione (stato da aggiornare)</td>
+    <td>€ 1.269/mq − sconto stato 15% ≈ €1.080/mq × 120 mq</td>
+    <td>≈ <strong>€ 130.000</strong></td>
+  </tr>
+  <tr>
+    <td>Laboratorio/studio</td>
+    <td>€ 450/mq (media comp. zona) × 80 mq</td>
+    <td>≈ <strong>€ 36.000</strong></td>
+  </tr>
+  <tr>
+    <td>Sconto-illiquidità tipologia mista</td>
+    <td>−10% sul totale</td>
+    <td>−<strong>€ 17.000</strong></td>
+  </tr>
+  <tr style="background:#f0f0f0">
+    <td><strong>Valore di mercato realistico</strong></td>
+    <td colspan="2"><strong>≈ € 145.000 – € 160.000</strong></td>
+  </tr>
+</table>
+
+<div class="valore-box">
+  <div class="valore-label">Valore a cui l'immobile si vende davvero</div>
+  <div class="valore-principale">€ 145.000 – € 160.000</div>
+  <div style="margin-top:6px; font-size:9.5pt; color:#555;">
+    Allineato alla mediana casa Ravarino (€207k) corretta al ribasso per stato e componente produttiva.<br>
+    Se il prezzo in annuncio è sopra <strong>€175–180k</strong>, lì sta il blocco.
+  </div>
+</div>
+
+
+<!-- SEZIONE 3: VALORE DI TRASFORMAZIONE -->
+<h2>3 — Valore di trasformazione (la vera leva)</h2>
+
+<p>Il punto debole (il laboratorio) diventa il punto di forza se si trasforma.</p>
+
+<div class="scenario a">
+  <h3>Scenario A — Riconversione laboratorio → ampliamento abitativo</h3>
+  <p>Il laboratorio diventa parte della casa (open space, taverna, zona giorno extra, camere). Si elimina la "tipologia mista" e si vende come <strong>casa unica grande</strong>.</p>
+  <ul>
+    <li>Costo conversione (cambio destinazione d'uso + opere): <strong>€600–900/mq</strong> → su 80 mq ≈ <strong>€55–70k</strong></li>
+    <li>Valore in uscita: 200 mq residenziali × €1.269/mq ≈ <strong>€250.000</strong></li>
+    <li><strong>Plusvalore potenziale: +€90–100k</strong> sul valore attuale, al netto dei lavori</li>
+  </ul>
+  <p><em>Vincolo: verificare in Comune la fattibilità del cambio destinazione d'uso (urbanistica, distanze, conformità).</em></p>
+</div>
+
+<div class="scenario b">
+  <h3>Scenario B — Frazionamento in due unità indipendenti</h3>
+  <p>Casa + laboratorio diventano abitazione principale + monolocale/bilocale autonomo (o casa + studio professionale con ingresso separato).</p>
+  <ul>
+    <li>Sblocca due mercati: vendita frazionata o <strong>una unità a reddito</strong></li>
+    <li>Affitto unità ricavata: <strong>€500–650/mese</strong> → rendita che sostiene il mutuo</li>
+    <li>Valore complessivo frazionato: tipicamente <strong>+15–25%</strong> vs. corpo unico misto</li>
+  </ul>
+</div>
+
+<div class="scenario c">
+  <h3>Scenario C — Casa-laboratorio per professionista (target mirato)</h3>
+  <p>Non trasformare, ma <strong>rivendere il concept</strong> alla nicchia giusta: artigiano artistico, restauratore, fotografo, ceramista, e-commerce con magazzino, liutaio.</p>
+  <ul>
+    <li>Costo: <strong>~€2–4k</strong> (solo marketing e rifacimento annuncio)</li>
+    <li>Recupera valore al laboratorio come <em>asset di lavoro</em>, non come metratura scontata</li>
+    <li>Richiede annuncio rifatto e canale giusto (non solo portali generalisti)</li>
+  </ul>
+</div>
+
+<div class="scenario d">
+  <h3>Scenario D — "Live &amp; work" / B&amp;B-studio</h3>
+  <p>Abitazione + spazio per attività ricettiva leggera o studio-showroom. Funziona se la zona argini ha valenza paesaggistica (ciclovie / turismo lento).</p>
+</div>
+
+<h3>Sintesi scenari di trasformazione</h3>
+<table>
+  <tr>
+    <th>Scenario</th>
+    <th>Investimento</th>
+    <th>Valore potenziale in uscita</th>
+    <th>Δ vs. attuale</th>
+  </tr>
+  <tr>
+    <td>A — Ampliamento abitativo</td>
+    <td>€55–70k</td>
+    <td>~€250k</td>
+    <td><strong class="positivo">+€90–100k</strong></td>
+  </tr>
+  <tr>
+    <td>B — Frazionamento 2 unità</td>
+    <td>€40–60k</td>
+    <td>~€200k + reddito</td>
+    <td><strong class="positivo">+€55–75k</strong></td>
+  </tr>
+  <tr>
+    <td>C — Vendita mirata nicchia</td>
+    <td>~€2–4k (marketing)</td>
+    <td>€165–185k</td>
+    <td><strong>+€15–35k</strong></td>
+  </tr>
+  <tr>
+    <td>D — Live&amp;work / ricettivo</td>
+    <td>variabile</td>
+    <td>dipende da licenze</td>
+    <td>medio-alto</td>
+  </tr>
+</table>
+
+
+<!-- SEZIONE 4: VALORE FUTURO -->
+<h2>4 — Valore futuro — sviluppo della zona</h2>
+
+<h3>Segnali positivi</h3>
+<ul>
+  <li class="positivo">Ravarino in ripresa: <strong>+8,5%</strong> prezzo medio su base annua (2025→2026)</li>
+  <li class="positivo">Appartamenti <strong>+29,9% in 4 anni</strong> → domanda che ritorna sull'Area Nord modenese</li>
+  <li>Posizione tra <strong>Modena, Carpi e Bologna</strong>: la pressione di prezzo dei poli vicini spinge la domanda verso comuni satellite più accessibili</li>
+  <li>Zona argini/campagna: potenziale turismo lento / ciclovie / vivibilità post-pandemia che rivaluta il rurale ben tenuto</li>
+</ul>
+
+<h3>Segnali di attenzione</h3>
+<ul>
+  <li class="attenzione">Le case a Ravarino sono ferme/in lieve calo a 4 anni (−2,8%): il recupero è trainato dagli <strong>appartamenti</strong>, non dalle case grandi rurali → la liquidità sulla tipologia di Antonia resta bassa finché è "mista".</li>
+  <li class="attenzione">Area Nord soggetta a <strong>rischio idrogeologico/sismico</strong> (pianura modenese): incide su assicurazioni e percezione, soprattutto vicino agli argini.</li>
+</ul>
+
+<p><strong>Conclusione sul futuro:</strong> Tenere fermo l'immobile così com'è significa cavalcare un trend (case) che è il più debole dei due. Il valore futuro si cattura solo trasformando: convertito ad uso residenziale pieno (Scenario A) o frazionato (B), l'immobile aggancia il segmento in crescita. In ottica 3–5 anni, una proprietà trasformata a €250k oggi può ragionevolmente posizionarsi a <strong>€270–290k</strong>, mentre lo stesso immobile lasciato misto rischia di <strong>restare invenduto o svendersi sotto €150k</strong>.</p>
+
+
+<!-- RACCOMANDAZIONE FINALE -->
+<div class="raccomandazione">
+  <h3>Raccomandazione operativa</h3>
+  <ol>
+    <li>
+      <strong>Subito (costo ~zero):</strong> rifare l'annuncio — foto del laboratorio e degli esterni, planimetria, descrivere la separabilità e i possibili usi (puntare allo Scenario C). Riallineare il prezzo a <strong>€155–165k</strong> se oggi è sopra €180k.
+    </li>
+    <li>
+      <strong>Breve termine (decisione strategica):</strong> verificare in Comune la fattibilità del <strong>cambio destinazione d'uso</strong> (Scenario A) o del <strong>frazionamento</strong> (Scenario B). È qui che stanno i €90k di plusvalore reale.
+    </li>
+    <li>
+      <strong>Da non fare:</strong> lasciare l'annuncio identico e aspettare. Ogni mese fermo erode il potere contrattuale e consolida il sospetto di un problema nascosto.
+    </li>
+  </ol>
+</div>
+
+
+<!-- FONTI -->
+<h2>Fonti</h2>
+<ul>
+  <li>RealAdvisor — Mercato immobiliare Ravarino: realadvisor.it/it/mercato-immobiliare/comune-ravarino-it</li>
+  <li>Immobiliare.it — Quotazioni Ravarino: immobiliare.it/mercato-immobiliare/emilia-romagna/ravarino/</li>
+  <li>Annuncio oggetto dell'analisi: immobiliare.it/annunci/120944848/ <em>(scheda non estraibile automaticamente — verificare prezzo/mq/foto manualmente)</em></li>
+  <li>Comparabili laboratori provincia Modena: Casa.it, TrovaCasa, RisorseImmobiliari, IVG Modena</li>
+</ul>
+
+<!-- FOOTER -->
+<div class="footer">
+  <span>External Opinion — Analisi immobiliare oggettiva</span>
+  <span>Data analisi: 14 giugno 2026 — Ravarino (MO)</span>
+</div>
+
+</body>
+</html>
