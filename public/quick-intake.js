@@ -1,8 +1,6 @@
 (function () {
   'use strict';
 
-  var PAYMENT_LINK = 'https://buy.stripe.com/6oUeV54fFbZ16jdfJ9ffy06';
-
   // Stato
   var state = {
     service: null,
@@ -142,25 +140,42 @@
       var jobId = result.data.jobId;
       state.jobId = jobId;
 
-      loadingState.classList.remove('visible');
-      submitBtn.disabled = false;
+      // Payment Link Stripe live 10 EUR — client_reference_id = caseId
+      return Promise.resolve({ jobId: jobId, checkout: { checkoutUrl: 'https://buy.stripe.com/6oUeV54fFbZ16jdfJ9ffy06?client_reference_id=' + encodeURIComponent(jobId) } });
+      /* checkout API legacy disattivato
+      return fetch('/api/jobs/' + jobId + '/checkout', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ tier: 'TIER_1_CASCADE_79', email: emailForCheckout }),
+      })
+      .then(function (r) { return r.json().then(function (d) { return { jobId: jobId, checkout: d }; }); })
+      .catch(function () { return { jobId: jobId, checkout: null }; })
+      legacy end */
+      .then(function (res2) {
+        loadingState.classList.remove('visible');
+        submitBtn.disabled = false;
 
-      var shortId  = jobId ? jobId.toString().slice(0, 8) : 'XXXXXXXX';
-      var caseCode = 'EO-' + shortId.toUpperCase();
+        var shortId = res2.jobId ? res2.jobId.toString().slice(0, 8) : 'XXXXXXXX';
 
-      displayCase.textContent = caseCode;
-      document.getElementById('summary-tipo').textContent    = state.label || '—';
-      document.getElementById('summary-url').textContent     = urlVal.length > 50 ? urlVal.slice(0, 50) + '…' : urlVal;
-      document.getElementById('summary-contact').textContent = contactVal;
+        displayCase.textContent = 'EO-' + shortId.toUpperCase();
+        document.getElementById('summary-tipo').textContent    = state.label || '—';
+        document.getElementById('summary-url').textContent     = urlVal.length > 50 ? urlVal.slice(0, 50) + '…' : urlVal;
+        document.getElementById('summary-contact').textContent = contactVal;
 
-      // Payment Link Stripe: il caso viene collegato al pagamento tramite client_reference_id
-      checkoutBtn.href        = PAYMENT_LINK + '?client_reference_id=' + encodeURIComponent(caseCode);
-      checkoutBtn.textContent = 'Procedi al pagamento →';
+        if (res2.checkout && res2.checkout.checkoutUrl) {
+          checkoutBtn.href        = res2.checkout.checkoutUrl;
+          checkoutBtn.textContent = 'Procedi al pagamento →';
+        } else {
+          checkoutBtn.href        = '/landing.html#piani';
+          checkoutBtn.textContent = 'Scegli il piano (indica codice caso) →';
+          checkoutBtn.title       = 'Copia il codice caso e indicalo nel pagamento';
+        }
 
-      intakeForm.classList.remove('visible');
-      catSection.style.display = 'none';
-      document.getElementById('steps').style.display = 'none';
-      confirmPanel.classList.add('visible');
+        intakeForm.classList.remove('visible');
+        catSection.style.display = 'none';
+        document.getElementById('steps').style.display = 'none';
+        confirmPanel.classList.add('visible');
+      });
     })
     .catch(function (err) {
       loadingState.classList.remove('visible');
@@ -204,4 +219,35 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
+})();
+
+/* ===== V2: interazioni semaforo e statistiche ===== */
+(function () {
+  var pop = document.getElementById('stage-pop');
+  var popT = document.getElementById('pop-t');
+  var popB = document.getElementById('pop-b');
+  var VERDETTI = {
+    verde:  { t: 'VERDETTO VERDE',  b: 'Nessuna criticità rilevante emersa dallo screening documentale e di mercato.' },
+    giallo: { t: 'VERDETTO GIALLO', b: 'Criticità presenti che richiedono approfondimento prima di muovere soldi. Il dettaglio è nel report completo.' },
+    rosso:  { t: 'VERDETTO ROSSO',  b: 'Criticità gravi rilevate. Il report completo documenta ogni rischio con riferimenti verificabili.' }
+  };
+  var open = null;
+  function show(cls, t, b, btn) {
+    document.querySelectorAll('.hot.verdetto, .hot.stat').forEach(function (x) { x.classList.remove('open'); });
+    if (open === btn) { pop.classList.remove('visible'); open = null; return; }
+    pop.className = 'visible ' + cls; pop.id = 'stage-pop';
+    popT.textContent = t; popB.textContent = b;
+    btn.classList.add('open'); open = btn;
+  }
+  document.querySelectorAll('.hot.verdetto').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var v = VERDETTI[btn.dataset.v];
+      show('v-' + btn.dataset.v, v.t, v.b, btn);
+    });
+  });
+  document.querySelectorAll('.hot.stat').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      show('v-oro', 'DATO DI MERCATO', 'Dettaglio e fonte disponibili nel report completo.', btn);
+    });
+  });
 })();
