@@ -141,16 +141,7 @@
       state.jobId = jobId;
 
       // Payment Link Stripe live 10 EUR — client_reference_id = caseId
-      return Promise.resolve({ jobId: jobId, checkout: { checkoutUrl: 'https://buy.stripe.com/6oUeV54fFbZ16jdfJ9ffy06?client_reference_id=' + encodeURIComponent(jobId) } });
-      /* checkout API legacy disattivato
-      return fetch('/api/jobs/' + jobId + '/checkout', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ tier: 'TIER_1_CASCADE_79', email: emailForCheckout }),
-      })
-      .then(function (r) { return r.json().then(function (d) { return { jobId: jobId, checkout: d }; }); })
-      .catch(function () { return { jobId: jobId, checkout: null }; })
-      legacy end */
+      return Promise.resolve({ jobId: jobId, checkout: { checkoutUrl: 'https://buy.stripe.com/6oUeV54fFbZ16jdfJ9ffy06?client_reference_id=' + encodeURIComponent(jobId) } })
       .then(function (res2) {
         loadingState.classList.remove('visible');
         submitBtn.disabled = false;
