@@ -525,7 +525,7 @@ nav {
   </div>
 </div>
 
-<script src="/quick-intake.js"></script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})});if(window.caches){caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})})}}</script><script src="/quick-intake.js"></script>
 <script>
 // Bridge: hotspot #go → apre il form (equivale a cliccare la categoria selezionata)
 document.getElementById('go').addEventListener('click', function () {
