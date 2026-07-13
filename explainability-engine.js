@@ -199,11 +199,16 @@ function generaProfiloRischio(calcoliScoring, datiEstrazione) {
 
   // Fattori di rischio economico
   if (!calcoliScoring.roiConveniente) {
-    riskFactors.push({
+    riskFactors.push(calcoliScoring.roi !== null ? {
       categoria: 'Economico',
       severita: 'MEDIA',
       descrizione: 'ROI insufficiente',
       impatto: `ROI ${calcoliScoring.roi.toFixed(2)}% < 18% threshold`,
+    } : {
+      categoria: 'Economico',
+      severita: 'MEDIA',
+      descrizione: 'Dati economici incompleti',
+      impatto: 'ROI non calcolabile: costi di sanatoria/ripristino non estratti dal documento',
     });
   }
 
