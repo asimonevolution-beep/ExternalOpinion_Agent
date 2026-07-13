@@ -44,3 +44,6 @@ build/
 .netlify
 
 claude-external-opinion-chat.txt
+
+# Stato runtime locale (hook credit guard)
+.claude/.credit-guard-state.json
