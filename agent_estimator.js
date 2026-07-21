@@ -223,7 +223,7 @@ function buildFormattedAnalysis(parsedData, estimation) {
     '',
     'DATI ESTRATTI',
     `- Superficie: ${valuation.area ? `${Math.round(valuation.area)}mq` : 'N/D'} | Prezzo asta: ${formatCurrency(valuation.basePrice)} | ${valuation.pricePerSqmAuction ? formatCurrency(valuation.pricePerSqmAuction).replace('€', '€') : 'N/D'}/mq`,
-    `- Valore CTU: ${formatCurrency(technical.ctuValue)} | Sconto: ${formatPercent(valuation.discountPercent)}`,
+    `- Valore CTU: ${formatCurrency(valuation.ctuValue)} | Sconto: ${formatPercent(valuation.discountPercent)}`,
     `- Mercato zona: ${formatCurrency(valuation.marketPricePerSqm).replace('€', '€')}/mq | Valore stimato: ${formatCurrency(valuation.marketValueEstimate)}`,
     `- Occupazione: ${technical.occupancyStatus || 'N/D'} | Anno: ${technical.yearBuilt || 'N/D'} | Piano: ${technical.floor || 'N/D'}`,
     '',

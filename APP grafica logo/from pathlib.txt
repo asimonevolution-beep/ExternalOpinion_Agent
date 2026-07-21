@@ -1,0 +1,585 @@
+from pathlib import Path
+import base64, mimetypes, os, subprocess
+from IPython.display import Image as IPyImage, display
+
+# Logo ufficiale, se presente nei file caricati
+logo_candidates = [
+    Path("/mnt/data/Logo EXTERNAL  Opinion.webp"),
+    Path("/mnt/data/Logo EXTERNAL Opinion.webp"),
+    Path("/mnt/data/logo-external-opinion.webp"),
+]
+logo_data_uri = ""
+for p in logo_candidates:
+    if p.exists():
+        mime = mimetypes.guess_type(str(p))[0] or "image/webp"
+        logo_data_uri = f"data:{mime};base64," + base64.b64encode(p.read_bytes()).decode("ascii")
+        break
+
+if not logo_data_uri:
+    # fallback solo se il logo non è disponibile nel runtime
+    svg = """<svg xmlns="http://www.w3.org/2000/svg" width="360" height="190" viewBox="0 0 360 190">
+    <rect width="360" height="190" fill="none"/>
+    <circle cx="180" cy="72" r="48" fill="none" stroke="#E7C887" stroke-width="3"/>
+    <ellipse cx="180" cy="72" rx="92" ry="22" fill="none" stroke="#C7A468" stroke-width="4" transform="rotate(-13 180 72)"/>
+    <text x="180" y="160" text-anchor="middle" font-family="Georgia,serif" font-size="28" fill="#ECE6DA" letter-spacing="8">EXTERNAL</text>
+    </svg>"""
+    logo_data_uri = "data:image/svg+xml;base64," + base64.b64encode(svg.encode("utf-8")).decode("ascii")
+
+html = f"""<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>External Opinion — Quick Intake Gioiello</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {{
+  --bg:#050709;
+  --bg2:#0b0f12;
+  --panel:#10161a;
+  --panel2:#151d22;
+  --line:#2a363d;
+  --gold:#c7a468;
+  --gold2:#e7c887;
+  --gold3:#765f32;
+  --bone:#ece6da;
+  --muted:#9aa09b;
+  --muted2:#6b716c;
+  --verde:#46b27a;
+  --giallo:#e0ae3c;
+  --rosso:#cf5740;
+  --serif:"Cormorant Garamond", Georgia, serif;
+  --sans:"Archivo", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, monospace;
+}}
+*{{box-sizing:border-box;margin:0;padding:0}}
+html,body{{min-height:100%;background:var(--bg);}}
+body{{
+  color:var(--bone);
+  font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;
+  background:
+    radial-gradient(circle at 50% -6%, rgba(231,200,135,.24), transparent 23rem),
+    radial-gradient(circle at 12% 28%, rgba(199,164,104,.11), transparent 26rem),
+    radial-gradient(circle at 88% 36%, rgba(199,164,104,.10), transparent 25rem),
+    linear-gradient(180deg,#06090b 0%,#0b0f12 50%,#050709 100%);
+}}
+body::before{{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(116deg, transparent 0 22%, rgba(231,200,135,.08) 23%, transparent 24%),
+    linear-gradient(64deg, transparent 0 70%, rgba(231,200,135,.06) 71%, transparent 72%);
+  opacity:.55;
+}}
+.app{{
+  width:min(1180px, calc(100% - 28px));
+  margin:0 auto;
+  padding:20px 0 46px;
+}}
+.shell{{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(199,164,104,.34);
+  border-radius:34px;
+  padding:28px clamp(16px,3vw,44px) 28px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.035), transparent 20%),
+    linear-gradient(145deg, rgba(21,29,34,.95), rgba(5,8,10,.97));
+  box-shadow:
+    0 28px 90px rgba(0,0,0,.72),
+    inset 0 1px 0 rgba(255,255,255,.055),
+    0 0 0 1px rgba(255,255,255,.025);
+}}
+.shell::before{{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  pointer-events:none;
+  border-radius:34px;
+  background:radial-gradient(circle at 50% 0%, rgba(231,200,135,.18), transparent 38rem);
+  opacity:.9;
+}}
+.hero{{position:relative;z-index:1;text-align:center}}
+.logo{{
+  width:min(186px,40vw);
+  height:auto;
+  display:block;
+  margin:0 auto 2px;
+  filter:drop-shadow(0 0 18px rgba(231,200,135,.34));
+}}
+.wordmark{{
+  font-family:var(--serif);
+  letter-spacing:.38em;
+  text-transform:uppercase;
+  color:var(--bone);
+  font-size:clamp(.82rem,1.25vw,1.02rem);
+  opacity:.92;
+}}
+h1{{
+  margin:16px auto 10px;
+  font-family:var(--serif);
+  font-size:clamp(2.45rem,6.8vw,5rem);
+  line-height:.98;
+  font-weight:700;
+  letter-spacing:.036em;
+  text-transform:uppercase;
+  max-width:980px;
+  text-shadow:0 0 30px rgba(0,0,0,.8);
+}}
+h1 .gold{{color:var(--gold2); text-shadow:0 0 22px rgba(231,200,135,.32)}}
+.sub{{
+  color:var(--bone);
+  opacity:.84;
+  max-width:760px;
+  margin:0 auto 20px;
+  font-size:clamp(1rem,2.1vw,1.32rem);
+  line-height:1.45;
+}}
+.sub .v{{color:var(--verde);font-weight:700}}
+.sub .g{{color:var(--giallo);font-weight:700}}
+.sub .r{{color:var(--rosso);font-weight:700}}
+
+.verdict{{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:1.05fr 1.45fr;
+  gap:18px;
+  align-items:stretch;
+  margin:22px auto 22px;
+  max-width:980px;
+  border:1px solid rgba(199,164,104,.42);
+  border-radius:24px;
+  background:linear-gradient(145deg, rgba(18,26,31,.92), rgba(7,10,12,.96));
+  box-shadow:0 16px 46px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.045), 0 0 30px rgba(199,164,104,.08);
+  padding:22px;
+}}
+.verdict-left{{
+  display:grid;
+  grid-template-columns:62px 1fr;
+  gap:18px;
+  align-items:center;
+}}
+.light{{
+  width:58px;height:58px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #fff3ae 0 9%, var(--giallo) 38%, #6b3f00 100%);
+  box-shadow:0 0 24px rgba(224,174,60,.88), inset 0 0 12px rgba(255,255,255,.22);
+  border:1px solid rgba(231,200,135,.72);
+}}
+.vtitle{{
+  font-family:var(--serif);
+  font-size:clamp(2.55rem,5vw,4.2rem);
+  line-height:.9;
+  color:var(--giallo);
+  font-weight:700;
+  letter-spacing:.07em;
+}}
+.vcopy{{margin-top:8px;color:var(--bone);font-size:clamp(1rem,1.7vw,1.25rem);line-height:1.35;opacity:.92}}
+.traffic{{display:flex;justify-content:flex-end;gap:16px;margin-bottom:14px}}
+.traffic span{{width:31px;height:31px;border-radius:50%;display:block;border:1px solid rgba(255,255,255,.12)}}
+.traffic .green{{background:var(--verde);box-shadow:0 0 15px rgba(70,178,122,.35)}}
+.traffic .yellow{{background:var(--giallo);box-shadow:0 0 22px rgba(224,174,60,.82)}}
+.traffic .red{{background:var(--rosso);box-shadow:0 0 15px rgba(207,87,64,.35)}}
+.metrics{{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  border:1px solid rgba(199,164,104,.27);
+  border-radius:16px;
+  overflow:hidden;
+}}
+.metric{{
+  padding:15px 14px;
+  background:rgba(5,8,10,.38);
+  border-right:1px solid rgba(199,164,104,.18);
+}}
+.metric:last-child{{border-right:0}}
+.metric .k{{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(236,230,218,.78)}}
+.metric .v{{margin-top:6px;font-family:var(--mono);font-weight:700;font-size:clamp(1.3rem,2.7vw,2.05rem);color:var(--gold2)}}
+
+.intake{{
+  position:relative;
+  z-index:1;
+  max-width:1060px;
+  margin:0 auto;
+  border:1px solid rgba(199,164,104,.42);
+  border-radius:26px;
+  background:linear-gradient(145deg, rgba(15,22,26,.92), rgba(5,8,10,.95));
+  padding:24px 26px 22px;
+  box-shadow:0 18px 52px rgba(0,0,0,.45), 0 0 34px rgba(199,164,104,.07);
+}}
+.intake-title{{
+  text-align:center;
+  font-family:var(--mono);
+  letter-spacing:.32em;
+  color:var(--gold2);
+  font-size:clamp(1.12rem,2.2vw,1.72rem);
+  font-weight:700;
+  margin-bottom:6px;
+}}
+.intake-sub{{text-align:center;color:var(--bone);opacity:.76;font-size:clamp(.95rem,1.7vw,1.12rem);margin-bottom:18px}}
+.cats{{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:14px;
+}}
+.cat{{
+  min-height:128px;
+  border:1px solid rgba(199,164,104,.38);
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(231,200,135,.14), transparent 58%),
+    linear-gradient(145deg, rgba(21,29,34,.92), rgba(5,8,10,.96));
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  cursor:pointer;
+  color:var(--bone);
+  transition:.2s ease;
+  box-shadow:0 8px 20px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.04);
+}}
+.cat:hover,.cat.on{{
+  border-color:var(--gold2);
+  transform:translateY(-2px);
+  box-shadow:0 10px 30px rgba(0,0,0,.46), 0 0 24px rgba(224,174,60,.28), inset 0 1px 0 rgba(255,255,255,.06);
+}}
+.ico{{
+  width:42px;height:42px;color:var(--gold2);
+  filter:drop-shadow(0 0 10px rgba(231,200,135,.42));
+}}
+.cat span{{
+  text-align:center;
+  font-size:clamp(.9rem,1.45vw,1.08rem);
+  line-height:1.18;
+}}
+.steps{{
+  margin:17px 0 12px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  border:1px solid rgba(199,164,104,.25);
+  border-radius:18px;
+  overflow:hidden;
+  background:rgba(5,8,10,.4);
+}}
+.step{{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  min-height:54px;color:var(--bone);opacity:.86;
+  font-size:clamp(.88rem,1.45vw,1.02rem);
+  border-right:1px solid rgba(199,164,104,.14);
+}}
+.step:last-child{{border-right:0}}
+.num{{
+  width:34px;height:34px;border-radius:50%;
+  display:grid;place-items:center;
+  color:#1a1206;
+  background:linear-gradient(180deg,var(--gold2),var(--gold));
+  font-weight:800;
+  box-shadow:0 0 13px rgba(231,200,135,.28);
+}}
+.form{{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}}
+.field{{position:relative}}
+.field.main{{grid-column:1 / -1}}
+input,textarea{{
+  width:100%;
+  color:var(--bone);
+  font-family:var(--sans);
+  font-size:1.05rem;
+  border:1px solid rgba(199,164,104,.27);
+  border-radius:15px;
+  background:rgba(5,8,10,.58);
+  outline:0;
+  padding:19px 18px 18px 56px;
+  transition:.2s ease;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+}}
+textarea{{min-height:66px;resize:vertical}}
+input:focus,textarea:focus{{border-color:rgba(231,200,135,.72);box-shadow:0 0 0 1px rgba(231,200,135,.16), 0 0 22px rgba(199,164,104,.12)}}
+.field svg{{
+  position:absolute;left:18px;top:50%;transform:translateY(-50%);
+  width:24px;height:24px;color:var(--gold2);
+}}
+.field.notes{{grid-column:1 / -1}}
+.notes textarea{{padding-left:18px;min-height:70px;font-size:.98rem}}
+.cta-row{{
+  display:grid;
+  grid-template-columns:1.05fr 1.55fr;
+  gap:14px;
+  align-items:center;
+  margin-top:14px;
+}}
+.price{{
+  min-height:74px;
+  border:1px solid rgba(199,164,104,.25);
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  color:var(--bone);
+  background:rgba(5,8,10,.38);
+  font-family:var(--serif);
+  font-size:clamp(1.25rem,2.7vw,2.1rem);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}}
+.price b{{color:var(--gold2);font-size:1.18em}}
+.go{{
+  min-height:74px;
+  border:0;
+  border-radius:18px;
+  cursor:pointer;
+  background:linear-gradient(180deg,#f5d889 0%, var(--gold2) 32%, var(--gold) 100%);
+  color:#120d05;
+  font-family:var(--mono);
+  font-weight:800;
+  font-size:clamp(1.15rem,2.6vw,2rem);
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  box-shadow:0 0 24px rgba(231,200,135,.34), inset 0 1px 0 rgba(255,255,255,.55);
+  transition:.2s ease;
+}}
+.go:hover{{transform:translateY(-2px);filter:brightness(1.04)}}
+.confirm{{
+  display:none;
+  margin-top:16px;
+  border:1px solid rgba(70,178,122,.35);
+  background:rgba(70,178,122,.08);
+  color:#dff8ea;
+  border-radius:16px;
+  padding:16px 18px;
+  font-size:1rem;
+}}
+.footer{{
+  position:relative;
+  z-index:1;
+  max-width:1060px;
+  margin:18px auto 0;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:0;
+  border:1px solid rgba(199,164,104,.25);
+  border-radius:20px;
+  overflow:hidden;
+  background:rgba(5,8,10,.45);
+}}
+.footitem{{
+  min-height:62px;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  border-right:1px solid rgba(199,164,104,.14);
+  color:var(--bone);opacity:.86;
+}}
+.footitem:last-child{{border-right:0}}
+.footitem svg{{width:23px;height:23px;color:var(--gold2)}}
+
+.hidden{{display:none!important}}
+
+@media(max-width:760px){{
+  .app{{width:min(100% - 18px, 1180px);padding-top:10px}}
+  .shell{{border-radius:24px;padding:22px 14px 20px}}
+  h1{{font-size:clamp(2.08rem,10vw,3.1rem)}}
+  .verdict{{grid-template-columns:1fr;padding:17px;border-radius:20px}}
+  .traffic{{justify-content:flex-start}}
+  .metrics{{grid-template-columns:1fr}}
+  .metric{{border-right:0;border-bottom:1px solid rgba(199,164,104,.18)}}
+  .metric:last-child{{border-bottom:0}}
+  .intake{{padding:18px 14px;border-radius:22px}}
+  .cats{{grid-template-columns:repeat(2,1fr);gap:10px}}
+  .cat{{min-height:112px}}
+  .cats .cat:last-child{{grid-column:1 / -1}}
+  .steps{{grid-template-columns:1fr}}
+  .step{{border-right:0;border-bottom:1px solid rgba(199,164,104,.14)}}
+  .step:last-child{{border-bottom:0}}
+  .form{{grid-template-columns:1fr}}
+  .cta-row{{grid-template-columns:1fr}}
+  .footer{{grid-template-columns:1fr}}
+  .footitem{{border-right:0;border-bottom:1px solid rgba(199,164,104,.14)}}
+  .footitem:last-child{{border-bottom:0}}
+}}
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="shell">
+    <section class="hero">
+      <img class="logo" src="{logo_data_uri}" alt="External Opinion">
+      <div class="wordmark">External Opinion</div>
+      <h1>Prima di muovere soldi,<br><span class="gold">guarda cosa rischi.</span></h1>
+      <p class="sub">Incolla il link dell’immobile o dell’asta e ricevi una prima lettura del rischio con verdetto <span class="v">VERDE</span> / <span class="g">GIALLO</span> / <span class="r">ROSSO</span>.</p>
+    </section>
+
+    <section class="verdict" aria-label="Esempio verdetto">
+      <div class="verdict-left">
+        <div class="light"></div>
+        <div>
+          <div class="vtitle">GIALLO</div>
+          <div class="vcopy">Margine presente, ma con verifiche da chiudere prima di offrire.</div>
+        </div>
+      </div>
+      <div>
+        <div class="traffic"><span class="green"></span><span class="yellow"></span><span class="red"></span></div>
+        <div class="metrics">
+          <div class="metric"><div class="k">ROI stimato</div><div class="v">+18%</div></div>
+          <div class="metric"><div class="k">Valore attuale</div><div class="v">€142.000</div></div>
+          <div class="metric"><div class="k">Coerenza</div><div class="v">0,61</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="intake" aria-label="Quick Intake">
+      <div class="intake-title">ACCESSO SMART, VELOCE, SEMPLICE</div>
+      <div class="intake-sub">Scegli il caso e ricevi il verdetto in pochi minuti.</div>
+
+      <div class="cats" id="cats">
+        <button class="cat" data-c="Prima casa" type="button">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V21h14V10.5"/><path d="M9 21v-6h6v6"/></svg>
+          <span>Prima casa</span>
+        </button>
+        <button class="cat" data-c="Investimento" type="button">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 4-4 3 3 5-7"/><path d="M17 7h2v2"/></svg>
+          <span>Investimento</span>
+        </button>
+        <button class="cat on" data-c="Asta immobiliare" type="button">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m14 4 6 6"/><path d="m12 6 6 6"/><path d="m8 10 6 6"/><path d="m6 12 6 6"/><path d="M3 21h9"/><path d="M5 19l4-4"/></svg>
+          <span>Aste immobiliari</span>
+        </button>
+        <button class="cat" data-c="Compravendita" type="button">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 11 4 15a3 3 0 0 0 4 4l3-3"/><path d="m16 13 4-4a3 3 0 0 0-4-4l-3 3"/><path d="m9 15 6-6"/></svg>
+          <span>Compravendita</span>
+        </button>
+        <button class="cat" data-c="Difformità, vizi e documenti" type="button">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v6h5"/><path d="M9 14h7"/><path d="M9 18h5"/></svg>
+          <span>Difformità,<br>vizi e documenti</span>
+        </button>
+      </div>
+
+      <div class="steps">
+        <div class="step"><span class="num">1</span> Scegli il caso</div>
+        <div class="step"><span class="num">2</span> Incolla il link</div>
+        <div class="step"><span class="num">3</span> Ricevi il verdetto</div>
+      </div>
+
+      <form id="quickForm" class="form">
+        <div class="field main">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L11 4.93"/><path d="M14 11a5 5 0 0 0-7.07 0L4.8 13.12a5 5 0 0 0 7.07 7.07L13 19.07"/></svg>
+          <textarea id="link" placeholder="Incolla qui il link dell’immobile o dell’asta"></textarea>
+        </div>
+        <div class="field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+          <input id="email" type="email" placeholder="Email">
+        </div>
+        <div class="field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.18 2A19.8 19.8 0 0 1 3 5.18 2 2 0 0 1 5 3h3a2 2 0 0 1 2 1.72c.12.9.32 1.78.6 2.62a2 2 0 0 1-.45 2.11L9 10.6a16 16 0 0 0 4.4 4.4l1.15-1.15a2 2 0 0 1 2.11-.45c.84.28 1.72.48 2.62.6A2 2 0 0 1 22 16.9z"/></svg>
+          <input id="phone" type="tel" placeholder="Telefono / WhatsApp">
+        </div>
+        <div class="field notes">
+          <textarea id="notes" placeholder="Note facoltative: dubbi, obiettivo, urgenza, documenti disponibili"></textarea>
+        </div>
+      </form>
+
+      <div class="cta-row">
+        <div class="price">Screening iniziale da <b>20 €</b></div>
+        <button class="go" id="go" type="button">Inizia analisi</button>
+      </div>
+      <div id="confirm" class="confirm"></div>
+    </section>
+
+    <section class="footer">
+      <div class="footitem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L11 4.93"/><path d="M14 11a5 5 0 0 0-7.07 0L4.8 13.12a5 5 0 0 0 7.07 7.07L13 19.07"/></svg>
+        Link annuncio
+      </div>
+      <div class="footitem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+        Email o telefono
+      </div>
+      <div class="footitem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 11V8a5 5 0 0 1 10 0v3"/><path d="M5 11h14v10H5z"/></svg>
+        Accesso immediato
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+let categoria = "Asta immobiliare";
+document.getElementById("cats").addEventListener("click", (e) => {{
+  const c = e.target.closest(".cat");
+  if (!c) return;
+  document.querySelectorAll(".cat").forEach(x => x.classList.remove("on"));
+  c.classList.add("on");
+  categoria = c.dataset.c;
+}});
+
+document.getElementById("go").addEventListener("click", () => {{
+  const link = document.getElementById("link").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const notes = document.getElementById("notes").value.trim();
+  const confirm = document.getElementById("confirm");
+
+  if (!link) {{
+    confirm.style.display = "block";
+    confirm.textContent = "Incolla il link dell’immobile o dell’asta.";
+    return;
+  }}
+  if (!email && !phone) {{
+    confirm.style.display = "block";
+    confirm.textContent = "Lascia almeno email o telefono.";
+    return;
+  }}
+
+  const payload = {{
+    caseType: categoria,
+    link,
+    email,
+    phone,
+    notes,
+    createdAt: new Date().toISOString()
+  }};
+  console.log("External Opinion Quick Intake payload", payload);
+
+  confirm.style.display = "block";
+  confirm.textContent = "Caso ricevuto. Ti contatteremo per la prima lettura del rischio.";
+}});
+</script>
+</body>
+</html>
+"""
+
+out_html = Path("/mnt/data/external_opinion_quick_intake_gioiello.html")
+out_html.write_text(html, encoding="utf-8")
+
+# Tenta screenshot con chromium; fallback senza bloccare il file HTML
+out_png = Path("/mnt/data/external_opinion_quick_intake_gioiello_preview.png")
+screenshot_ok = False
+chromium_paths = ["/usr/bin/chromium", "/usr/bin/chromium-browser", "/usr/bin/google-chrome"]
+chromium = next((c for c in chromium_paths if Path(c).exists()), None)
+if chromium:
+    cmd = [
+        chromium, "--headless=new", "--no-sandbox", "--disable-gpu",
+        "--disable-dev-shm-usage", "--single-process", "--window-size=430,1500",
+        f"--screenshot={out_png}", out_html.as_uri()
+    ]
+    try:
+        subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=25)
+        screenshot_ok = out_png.exists()
+    except Exception:
+        screenshot_ok = False
+
+print(f"File HTML creato: {out_html}")
+if screenshot_ok:
+    print(f"Anteprima PNG creata: {out_png}")
+    display(IPyImage(filename=str(out_png)))
+else:
+    print("Anteprima browser non generata qui; file HTML pronto da aprire.")

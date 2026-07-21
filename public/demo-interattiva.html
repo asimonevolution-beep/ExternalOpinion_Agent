@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>External Opinion — Cruscotto Live (Demo Interattiva)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:           #0D0B08;
+  --bg2:          #161310;
+  --bg3:          #1C1813;
+  --cream:        #F2EDE4;
+  --dim:          #7A7269;
+  --gold:         #C8A96E;
+  --gold-d:       #9E7E45;
+  --gold-glow:    rgba(200,169,110,0.10);
+  --green:        #1E8449;
+  --green-glow:   rgba(30,132,73,0.14);
+  --yellow:       #D4AC0D;
+  --yellow-glow:  rgba(212,172,13,0.14);
+  --red:          #C0392B;
+  --red-glow:     rgba(192,57,43,0.14);
+  --border:       rgba(200,169,110,0.14);
+  --border-dim:   rgba(242,237,228,0.05);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: 'Instrument Sans', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.3rem 3rem;
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cream);
+  text-decoration: none;
+}
+.logo em { font-style: normal; color: var(--gold); }
+.header-right {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.live-pill {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.25rem 0.6rem; border: 1px solid var(--border);
+}
+.live-pill .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.live-pill.on .pip { animation: pip-blink 1.1s ease-in-out infinite; box-shadow: 0 0 6px rgba(30,132,73,0.9); }
+.live-pill.off .pip { background: var(--dim); }
+@keyframes pip-blink { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+main {
+  width: 100%;
+  max-width: 760px;
+  padding: 2.8rem 1.5rem 4rem;
+  flex: 1;
+}
+
+.cruscotto {
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  position: relative;
+  overflow: hidden;
+}
+.cruscotto::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  background: var(--gold-glow);
+  pointer-events: none;
+  filter: blur(40px);
+}
+
+.crush-head {
+  padding: 1.5rem 2rem 1.3rem;
+  border-bottom: 1px solid var(--border-dim);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.crush-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-d);
+  margin-bottom: 0.35rem;
+}
+.crush-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.45rem;
+  font-weight: 300;
+  color: var(--cream);
+  line-height: 1.2;
+}
+.case-id {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  text-align: right;
+}
+.case-id b { color: var(--gold); font-size: 0.72rem; }
+
+/* ── SEMAFORO STRIP (lampeggiante) ── */
+.semaforo-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.sem-block {
+  background: var(--bg2);
+  padding: 1rem 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  opacity: 0.32;
+  transition: opacity 0.35s, background 0.35s, border-color 0.35s;
+}
+.sem-block.active-green  { background: var(--green-glow);  border: 1px solid rgba(30,132,73,0.45);   opacity: 1; animation: glow-green 1.15s ease-in-out infinite; }
+.sem-block.active-yellow { background: var(--yellow-glow); border: 1px solid rgba(212,172,13,0.45);  opacity: 1; animation: glow-yellow 1.15s ease-in-out infinite; }
+.sem-block.active-red    { background: var(--red-glow);    border: 1px solid rgba(192,57,43,0.45);   opacity: 1; animation: glow-red 0.85s ease-in-out infinite; }
+
+@keyframes glow-green  { 0%,100% { box-shadow: inset 0 0 0 1px rgba(30,132,73,0.45);  } 50% { box-shadow: inset 0 0 18px rgba(30,132,73,0.55);  } }
+@keyframes glow-yellow { 0%,100% { box-shadow: inset 0 0 0 1px rgba(212,172,13,0.45); } 50% { box-shadow: inset 0 0 18px rgba(212,172,13,0.55); } }
+@keyframes glow-red    { 0%,100% { box-shadow: inset 0 0 0 1px rgba(192,57,43,0.45);  } 50% { box-shadow: inset 0 0 20px rgba(192,57,43,0.65);  } }
+
+.sem-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.green-side  .sem-dot { background: var(--green); }
+.yellow-side .sem-dot { background: var(--yellow); }
+.red-side    .sem-dot { background: var(--red); }
+.active-green  .sem-dot { box-shadow: 0 0 8px rgba(30,132,73,0.9);  animation: dot-blink 1.15s ease-in-out infinite; }
+.active-yellow .sem-dot { box-shadow: 0 0 8px rgba(212,172,13,0.9); animation: dot-blink 1.15s ease-in-out infinite; }
+.active-red    .sem-dot { box-shadow: 0 0 8px rgba(192,57,43,0.9);  animation: dot-blink 0.85s ease-in-out infinite; }
+@keyframes dot-blink { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(0.82); } }
+
+.sem-txt { display: flex; flex-direction: column; gap: 0.12rem; }
+.sem-name {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+.sem-sub { font-size: 0.7rem; color: var(--dim); line-height: 1.3; }
+
+/* ── PANNELLO METRICHE ── */
+.metrics-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border-dim);
+  border-bottom: 1px solid var(--border-dim);
+}
+@media (min-width: 560px) { .metrics-row { grid-template-columns: 1fr 1fr 1fr; } }
+.metric-box {
+  background: var(--bg2);
+  padding: 1.1rem 1.3rem;
+}
+.metric-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 0.4rem;
+}
+.metric-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.7rem;
+  font-weight: 300;
+  color: var(--cream);
+  transition: color 0.3s;
+}
+.metric-value.g { color: var(--green); }
+.metric-value.y { color: var(--yellow); }
+.metric-value.r { color: var(--red); }
+.metric-sub { font-size: 0.66rem; color: var(--dim); margin-top: 0.15rem; }
+
+/* ── GAUGE RISKSCORE (donut) ── */
+.gauge-section {
+  padding: 1.4rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  border-bottom: 1px solid var(--border-dim);
+  flex-wrap: wrap;
+}
+.gauge-wrap { position: relative; width: 108px; height: 108px; flex-shrink: 0; }
+.gauge-ring {
+  width: 108px; height: 108px; border-radius: 50%;
+  background: conic-gradient(var(--gauge-color, var(--yellow)) calc(var(--gauge-pct, 50) * 1%), rgba(242,237,228,0.06) 0);
+  transition: background 0.5s;
+  display: flex; align-items: center; justify-content: center;
+}
+.gauge-ring::after {
+  content: '';
+  position: absolute;
+  width: 82px; height: 82px;
+  border-radius: 50%;
+  background: var(--bg2);
+}
+.gauge-center {
+  position: relative; z-index: 1;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem; font-weight: 300;
+  color: var(--cream);
+}
+.gauge-info { flex: 1; min-width: 160px; }
+.gauge-title { font-family: 'DM Mono', monospace; font-size: 0.5rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); margin-bottom: 0.4rem; }
+.gauge-desc { font-size: 0.78rem; color: var(--cream); opacity: 0.75; line-height: 1.5; }
+
+/* ── BARRA COHERENCE INDEX ── */
+.bar-section { padding: 1.3rem 2rem; border-bottom: 1px solid var(--border-dim); }
+.bar-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem; }
+.bar-score { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 300; }
+.bar-label { font-family: 'DM Mono', monospace; font-size: 0.5rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); }
+.bar-track { height: 7px; background: rgba(242,237,228,0.07); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; background: linear-gradient(90deg, var(--red), var(--yellow), var(--green)); border-radius: 4px; transition: width 0.6s ease; width: 50%; }
+.bar-legend { display: flex; justify-content: space-between; font-size: 0.58rem; color: var(--dim); margin-top: 0.35rem; letter-spacing: 0.06em; }
+
+/* ── SPARKLINE STORICO ── */
+.spark-section { padding: 1.3rem 2rem; border-bottom: 1px solid var(--border-dim); }
+.spark-head { display: flex; justify-content: space-between; margin-bottom: 0.6rem; }
+svg.spark { width: 100%; height: 64px; display: block; }
+.spark-fill { transition: d 0.4s; }
+
+/* ── CONTROLLI ── */
+.controls { padding: 1.4rem 2rem 1.6rem; }
+.ctrl-row { margin-bottom: 1.1rem; }
+.ctrl-row:last-child { margin-bottom: 0; }
+.ctrl-label { display: flex; justify-content: space-between; font-family: 'DM Mono', monospace; font-size: 0.52rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 0.5rem; }
+.ctrl-label span:last-child { color: var(--gold); }
+input[type="range"] {
+  width: 100%; height: 3px; -webkit-appearance: none; appearance: none;
+  background: rgba(242,237,228,0.12); border-radius: 2px; outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--gold); cursor: pointer; box-shadow: 0 0 6px rgba(200,169,110,0.6);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%; background: var(--gold); border: none; cursor: pointer;
+}
+
+.buttons-row { display: flex; gap: 0.6rem; padding: 0 2rem 1.6rem; flex-wrap: wrap; }
+.btn {
+  flex: 1; min-width: 140px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--cream);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.btn:hover { border-color: rgba(200,169,110,0.5); color: var(--gold); }
+.btn.primary { background: var(--gold); color: var(--bg); border-color: var(--gold); font-weight: 600; }
+.btn.primary:hover { background: #DDB97E; color: var(--bg); }
+.btn.live-active { border-color: var(--green); color: var(--green); }
+
+footer {
+  width: 100%;
+  padding: 1.1rem 3rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.footer-txt {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+@media (max-width: 600px) {
+  header { padding: 1rem 1.25rem; }
+  main { padding: 1.5rem 0.5rem 3rem; }
+  .crush-head, .gauge-section, .bar-section, .spark-section, .controls { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .buttons-row { padding: 0 1.25rem 1.6rem; }
+  .semaforo-strip { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 0.5rem; text-align: center; padding: 1rem 1.25rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo">External <em>Opinion</em></a>
+  <span class="header-right">
+    CASCADE · Motore Analitico
+    <span class="live-pill off" id="live-pill"><span class="pip"></span><span id="live-txt">Manuale</span></span>
+  </span>
+</header>
+
+<main>
+  <div class="cruscotto" id="cruscotto">
+
+    <div class="crush-head">
+      <div>
+        <div class="crush-eyebrow">External Opinion · Sistema CASCADE</div>
+        <div class="crush-title">Cruscotto analisi — caso live</div>
+      </div>
+      <div class="case-id">Case ID<br><b id="case-id">EO-00000000</b></div>
+    </div>
+
+    <!-- SEMAFORO -->
+    <div class="semaforo-strip">
+      <div class="sem-block green-side" id="sem-verde">
+        <div class="sem-dot"></div>
+        <div class="sem-txt"><span class="sem-name">Verde</span><span class="sem-sub">Coerente. Procedi.</span></div>
+      </div>
+      <div class="sem-block yellow-side" id="sem-giallo">
+        <div class="sem-dot"></div>
+        <div class="sem-txt"><span class="sem-name">Giallo</span><span class="sem-sub">Attenzione. Verifica.</span></div>
+      </div>
+      <div class="sem-block red-side" id="sem-rosso">
+        <div class="sem-dot"></div>
+        <div class="sem-txt"><span class="sem-name">Rosso</span><span class="sem-sub">Critico. Non procedere.</span></div>
+      </div>
+    </div>
+
+    <!-- METRICHE NUMERICHE -->
+    <div class="metrics-row">
+      <div class="metric-box">
+        <div class="metric-label">Valore OMI</div>
+        <div class="metric-value" id="m-valore">€ 148.500</div>
+        <div class="metric-sub" id="m-valore-sub">Zona B2</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">ROI stimato</div>
+        <div class="metric-value" id="m-roi">18,0%</div>
+        <div class="metric-sub" id="m-roi-sub">Soglia minima 18%</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Confidence Score</div>
+        <div class="metric-value" id="m-conf">72</div>
+        <div class="metric-sub">Affidabilità dati estratti</div>
+      </div>
+    </div>
+
+    <!-- GAUGE RISK SCORE -->
+    <div class="gauge-section">
+      <div class="gauge-wrap">
+        <div class="gauge-ring" id="gauge-ring">
+          <div class="gauge-center" id="gauge-center">50</div>
+        </div>
+      </div>
+      <div class="gauge-info">
+        <div class="gauge-title">Risk Score · 0 ottimo → 100 critico</div>
+        <div class="gauge-desc" id="gauge-desc">Livello di rischio intermedio: opportunità plausibile ma da verificare con attenzione documentale.</div>
+      </div>
+    </div>
+
+    <!-- COHERENCE INDEX -->
+    <div class="bar-section">
+      <div class="bar-head">
+        <span class="bar-score" id="ci-score">70<span style="font-size:1rem;color:var(--dim)">/100</span></span>
+        <span class="bar-label">Coherence Index</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="ci-fill" style="width:70%"></div></div>
+      <div class="bar-legend"><span>0 — Alta criticità</span><span>50 — Neutro</span><span>100 — Ottimale</span></div>
+    </div>
+
+    <!-- SPARKLINE STORICO -->
+    <div class="spark-section">
+      <div class="spark-head">
+        <span class="bar-label">Storico Risk Score · ultimi casi analizzati</span>
+        <span class="bar-label" id="spark-count">1 / 24</span>
+      </div>
+      <svg class="spark" viewBox="0 0 300 64" preserveAspectRatio="none">
+        <line x1="0" y1="32" x2="300" y2="32" stroke="rgba(242,237,228,0.08)" stroke-width="1"/>
+        <path id="spark-path" class="spark-fill" d="" fill="none" stroke="var(--gold)" stroke-width="2"/>
+        <circle id="spark-dot" cx="300" cy="32" r="3.2" fill="var(--gold)"/>
+      </svg>
+    </div>
+
+    <!-- CONTROLLI INTERATTIVI -->
+    <div class="controls">
+      <div class="ctrl-row">
+        <div class="ctrl-label"><span>Risk Score</span><span id="lbl-risk">50</span></div>
+        <input type="range" id="in-risk" min="0" max="100" value="50">
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label"><span>Coherence Index</span><span id="lbl-ci">70</span></div>
+        <input type="range" id="in-ci" min="0" max="100" value="70">
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label"><span>ROI stimato (%)</span><span id="lbl-roi">18</span></div>
+        <input type="range" id="in-roi" min="-40" max="40" value="18">
+      </div>
+    </div>
+
+    <div class="buttons-row">
+      <button class="btn primary" id="btn-random">Simula nuovo caso →</button>
+      <button class="btn" id="btn-live">Avvia monitoraggio live</button>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <span class="footer-txt">External Opinion · CASCADE</span>
+  <span class="footer-txt">Demo interattiva · dati simulati</span>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var history = [50];
+  var liveTimer = null;
+
+  var el = {
+    caseId:   document.getElementById('case-id'),
+    semVerde: document.getElementById('sem-verde'),
+    semGiallo:document.getElementById('sem-giallo'),
+    semRosso: document.getElementById('sem-rosso'),
+    mValore:  document.getElementById('m-valore'),
+    mValoreSub: document.getElementById('m-valore-sub'),
+    mRoi:     document.getElementById('m-roi'),
+    mRoiSub:  document.getElementById('m-roi-sub'),
+    mConf:    document.getElementById('m-conf'),
+    gaugeRing:document.getElementById('gauge-ring'),
+    gaugeCenter: document.getElementById('gauge-center'),
+    gaugeDesc: document.getElementById('gauge-desc'),
+    ciScore:  document.getElementById('ci-score'),
+    ciFill:   document.getElementById('ci-fill'),
+    sparkPath:document.getElementById('spark-path'),
+    sparkDot: document.getElementById('spark-dot'),
+    sparkCount: document.getElementById('spark-count'),
+    inRisk:   document.getElementById('in-risk'),
+    inCi:     document.getElementById('in-ci'),
+    inRoi:    document.getElementById('in-roi'),
+    lblRisk:  document.getElementById('lbl-risk'),
+    lblCi:    document.getElementById('lbl-ci'),
+    lblRoi:   document.getElementById('lbl-roi'),
+    btnRandom:document.getElementById('btn-random'),
+    btnLive:  document.getElementById('btn-live'),
+    livePill: document.getElementById('live-pill'),
+    liveTxt:  document.getElementById('live-txt'),
+  };
+
+  function colorFor(level) {
+    if (level === 'green')  return '#1E8449';
+    if (level === 'yellow') return '#D4AC0D';
+    return '#C0392B';
+  }
+
+  /* Soglie derivate dal motore ufficiale decision-signal.js */
+  function computeVerdict(riskScore, coherence, roi) {
+    if (riskScore <= 35) {
+      return (roi > 0 && coherence >= 70) ? 'green' : 'yellow';
+    }
+    if (riskScore <= 80) {
+      return (roi < -20 && coherence < 40) ? 'red' : 'yellow';
+    }
+    return 'red';
+  }
+
+  function fmtEuro(n) {
+    return '€ ' + Math.round(n).toLocaleString('it-IT');
+  }
+
+  function render(riskScore, coherence, roi, valore, conf) {
+    var verdict = computeVerdict(riskScore, coherence, roi);
+
+    el.semVerde.className  = 'sem-block green-side'  + (verdict === 'green'  ? ' active-green'  : '');
+    el.semGiallo.className = 'sem-block yellow-side' + (verdict === 'yellow' ? ' active-yellow' : '');
+    el.semRosso.className  = 'sem-block red-side'    + (verdict === 'red'    ? ' active-red'    : '');
+
+    el.mValore.textContent = fmtEuro(valore);
+    el.mRoi.textContent = roi.toFixed(1).replace('.', ',') + '%';
+    el.mRoi.className = 'metric-value ' + (roi > 18 ? 'g' : (roi >= 0 ? 'y' : 'r'));
+    el.mRoiSub.textContent = roi > 18 ? 'Sopra soglia di convenienza (18%)' : (roi >= 0 ? 'Sotto soglia minima (18%)' : 'ROI negativo — operazione a rischio');
+    el.mConf.textContent = Math.round(conf);
+
+    var gaugeColor = colorFor(verdict);
+    el.gaugeRing.style.setProperty('--gauge-pct', riskScore);
+    el.gaugeRing.style.setProperty('--gauge-color', gaugeColor);
+    el.gaugeCenter.textContent = Math.round(riskScore);
+    el.gaugeCenter.style.color = gaugeColor;
+
+    var desc = riskScore <= 35
+      ? 'Rischio contenuto: dati coerenti, operazione plausibile secondo i parametri di soglia.'
+      : riskScore <= 65
+      ? 'Rischio intermedio: opportunità plausibile ma da verificare con attenzione documentale.'
+      : riskScore <= 80
+      ? 'Rischio elevato: criticità multiple, procedere solo con verifiche approfondite.'
+      : 'Rischio critico: parametri fuori soglia, operazione sconsigliata.';
+    el.gaugeDesc.textContent = desc;
+
+    el.ciScore.innerHTML = Math.round(coherence) + '<span style="font-size:1rem;color:var(--dim)">/100</span>';
+    el.ciFill.style.width = coherence + '%';
+
+    history.push(riskScore);
+    if (history.length > 24) history.shift();
+    drawSpark();
+    el.sparkCount.textContent = history.length + ' / 24';
+  }
+
+  function drawSpark() {
+    var w = 300, h = 64, pad = 6;
+    var n = history.length;
+    var maxPts = 24;
+    var step = (w - pad * 2) / (maxPts - 1);
+    var startX = w - pad - (n - 1) * step;
+    var pts = history.map(function (v, i) {
+      var x = startX + i * step;
+      var y = pad + (1 - v / 100) * (h - pad * 2);
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    });
+    el.sparkPath.setAttribute('d', 'M' + pts.join(' L'));
+    var last = pts[pts.length - 1].split(',');
+    el.sparkDot.setAttribute('cx', last[0]);
+    el.sparkDot.setAttribute('cy', last[1]);
+    var lastVal = history[history.length - 1];
+    var color = lastVal <= 35 ? '#1E8449' : (lastVal <= 80 ? '#D4AC0D' : '#C0392B');
+    el.sparkPath.setAttribute('stroke', color);
+    el.sparkDot.setAttribute('fill', color);
+  }
+
+  function currentInputs() {
+    return {
+      riskScore: Number(el.inRisk.value),
+      coherence: Number(el.inCi.value),
+      roi: Number(el.inRoi.value),
+    };
+  }
+
+  var currentValore = 148500;
+  var currentConf = 72;
+
+  function refresh() {
+    var v = currentInputs();
+    el.lblRisk.textContent = v.riskScore;
+    el.lblCi.textContent = v.coherence;
+    el.lblRoi.textContent = v.roi;
+    render(v.riskScore, v.coherence, v.roi, currentValore, currentConf);
+  }
+
+  el.inRisk.addEventListener('input', refresh);
+  el.inCi.addEventListener('input', refresh);
+  el.inRoi.addEventListener('input', refresh);
+
+  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+  function newCase(smallStep) {
+    var riskScore, coherence, roi;
+    if (smallStep) {
+      riskScore = clamp(Number(el.inRisk.value) + randInt(-8, 8), 0, 100);
+      coherence = clamp(Number(el.inCi.value) + randInt(-6, 6), 0, 100);
+      roi = clamp(Number(el.inRoi.value) + randInt(-4, 4), -40, 40);
+    } else {
+      riskScore = randInt(5, 95);
+      coherence = randInt(15, 95);
+      roi = randInt(-30, 35);
+      currentValore = randInt(75000, 420000);
+      currentConf = randInt(45, 96);
+      el.caseId.textContent = 'EO-' + randInt(10000000, 99999999);
+      el.mValoreSub.textContent = 'Zona ' + ['A1','B2','C1','D3','E2'][randInt(0,4)];
+    }
+    el.inRisk.value = riskScore;
+    el.inCi.value = coherence;
+    el.inRoi.value = roi;
+    refresh();
+  }
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  el.btnRandom.addEventListener('click', function () { newCase(false); });
+
+  el.btnLive.addEventListener('click', function () {
+    if (liveTimer) {
+      clearInterval(liveTimer);
+      liveTimer = null;
+      el.btnLive.textContent = 'Avvia monitoraggio live';
+      el.btnLive.classList.remove('live-active');
+      el.livePill.className = 'live-pill off';
+      el.liveTxt.textContent = 'Manuale';
+    } else {
+      liveTimer = setInterval(function () { newCase(true); }, 2200);
+      el.btnLive.textContent = 'Ferma monitoraggio live';
+      el.btnLive.classList.add('live-active');
+      el.livePill.className = 'live-pill on';
+      el.liveTxt.textContent = 'Live';
+    }
+  });
+
+  /* stato iniziale */
+  el.caseId.textContent = 'EO-' + randInt(10000000, 99999999);
+  refresh();
+
+})();
+</script>
+</body>
+</html>

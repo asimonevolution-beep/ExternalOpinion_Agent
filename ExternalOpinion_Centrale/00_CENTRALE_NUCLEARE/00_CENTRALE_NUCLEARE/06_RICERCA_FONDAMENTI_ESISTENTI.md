@@ -1,0 +1,110 @@
+﻿# External Opinion — Ricerca fondamenti esistenti
+
+Data: 2026-06-23 01:32:24
+
+Totale file trovati: 573
+
+CSV completo: C:\ExternalOpinion_Centrale\00_CENTRALE_NUCLEARE\06_RICERCA_FONDAMENTI_ESISTENTI.csv
+
+## Primi 100 file più recenti
+
+- 06/23/2026 00:57:59 | 0 MB | C:\ExternalOpinion_Agent\.claude\.credit-guard-state.json
+- 06/23/2026 00:46:28 | 0.01 MB | C:\ExternalOpinion_Centrale\00_CENTRALE_NUCLEARE\02_MAPPA_FONTI_DA_INTEGRARE.md
+- 06/23/2026 00:46:27 | 0.06 MB | C:\ExternalOpinion_Centrale\00_CENTRALE_NUCLEARE\02_MAPPA_FONTI_DA_INTEGRARE.csv
+- 06/23/2026 00:46:26 | 0 MB | C:\ExternalOpinion_Centrale\00_CENTRALE_NUCLEARE\01_PROTOCOLLO_AI_AGENTI.md
+- 06/23/2026 00:46:26 | 0 MB | C:\ExternalOpinion_Centrale\00_CENTRALE_NUCLEARE\00_MANIFESTO_CENTRALE_NUCLEARE.md
+- 06/23/2026 00:38:05 | 0 MB | C:\ExternalOpinion_Centrale\00_CENTRALE_NUCLEARE\INDICE_CERVELLONE.md
+- 06/23/2026 00:38:05 | 0 MB | C:\ExternalOpinion_Centrale\00_CENTRALE_NUCLEARE\03_REGISTRO_DECISIONI.md
+- 06/23/2026 00:34:43 | 0 MB | C:\ExternalOpinion_Centrale\00_CENTRALE_NUCLEARE\02_PASSAGGI_CERTIFICAZIONE.md
+- 06/23/2026 00:34:42 | 0 MB | C:\ExternalOpinion_Centrale\00_CENTRALE_NUCLEARE\01_REGOLE_OPERATIVE.md
+- 06/23/2026 00:34:42 | 0 MB | C:\ExternalOpinion_Centrale\00_CENTRALE_NUCLEARE\00_STATO_CORRENTE.md
+- 06/23/2026 00:23:28 | 0 MB | C:\ExternalOpinion_Centrale\00_CENTRALE_NUCLEARE\RIMOZIONE_OLLAMA_BLOBS_20260623.md
+- 06/23/2026 00:15:28 | 0 MB | C:\ExternalOpinion_Centrale\00_CENTRALE_NUCLEARE\CHECK_OLLAMA_RIMOZIONE.md
+- 06/23/2026 00:10:33 | 0 MB | C:\ExternalOpinion_Centrale\INDICE_CENTRALE_OPERATIVA.md
+- 06/22/2026 23:40:12 | 0.18 MB | C:\ExternalOpinion_Backups\EO_VPS_BACKUP_CODE_PUBLIC_20260622_2100.tar.gz
+- 06/22/2026 23:40:12 | 0.18 MB | C:\Users\simone\Downloads\EO_VPS_BACKUP_CODE_PUBLIC_20260622_2100.tar.gz
+- 06/22/2026 23:40:12 | 0.18 MB | C:\ExternalOpinion_Centrale\01_BACKUP_SICURI\VPS_HOSTINGER\EO_VPS_BACKUP_CODE_PUBLIC_20260622_2100.tar.gz
+- 06/21/2026 19:45:45 | 0.17 MB | C:\ExternalOpinion_Agent\public\quick-intake.html
+- 06/21/2026 14:25:15 | 0.05 MB | C:\ExternalOpinion_Agent\server-v18.3.js
+- 06/21/2026 14:24:45 | 0.01 MB | C:\ExternalOpinion_Agent\stripe-webhook-handler.js
+- 06/21/2026 14:21:09 | 0.16 MB | C:\ExternalOpinion_Agent\public\app.html
+- 06/21/2026 14:18:04 | 0.16 MB | C:\Users\simone\Downloads\external-opinion-operativa.html
+- 06/21/2026 14:18:04 | 0.16 MB | G:\Il mio Drive\APP grafica logo\external-opinion-operativa.html
+- 06/21/2026 11:15:18 | 0.02 MB | C:\ExternalOpinion_Agent\public\index.html
+- 06/20/2026 01:28:27 | 0 MB | C:\ExternalOpinion_Agent\.claude\settings.local.json
+- 06/20/2026 01:06:00 | 0 MB | C:\ExternalOpinion_Agent\.claude\hooks\credit-guard.js
+- 06/20/2026 00:50:41 | 0.02 MB | C:\ExternalOpinion_Agent\public\gioiello.html
+- 06/19/2026 21:32:12 | 0.01 MB | C:\Users\simone\Downloads\report_aste_ita.md
+- 06/19/2026 21:20:57 | 0 MB | G:\Il mio Drive\external opinion.com\externalopinion web.har
+- 06/19/2026 18:22:04 | 0.44 MB | G:\Il mio Drive\APP grafica logo - Copia\external_opinion_quick_intake_gioiello.html
+- 06/19/2026 18:22:04 | 0.44 MB | G:\Il mio Drive\APP grafica logo\external_opinion_quick_intake_gioiello.html
+- 06/19/2026 18:06:48 | 0.02 MB | G:\Il mio Drive\APP grafica logo - Copia\from pathlib.txt
+- 06/19/2026 18:06:48 | 0.02 MB | G:\Il mio Drive\APP grafica logo\from pathlib.txt
+- 06/19/2026 18:04:28 | 0.02 MB | G:\Il mio Drive\External Opinion  │ ├── v11_stable  │   ├── index.html │   ├── assets  │   ├~└── ... │ └── v12_final      ├── index.html     ├── assets      ├── modules      └── docs\from pathlib.txt
+- 06/19/2026 16:22:50 | 0.02 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\isolated-segment.html
+- 06/19/2026 16:22:50 | 4.88 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude.html
+- 06/19/2026 16:22:50 | 0 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\saved_resource.html
+- 06/19/2026 16:22:50 | 0 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\saved_resource(1).html
+- 06/19/2026 16:22:48 | 0.1 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\analytics.min.js.download
+- 06/19/2026 16:22:47 | 0.41 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\js(1)
+- 06/19/2026 16:22:46 | 0.36 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\js
+- 06/19/2026 16:22:45 | 0.01 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\facebook-pixel.dynamic.js.gz
+- 06/19/2026 16:22:45 | 0.07 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\commons.59560acdd69ed701c941.js.gz
+- 06/19/2026 16:22:44 | 0.36 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\fbevents.js.download
+- 06/19/2026 16:22:42 | 0.18 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\468742119653388
+- 06/19/2026 16:22:41 | 0.06 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\s.js.download
+- 06/19/2026 16:22:40 | 0 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\favicons(2)
+- 06/19/2026 16:22:40 | 0 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\favicons(1)
+- 06/19/2026 16:22:39 | 0 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\favicons
+- 06/19/2026 16:22:28 | 0 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\c1b9abf13-BAcHnzsm.css
+- 06/19/2026 16:22:27 | 0.03 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\cf1a02a1a-CnIZRMjU.css
+- 06/19/2026 16:22:27 | 0.7 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\c6a992d55-jz_XdrnJ.css
+- 06/19/2026 16:22:27 | 0 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\c34d1f91f-o73uZ2YJ.css
+- 06/19/2026 16:22:25 | 0.01 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\c41323917-BjS1Z-Ak.css
+- 06/19/2026 16:22:23 | 0 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\vendor-ant-cds-D6IJ1PR1.css
+- 06/19/2026 16:22:19 | 7.16 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\index-CoB4GzT3.js.download
+- 06/19/2026 16:22:15 | 0.01 MB | C:\ExternalOpinion_Agent\mercato aste immobiliari ItaliaCo - Claude_files\f12a4347e1080fb88155.js.download
+- 06/19/2026 03:57:25 | 6.69 MB | C:\Users\simone\Downloads\Claude Setup (5).exe
+- 06/18/2026 22:08:58 | 0.01 MB | C:\ExternalOpinion_Agent\public\quick-intake.js
+- 06/18/2026 22:02:00 | 0 MB | C:\ExternalOpinion_Agent\QUICK_INTAKE_TEST_SCRIPT.md
+- 06/18/2026 21:49:26 | 0 MB | C:\ExternalOpinion_Agent\.claude\credit-guard-state.json
+- 06/18/2026 18:45:19 | 0 MB | C:\ExternalOpinion_Agent\QUICK_INTAKE_IMPLEMENTATION_PLAN.md
+- 06/18/2026 18:44:51 | 0 MB | C:\ExternalOpinion_Agent\QUICK_INTAKE_SPEC.md
+- 06/18/2026 16:36:30 | 0.01 MB | C:\ExternalOpinion_Agent\CUSTOMER_TEST_SCRIPT.md
+- 06/18/2026 16:35:48 | 0.01 MB | C:\ExternalOpinion_Agent\FUNNEL_HEALTHCHECK.md
+- 06/18/2026 16:34:03 | 0 MB | C:\ExternalOpinion_Agent\CURRENT_COMMERCIAL_STATE.md
+- 06/18/2026 16:21:12 | 0.01 MB | C:\ExternalOpinion_Agent\external_opinion_broker_outreach.md
+- 06/18/2026 16:19:42 | 0.02 MB | C:\ExternalOpinion_Agent\external_opinion_broker_leads.csv
+- 06/18/2026 15:53:30 | 0.02 MB | G:\Il mio Drive\External Opinion  │ ├── v11_stable  │   ├── index.html │   ├── assets  │   ├~└── ... │ └── v12_final      ├── index.html     ├── assets      ├── modules      └── docs\Italian Judicial Real Estate Auctions_ Volume Map and Buyer-Side (1).md
+- 06/18/2026 13:14:02 | 0.02 MB | G:\Il mio Drive\External Opinion  │ ├── v11_stable  │   ├── index.html │   ├── assets  │   ├~└── ... │ └── v12_final      ├── index.html     ├── assets      ├── modules      └── docs\Italian Judicial Real Estate Auctions_ Volume Map and Buyer-Side.md
+- 06/18/2026 03:22:03 | 0 MB | C:\ExternalOpinion_Agent\.claude\hooks\credit-guard-reset.js
+- 06/18/2026 03:21:44 | 0 MB | C:\ExternalOpinion_Agent\.claude\hooks\credit-guard-lib.js
+- 06/18/2026 00:10:03 | 0 MB | C:\ExternalOpinion_Agent\.claude\hooks\credit-guard-statusline.js
+- 06/17/2026 01:39:40 | 0.16 MB | C:\Users\simone\Downloads\gemini-segA.txt
+- 06/17/2026 01:36:24 | 0.24 MB | C:\Users\simone\Downloads\gemini-segB.txt
+- 06/17/2026 01:29:33 | 0.01 MB | C:\Users\simone\Downloads\gemini-seg1.txt
+- 06/17/2026 01:19:13 | 0 MB | C:\Users\simone\Downloads\gemini-video-raw.json
+- 06/17/2026 01:17:58 | 0 MB | C:\ExternalOpinion_Agent\r3.json
+- 06/17/2026 01:17:58 | 0.02 MB | C:\ExternalOpinion_Agent\r2.json
+- 06/17/2026 01:17:56 | 0.02 MB | C:\ExternalOpinion_Agent\r1.json
+- 06/17/2026 00:41:21 | 0.08 MB | C:\Users\simone\Downloads\[Italian] Come uso CLAUDE CODE per essere piu PRODUTTIVO (ep.1) [DownSub.com].txt
+- 06/16/2026 23:08:58 | 0.02 MB | C:\ExternalOpinion_Agent\public\landing.html
+- 06/16/2026 23:02:38 | 0 MB | C:\ExternalOpinion_Agent\.claude\scheduled_tasks.lock
+- 06/16/2026 02:27:04 | 0.02 MB | C:\ExternalOpinion_Agent\ai-fallback-handler.js
+- 06/15/2026 23:51:26 | 0 MB | C:\ExternalOpinion_Agent\CURRENT_STATE.md
+- 06/15/2026 23:40:09 | 0.01 MB | C:\ExternalOpinion_Agent\middleware-security.js
+- 06/15/2026 23:22:27 | 0 MB | C:\ExternalOpinion_Agent\revenue\PAYMENT_LINK_STATUS.md
+- 06/15/2026 23:22:10 | 0 MB | C:\ExternalOpinion_Agent\docs\RAILWAY_ENV.md
+- 06/15/2026 03:23:58 | 0.02 MB | C:\ExternalOpinion_Agent\scripts\gdrive-export\package-lock.json
+- 06/15/2026 03:17:19 | 0 MB | C:\ExternalOpinion_Agent\scripts\gdrive-export\README.md
+- 06/15/2026 03:16:20 | 0 MB | C:\ExternalOpinion_Agent\scripts\gdrive-export\gdoc-list.json
+- 06/15/2026 03:16:05 | 0 MB | C:\ExternalOpinion_Agent\scripts\gdrive-export\package.json
+- 06/15/2026 03:02:04 | 0.01 MB | C:\ExternalOpinion_Agent\assets\canonical\DRIVE_EXTERNALOPINION\INDICE_DRIVE.md
+- 06/15/2026 02:30:44 | 0 MB | C:\ExternalOpinion_Agent\assets\canonical\ARCHIVIO_EXTERNALOPINION\06_STATO_15GIUGNO.md
+- 06/15/2026 02:30:44 | 0 MB | G:\Il mio Drive\ARCHIVIO_EXTERNALOPINION\06_STATO_15GIUGNO.md
+- 06/15/2026 02:30:25 | 0 MB | C:\ExternalOpinion_Agent\assets\canonical\ARCHIVIO_EXTERNALOPINION\05_CLIENTI.md
+- 06/15/2026 02:30:25 | 0 MB | G:\Il mio Drive\ARCHIVIO_EXTERNALOPINION\05_CLIENTI.md
+- 06/15/2026 02:30:07 | 0 MB | C:\ExternalOpinion_Agent\assets\canonical\ARCHIVIO_EXTERNALOPINION\04_GOTOMARKET.md
+- 06/15/2026 02:30:07 | 0 MB | G:\Il mio Drive\ARCHIVIO_EXTERNALOPINION\04_GOTOMARKET.md
+- 06/15/2026 02:29:44 | 0 MB | C:\ExternalOpinion_Agent\assets\canonical\ARCHIVIO_EXTERNALOPINION\03_GOVERNANCE.md
+- 06/15/2026 02:29:44 | 0 MB | G:\Il mio Drive\ARCHIVIO_EXTERNALOPINION\03_GOVERNANCE.md

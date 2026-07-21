@@ -23,6 +23,7 @@ function getFlowProducer() {
 const router = express.Router();
 
 const TIER_MAPPING = {
+  10:  'TIER_1_SCREENING_69', // promo lancio: Screening Report normalmente €69, scontato a €10
   69:  'TIER_1_SCREENING_69',
   79:  'TIER_1_CASCADE_79',
   89:  'TIER_1_ENTRY_89',

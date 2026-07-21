@@ -94,6 +94,22 @@ function generateCoherenceInterpretation(coherenceIndex) {
 // ============================================================================
 
 function spiegaROI(roi, margineReale, costiTotali, roiConveniente) {
+  if (roi === null || roi === undefined) {
+    return {
+      roiPercentage: null,
+      roiType: 'NON_CALCOLABILE',
+      convenient: false,
+      analysis: {
+        profitMargin: margineReale,
+        totalInvestment: costiTotali,
+        breakdownExplanation: `Investimento totale: €${costiTotali.toLocaleString()}`,
+        profitExplanation: `Margine netto: €${margineReale.toLocaleString()}`,
+        roiExplanation: 'ROI non calcolabile: costi di sanatoria/ripristino non estratti dal documento',
+      },
+      recommendation: 'Dati economici incompleti: acquisire documentazione tecnica per stimare i costi reali prima di decidere.',
+    };
+  }
+
   const roiType = roi > 25 ? 'ECCELLENTE' : roi > 18 ? 'BUONO' : 'INSUFFICIENTE';
 
   return {
