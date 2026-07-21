@@ -60,7 +60,7 @@ function eseguiMotoreDeterministico(datiAI, parametriMercato) {
     ? safeRoiCalculation(margineReale, costiTotaliOperativi)
     : null;
   const signal       = calculateDecisionSignal({
-    riskScore:         coherenceIndex,
+    riskScore:         100 - coherenceIndex,
     coherenceIndex,
     roi:               roiCalcolato !== null ? parseFloat(roiCalcolato.toFixed(2)) : 0,
     documentsVerified: false,
@@ -161,7 +161,7 @@ const worker = new Worker('deterministicScoringQueue', async (job) => {
     const finalStatus = (tier === 'TIER_1_SCREENING_69') ? 'READY_FOR_PAYMENT' : 'SCORED';
     await prisma.job.update({
       where: { id: jobId },
-      data:  { status: finalStatus, riskScore: calcoliScoring.coherenceIndex },
+      data:  { status: finalStatus, riskScore: 100 - calcoliScoring.coherenceIndex },
     });
 
     const durationMs = Date.now() - startTime;
