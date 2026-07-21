@@ -1,4 +1,4 @@
-x[build]
+[build]
 builder = "dockerfile"
 
 [deploy]
