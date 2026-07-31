@@ -17,7 +17,7 @@
 
 ## Servizi Railway
 - ExternalOpinion_Agent: ● Online (+ /api/health) · Postgres ● Online · Redis ● Online
-- l2-sensor: ● Failed (worker secondario inattivo, stato terminale cosmetico, gira in MOCK_FEED)
+- l2-sensor: rimosso da Railway il 2026-07-31 (fermo dal 09/06, nessuna utilità attiva). Codice archiviato in `_NON_UTILIZZATI/_ARCHIVIO_CODICE/l2-sensor/`.
 
 ## Netlify
 - **Commit deployato**: `91cac13` (in deployment)
