@@ -1269,27 +1269,29 @@ async function start() {
 â•‘ Server running on port: ${PORT}              â”‚
 â•‘ Environment: ${process.env.NODE_ENV || 'development'}        â”‚
 â•‘ DAG Orchestrator: ACTIVE               â”‚
-â•‘ Portal Crawler: SCHEDULED (02:00 UTC)  â”‚
+â•‘ Portal Crawler: DISATTIVATO (manuale)  â”‚
 â•‘ Security: Hardened                    â”‚
 â•‘ Observability: Prometheus/Sentry       â”‚
 â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       `);
     });
 
-    // Crawler autonomo ogni notte alle 02:00 UTC
+    // Crawler notturno disattivato manualmente: fonti irraggiungibili (404/ECONNRESET su tutti
+    // e 4 i portali) e nessun consumer a valle usa ancora le aste pre-analizzate. Riattivare
+    // scommentando il blocco sottostante quando servirà davvero.
     try {
       const cron = require('node-cron');
-      cron.schedule('0 2 * * *', async () => {
-        console.log('[CRON] Avvio crawler notturno...');
-        try {
-          const { runCrawler } = require('./portal-crawler');
-          const result = await runCrawler({ maxPerPortal: 20 });
-          console.log('[CRON] Crawler completato:', result);
-        } catch (err) {
-          console.error('[CRON] Crawler error:', err.message);
-        }
-      });
-      console.log('[CRON] Scheduler crawler attivo — esecuzione alle 02:00 UTC ogni notte');
+      // cron.schedule('0 2 * * *', async () => {
+      //   console.log('[CRON] Avvio crawler notturno...');
+      //   try {
+      //     const { runCrawler } = require('./portal-crawler');
+      //     const result = await runCrawler({ maxPerPortal: 20 });
+      //     console.log('[CRON] Crawler completato:', result);
+      //   } catch (err) {
+      //     console.error('[CRON] Crawler error:', err.message);
+      //   }
+      // });
+      console.log('[CRON] Scheduler crawler disattivato manualmente');
 
       // Reset mensile statistiche: primo giorno del mese alle 03:00 UTC
       cron.schedule('0 3 1 * *', async () => {
