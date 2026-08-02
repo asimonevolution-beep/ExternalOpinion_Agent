@@ -1,8 +1,11 @@
 #!/usr/bin/env pwsh
 # check-email.ps1 — stato verifica dominio Resend per externalopinion.it
-# Dipendenze: RESEND_API_KEY (env) oppure hardcoded sotto
+# Dipendenze: RESEND_API_KEY impostata nell'ambiente
 
-$RESEND_KEY = if ($env:RESEND_API_KEY) { $env:RESEND_API_KEY } else { "re_A7byXPsN_AuresTqjbQzPVRcwwwF8jBkj" }
+$RESEND_KEY = $env:RESEND_API_KEY
+if ([string]::IsNullOrWhiteSpace($RESEND_KEY)) {
+    throw "RESEND_API_KEY non configurata. Impostala nell'ambiente prima di eseguire questo script."
+}
 $DOMAIN_ID  = "ae4f3fcc-cc14-441b-8a05-829dd900321f"
 
 $headers = @{ "Authorization" = "Bearer $RESEND_KEY" }
