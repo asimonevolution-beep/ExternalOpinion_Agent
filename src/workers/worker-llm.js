@@ -88,9 +88,23 @@ const worker = new Worker('llmExtractionQueue', async (job) => {
 
     const datiEstrattiEValidati = extractionResult.data;
 
-    // Validazione confidence — soglia produzione 0.30 (perizie reali danno 0.85+)
+    // Validazione confidence — gli ordini promo già pagati proseguono con un
+    // avviso esplicito nel report, così non vengono persi per un input povero.
     const confidenceThreshold = parseFloat(process.env.CONFIDENCE_THRESHOLD || '0.30');
-    validateConfidenceThreshold(datiEstrattiEValidati.confidence, confidenceThreshold);
+    const jobRecord = await prisma.job.findUnique({ where: { id: jobId }, select: { payload: true } });
+    const jobPayload = (() => { try { return JSON.parse(jobRecord?.payload || '{}'); } catch { return {}; } })();
+    const isPaidPromo = jobPayload.order?.stato === 'PAID' && jobPayload.order?.tipoRichiesta && jobPayload.tier === 'TIER_1_PROMO_10';
+    const lowConfidence = datiEstrattiEValidati.confidence < confidenceThreshold;
+    if (lowConfidence && !isPaidPromo) {
+      validateConfidenceThreshold(datiEstrattiEValidati.confidence, confidenceThreshold);
+    }
+    if (lowConfidence && isPaidPromo) {
+      await recordJobEvent(jobId, 'LOW_CONFIDENCE_ACCEPTED_FOR_PAID_ORDER', {
+        confidence: datiEstrattiEValidati.confidence,
+        threshold: confidenceThreshold,
+        requiresHumanAttention: true,
+      }, WORKER_ID);
+    }
 
     // Salva datiAI nel DB per il worker-scoring
     const immobileAggiornato = await prisma.immobile.findUnique({ where: { jobId } });
@@ -101,6 +115,7 @@ const worker = new Worker('llmExtractionQueue', async (job) => {
         datiComputati: JSON.stringify({
           ...datiAggiornati,
           datiAI: datiEstrattiEValidati,
+          lowConfidenceWarning: lowConfidence,
           aiModel: extractionResult.model,
           aiConsensus: extractionResult.consensus || null,
         }),

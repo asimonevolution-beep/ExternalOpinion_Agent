@@ -226,6 +226,7 @@ async function sendConfirmationEmail(email, reportId, tier, amountEuro) {
   } catch (err) {
     console.error(`[EMAIL] Errore invio conferma ${reportId}:`, err.message);
     await prisma.jobEvent.create({ data: { jobId: reportId, eventType: 'CUSTOMER_CONFIRMATION_FAILED', metadata: JSON.stringify({ channel: 'email', error: err.message }) } }).catch(() => {});
+    try { await sendTelegram(`CONFERMA CLIENTE FALLITA\nOrdine: ${reportId}\nEmail: ${email || 'n/d'}\nErrore: ${err.message}`); } catch (_) {}
   }
 }
 
