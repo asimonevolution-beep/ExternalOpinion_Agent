@@ -30,7 +30,7 @@ const redisConnection = getSharedRedis();
 // MAILER — Nodemailer (SMTP env vars oppure log in dev)
 // ============================================================================
 function getMailer() {
-  if (!process.env.SMTP_HOST) return null;
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) return null;
   return nodemailer.createTransport({
     host:   process.env.SMTP_HOST,
     port:   parseInt(process.env.SMTP_PORT || '587'),
