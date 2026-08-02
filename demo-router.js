@@ -35,7 +35,7 @@ router.post('/analyze-auction', async (req, res) => {
 
   // Notifica asincrona — non blocca la risposta
   ntfyNotify(
-    'Nuovo lead demo — External Opinion',
+    'Nuovo lead demo - External Opinion',
     `Richiesta analisi demo\nURL: ${urlAsta}\nIP: ${ip}\nOra: ${ts}`,
     'bell,house,moneybag'
   );
@@ -93,10 +93,9 @@ router.post('/checkout', async (req, res) => {
       console.error('[DEMO CHECKOUT]', err.message);
     }
   }
-  // Fallback: placeholder per ambiente senza Stripe configurato
-  return res.json({
-    success: true,
-    checkoutUrl: 'https://buy.stripe.com/test_demo',
+  return res.status(503).json({
+    success: false,
+    error: 'Pagamento temporaneamente non disponibile: Stripe non configurato',
   });
 });
 
