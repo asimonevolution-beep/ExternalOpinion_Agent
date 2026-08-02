@@ -998,6 +998,33 @@ app.post('/api/admin/watchdog', requireAdmin, async (req, res) => {
   }
 });
 
+// Recupero esplicito di un ordine pagato: ricrea il DAG senza toccare Stripe.
+app.post('/api/admin/jobs/:jobId/requeue-paid', requireAdmin, async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const prismaClient = require('./db');
+    const jobRecord = await prismaClient.job.findUnique({
+      where: { id: jobId }, include: { immobile: true },
+    });
+    if (!jobRecord) return res.status(404).json({ success: false, error: 'Job non trovato' });
+    if (!jobRecord.immobile?.pagato) {
+      return res.status(409).json({ success: false, error: 'Il job non risulta pagato' });
+    }
+    const payload = (() => { try { return JSON.parse(jobRecord.payload || '{}'); } catch { return {}; } })();
+    const tier = payload.tier || jobRecord.immobile.livelloCommerciale || 'TIER_1_PROMO_10';
+    await prismaClient.job.update({ where: { id: jobId }, data: { status: 'PAID', error: null } });
+    const flow = await createAnalysisPipeline(jobId, jobRecord.payload, tier);
+    await prismaClient.jobEvent.create({ data: {
+      jobId, eventType: 'PAID_ORDER_REQUEUED',
+      metadata: JSON.stringify({ tier, rootId: flow.job.id, requestedAt: new Date().toISOString() }),
+    }});
+    res.json({ success: true, jobId, tier, rootId: flow.job.id });
+  } catch (err) {
+    console.error('[ADMIN] Requeue paid fallito:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ============================================================================
 // ADMIN — Test AI consensus in tempo reale
 // POST /api/admin/ai-test
