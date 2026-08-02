@@ -23,7 +23,7 @@ function getFlowProducer() {
 const router = express.Router();
 
 const TIER_MAPPING = {
-  10:  'TIER_1_SCREENING_69', // promo lancio: Screening Report normalmente €69, scontato a €10
+  10:  'TIER_1_PROMO_10',
   69:  'TIER_1_SCREENING_69',
   79:  'TIER_1_CASCADE_79',
   89:  'TIER_1_ENTRY_89',
@@ -66,65 +66,103 @@ router.post('/webhook', express.raw({ type: '*/*' }), async (req, res) => {
 // ============================================================================
 async function handleCheckoutCompleted(session) {
   const reportId    = session.metadata?.reportId || session.client_reference_id;
-  const clientEmail = session.customer_email;
   if (!reportId) { console.warn('[STRIPE] reportId mancante — sessione non collegata a nessun caso'); return; }
   const amountEuro = session.amount_total / 100;
   const tier       = TIER_MAPPING[amountEuro] || 'TIER_4_ENTERPRISE_API';
 
-  // G2 — IDEMPOTENCY ATOMICA: la chiave UNIQUE è il gate, creata PRIMA del lavoro
+  const jobRecord = await prisma.job.findUnique({ where: { id: reportId } });
+  if (!jobRecord) throw new Error(`Ordine ${reportId} non trovato`);
+  const payload = (() => { try { return JSON.parse(jobRecord.payload || '{}'); } catch { return {}; } })();
+  const stripeEmail = session.customer_details?.email || session.customer_email || null;
+  const clientEmail = stripeEmail && stripeEmail.includes('@') ? stripeEmail
+    : (payload.email && payload.email.includes('@') ? payload.email : null);
+  const clientPhone = payload.telefono || payload.zonaDati?.telefono || session.customer_details?.phone || null;
+  const order = {
+    id: reportId,
+    nome: payload.nome || null,
+    ragioneSociale: payload.ragioneSociale || null,
+    telefono: clientPhone,
+    email: clientEmail,
+    tipoRichiesta: payload.service || tier,
+    importo: amountEuro,
+    valuta: session.currency || 'eur',
+    stato: 'PAID',
+    stripeSessionId: session.id,
+    stripePaymentIntentId: session.payment_intent || null,
+    paidAt: new Date().toISOString(),
+  };
+
+  // Persistenza atomica: l'ordine pagato non può esistere solo nei log Stripe.
   try {
-    await prisma.idempotencyKey.create({
-      data: {
-        idempotencyKey: `checkout-${session.id}`,
-        jobId: reportId, operation: 'stripe_checkout', status: 'SUCCESS',
-        result: JSON.stringify({ tier, amount: amountEuro }),
+    await prisma.$transaction(async (tx) => {
+      await tx.idempotencyKey.create({ data: {
+        idempotencyKey: `checkout-${session.id}`, jobId: reportId,
+        operation: 'stripe_checkout', status: 'SUCCESS', result: JSON.stringify(order),
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      },
+      }});
+      await tx.job.update({ where: { id: reportId }, data: {
+        status: 'PAID', payload: JSON.stringify({ ...payload, email: clientEmail, telefono: clientPhone, order }),
+      }});
+      await tx.immobile.update({ where: { jobId: reportId }, data: { pagato: true, livelloCommerciale: tier } });
+      await tx.jobEvent.create({ data: { jobId: reportId, eventType: 'ORDER_PAID', metadata: JSON.stringify(order) } });
+      await tx.activityLog.create({ data: { event: 'STRIPE_CHECKOUT_COMPLETED', dataJson: JSON.stringify(order) } });
     });
   } catch (e) {
     if (e.code === 'P2002') { console.log(`[STRIPE] gia processato ${session.id}`); return; }
     throw e;
   }
 
-  await prisma.$transaction(async (tx) => {
-    await tx.immobile.update({ where: { jobId: reportId }, data: { pagato: true, livelloCommerciale: tier } });
-    await tx.jobEvent.create({ data: { jobId: reportId, eventType: 'PAYMENT_COMPLETED',
-      metadata: JSON.stringify({ stripeSessionId: session.id, amount: amountEuro, tier, customerEmail: clientEmail }) } });
-    await tx.activityLog.create({ data: { event: 'STRIPE_CHECKOUT_COMPLETED',
-      dataJson: JSON.stringify({ reportId, sessionId: session.id, tier, amount: amountEuro }) } });
-  });
+  const email = clientEmail;
+  await notifyAdminPaid(order);
+  await sendConfirmationEmail(email, reportId, tier, amountEuro);
 
-  const email = clientEmail || await (async () => {
-    try { const j = await prisma.job.findUnique({ where: { id: reportId } });
-      return JSON.parse(j?.payload || '{}').email || null; } catch { return null; }
-  })();
-
-  // G1 — CONSEGNA: pipeline solo se esplicitamente accesa; altrimenti notifica per consegna manuale
-  if (process.env.PIPELINE_ENABLED === 'true') {
+  if (payload.deferUntilPayment) {
     try {
-      await getFlowProducer().add({
-        name: `notifyJob-paid-${reportId}`,
-        queueName: 'notificationQueue',
-        data: { jobId: reportId, email, tier },
-        opts: { attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
-        children: [{
-          name: `reportJob-paid-${reportId}`,
-          queueName: 'reportRenderQueue',
-          data: { jobId: reportId, tier },
-          opts: { attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
-        }],
-      });
-      console.log(`[STRIPE] Flow report→notify avviato per ${reportId}`);
+      const { createAnalysisPipeline } = require('./dag-orchestrator');
+      await createAnalysisPipeline(reportId, { ...payload, email, telefono: clientPhone }, tier);
+      console.log(`[STRIPE] Pipeline post-pagamento avviata per ${reportId}`);
     } catch (err) {
-      console.error(`[STRIPE] flow KO ${reportId}:`, err.message);
-      await notifyManual(reportId, email, tier, amountEuro);
+      await markOrderAttention(reportId, order, `Avvio produzione fallito: ${err.message}`);
     }
   } else {
-    await notifyManual(reportId, email, tier, amountEuro);
+    try {
+      await getFlowProducer().add({
+        name: `notifyJob-paid-${reportId}`, queueName: 'notificationQueue',
+        data: { jobId: reportId, email, tier }, opts: { attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
+        children: [{ name: `reportJob-paid-${reportId}`, queueName: 'reportRenderQueue', data: { jobId: reportId, tier }, opts: { attempts: 2 } }],
+      });
+    } catch (err) { await markOrderAttention(reportId, order, `Flow consegna fallito: ${err.message}`); }
   }
+}
 
-  // Invia email di conferma al cliente
-  await sendConfirmationEmail(email, reportId, tier, amountEuro);
+async function sendTelegram(text) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) throw new Error('Telegram non configurato');
+  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text }),
+  });
+  if (!response.ok) throw new Error(`Telegram HTTP ${response.status}`);
+}
+
+async function notifyAdminPaid(order) {
+  const text = `PAGAMENTO RICEVUTO EUR ${order.importo}\nOrdine: ${order.id}\nCliente: ${order.nome || 'n/d'}\nContatto: ${order.email || order.telefono || 'n/d'}\nTipo: ${order.tipoRichiesta}`;
+  try {
+    await sendTelegram(text);
+    await prisma.jobEvent.create({ data: { jobId: order.id, eventType: 'ADMIN_PAYMENT_NOTIFIED', metadata: JSON.stringify({ channel: 'telegram' }) } });
+  } catch (err) {
+    console.error(`[TELEGRAM] Notifica pagamento fallita ${order.id}:`, err.message);
+    await notifyManual(order.id, order.email || order.telefono, order.tipoRichiesta, order.importo);
+    await prisma.jobEvent.create({ data: { jobId: order.id, eventType: 'ADMIN_PAYMENT_NOTIFICATION_FAILED', metadata: JSON.stringify({ error: err.message }) } }).catch(() => {});
+  }
+}
+
+async function markOrderAttention(reportId, order, reason) {
+  await prisma.job.update({ where: { id: reportId }, data: { status: 'PAID_NEEDS_ATTENTION', error: reason } }).catch(() => {});
+  await prisma.jobEvent.create({ data: { jobId: reportId, eventType: 'PAID_ORDER_NEEDS_ATTENTION', metadata: JSON.stringify({ reason }) } }).catch(() => {});
+  try { await sendTelegram(`ORDINE PAGATO DA GESTIRE\nOrdine: ${reportId}\nMotivo: ${reason}`); }
+  catch (_) { await notifyManual(reportId, order.email || order.telefono, order.tipoRichiesta, order.importo); }
 }
 
 // Notifica garantita sul telefono di Simone (ntfy) col jobId da evadere a mano
@@ -134,7 +172,7 @@ async function notifyManual(reportId, email, tier, amountEuro) {
   try {
     await fetch(`https://ntfy.sh/${topic}`, {
       method: 'POST',
-      headers: { Title: `PAGATO EUR${amountEuro} — ${tier}`, Priority: 'urgent', Tags: 'moneybag' },
+      headers: { Title: `PAGATO EUR${amountEuro} - ${tier}`, Priority: 'urgent', Tags: 'moneybag' },
       body: `Job ${reportId}\nEmail: ${email || 'n/d'}\nEvadi il report a mano.`,
     });
   } catch (e) { console.error('[MANUAL] ntfy KO:', e.message); }
@@ -160,7 +198,7 @@ async function sendConfirmationEmail(email, reportId, tier, amountEuro) {
       'TIER_3_PREMIUM_690': 'Premium Report',
     }[tier] || tier;
 
-    await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: 'info@externalopinion.it',
       to: email,
       subject: `✅ Perizia ricevuta — Ordine #${reportId.substring(0, 8)}`,
@@ -181,9 +219,13 @@ async function sendConfirmationEmail(email, reportId, tier, amountEuro) {
       `,
     });
 
+    if (error) throw new Error(error.message || JSON.stringify(error));
+    await prisma.jobEvent.create({ data: { jobId: reportId, eventType: 'CUSTOMER_CONFIRMATION_SENT', metadata: JSON.stringify({ channel: 'email', providerId: data?.id || null }) } }).catch(() => {});
+
     console.log(`[EMAIL] Conferma inviata a ${email} — jobId ${reportId}`);
   } catch (err) {
     console.error(`[EMAIL] Errore invio conferma ${reportId}:`, err.message);
+    await prisma.jobEvent.create({ data: { jobId: reportId, eventType: 'CUSTOMER_CONFIRMATION_FAILED', metadata: JSON.stringify({ channel: 'email', error: err.message }) } }).catch(() => {});
   }
 }
 
@@ -256,6 +298,7 @@ async function createCheckoutSession(reportId, tier, clientEmail = null) {
   if (!stripe) throw new Error('Stripe non configurato — imposta STRIPE_SECRET_KEY');
 
   const prices = {
+    TIER_1_PROMO_10:      { amount: 1000,  label: 'Analisi External Opinion - promo lancio (EUR 10)' },
     TIER_1_CASCADE_79:    { amount: 7900,  label: 'Analisi Asta — Verdetto CASCADE (EUR 79)' },
     TIER_1_SCREENING_69:  { amount: 6900,  label: 'Screening Report (EUR 69)' },
     TIER_1_ENTRY_89:      { amount: 8900,  label: 'Entry Report (EUR 89)' },
@@ -267,7 +310,6 @@ async function createCheckoutSession(reportId, tier, clientEmail = null) {
   const baseUrl = process.env.BASE_URL || 'https://externalopinionagent-production.up.railway.app';
 
   return stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
     line_items: [{
       price_data: {
         currency:     'eur',
@@ -277,8 +319,9 @@ async function createCheckoutSession(reportId, tier, clientEmail = null) {
       quantity: 1,
     }],
     mode:          'payment',
-    success_url:   `${baseUrl}/success?sessionId={CHECKOUT_SESSION_ID}&jobId=${reportId}`,
-    cancel_url:    `${baseUrl}/cancel?jobId=${reportId}`,
+    integration_identifier: 'externalopinion_checkout_qwertyui',
+    success_url:   `${baseUrl}/success.html?sessionId={CHECKOUT_SESSION_ID}&jobId=${reportId}`,
+    cancel_url:    `${baseUrl}/cancel.html?jobId=${reportId}`,
     customer_email:       clientEmail || undefined,
     client_reference_id: reportId,
     metadata:            { reportId, tier },

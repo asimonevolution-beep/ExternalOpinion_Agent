@@ -14,7 +14,6 @@
   var catBtns      = document.querySelectorAll('.cat-btn');
   var intakeForm   = document.getElementById('intake-form');
   var inputUrl     = document.getElementById('input-url');
-  var inputContact = document.getElementById('input-contact');
   var inputNote    = document.getElementById('input-note');
   var submitBtn    = document.getElementById('submit-btn');
   var loadingState = document.getElementById('loading-state');
@@ -73,7 +72,9 @@
 
   function clearErrors() {
     showFieldError('field-url', 'error-url', false);
-    showFieldError('field-contact', 'error-contact', false);
+    showFieldError('field-name', 'error-name', false);
+    showFieldError('field-email', 'error-email', false);
+    showFieldError('field-phone', 'error-phone', false);
     globalError.classList.remove('visible');
   }
 
@@ -82,7 +83,10 @@
     clearErrors();
 
     var urlVal     = inputUrl.value.trim();
-    var contactVal = inputContact.value.trim();
+    var nameVal    = document.getElementById('input-name').value.trim();
+    var companyVal = document.getElementById('input-company').value.trim();
+    var emailVal   = document.getElementById('input-email').value.trim();
+    var phoneVal   = document.getElementById('input-phone').value.trim();
     var noteVal    = inputNote.value.trim();
     var valid      = true;
 
@@ -90,8 +94,18 @@
       showFieldError('field-url', 'error-url', true);
       valid = false;
     }
-    if (!validateContact(contactVal)) {
-      showFieldError('field-contact', 'error-contact', true);
+    if (nameVal.length < 2) {
+      showFieldError('field-name', 'error-name', true);
+      valid = false;
+    }
+    var emailOk = !emailVal || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
+    var phoneOk = !phoneVal || phoneVal.replace(/\D/g, '').length >= 7;
+    if ((!emailVal && !phoneVal) || !emailOk) {
+      showFieldError('field-email', 'error-email', true);
+      valid = false;
+    }
+    if ((!emailVal && !phoneVal) || !phoneOk) {
+      showFieldError('field-phone', 'error-phone', true);
       valid = false;
     }
     if (!state.service) {
@@ -101,18 +115,19 @@
     }
     if (!valid) return;
 
-    var isEmail = contactVal.indexOf('@') !== -1;
-    var emailForCheckout = isEmail ? contactVal : '';
-
     var payload = {
       urlAsta:  urlVal,
-      email:    contactVal,
+      nome:     nameVal,
+      ragioneSociale: companyVal || null,
+      email:    emailVal || null,
+      telefono: phoneVal || null,
       service:  state.service,
-      tier:     'TIER_1_CASCADE_79',
+      tier:     'TIER_1_PROMO_10',
+      deferUntilPayment: true,
       zonaDati: {
         categoria:          state.label,
         note:               noteVal || null,
-        telefono:           !isEmail ? contactVal : null,
+        telefono:           phoneVal || null,
         allegatiDichiarati: state.allegati.length ? state.allegati.slice() : null,
         source:             'quick-intake',
       },
@@ -140,8 +155,16 @@
       var jobId = result.data.jobId;
       state.jobId = jobId;
 
-      // Payment Link Stripe live 10 EUR — client_reference_id = caseId
-      return Promise.resolve({ jobId: jobId, checkout: { checkoutUrl: 'https://buy.stripe.com/6oUeV54fFbZ16jdfJ9ffy06?client_reference_id=' + encodeURIComponent(jobId) } })
+      return fetch('/api/jobs/' + encodeURIComponent(jobId) + '/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier: 'TIER_1_PROMO_10', email: emailVal || null })
+      }).then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok || !data.checkoutUrl) throw new Error(data.error || 'Checkout non disponibile');
+          return { jobId: jobId, checkout: data };
+        });
+      })
       .then(function (res2) {
         loadingState.classList.remove('visible');
         submitBtn.disabled = false;
@@ -151,7 +174,7 @@
         displayCase.textContent = 'EO-' + shortId.toUpperCase();
         document.getElementById('summary-tipo').textContent    = state.label || '—';
         document.getElementById('summary-url').textContent     = urlVal.length > 50 ? urlVal.slice(0, 50) + '…' : urlVal;
-        document.getElementById('summary-contact').textContent = contactVal;
+        document.getElementById('summary-contact').textContent = emailVal || phoneVal;
 
         if (res2.checkout && res2.checkout.checkoutUrl) {
           checkoutBtn.href        = res2.checkout.checkoutUrl;
@@ -198,7 +221,11 @@
   newCaseBtn.addEventListener('click', function () {
     state = { service: null, label: null, jobId: null, checkoutUrl: null };
     catBtns.forEach(function (b) { b.classList.remove('selected'); });
-    inputUrl.value = ''; inputContact.value = ''; inputNote.value = '';
+    inputUrl.value = ''; inputNote.value = '';
+    document.getElementById('input-name').value = '';
+    document.getElementById('input-company').value = '';
+    document.getElementById('input-email').value = '';
+    document.getElementById('input-phone').value = '';
     clearErrors();
     intakeForm.classList.remove('visible');
     catSection.style.display = '';

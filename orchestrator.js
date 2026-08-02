@@ -131,7 +131,7 @@ async function logActivity(event, data) {
 // CORE: JOB CREATION (NON-BLOCKING)
 // ============================================================================
 
-async function createJob({ url, email, token, service, zonaDati = {} }) {
+async function createJob({ url, nome, ragioneSociale, email, telefono, token, service, zonaDati = {}, deferUntilPayment = false, tier = null }) {
   // Validazione input
   if (!url) {
     throw new Error('URL non fornito.');
@@ -147,9 +147,14 @@ async function createJob({ url, email, token, service, zonaDati = {} }) {
           status: 'PENDING',
           payload: JSON.stringify({
             url,
+            nome: nome || null,
+            ragioneSociale: ragioneSociale || null,
             email: email || null,
+            telefono: telefono || zonaDati.telefono || null,
             clientToken: token || null,
             service: service || null,
+            tier,
+            deferUntilPayment: Boolean(deferUntilPayment),
             zonaDati,
             timestamp: new Date().toISOString(),
           }),
@@ -172,7 +177,9 @@ async function createJob({ url, email, token, service, zonaDati = {} }) {
           eventType: 'JOB_CREATED',
           metadata: JSON.stringify({
             url,
+            nome: nome || null,
             email: email || null,
+            telefono: telefono || zonaDati.telefono || null,
             service,
           }),
           logicEngineVersion: '18.0',

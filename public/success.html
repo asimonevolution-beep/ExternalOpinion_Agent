@@ -34,11 +34,18 @@
     3. Ricevi il PDF via email (controlla anche la cartella spam)
   </div>
   <a href="/" class="btn">Torna alla home</a>
-  <p class="note">Domande? <a href="mailto:info@externalopinion.it">info@externalopinion.it</a></p>
+  <p id="status">Pagamento registrato. La richiesta è stata presa in carico.</p>
+  <p class="note">Conserva il riferimento ordine. Se hai indicato un’email riceverai anche la conferma. Domande? <a href="mailto:info@externalopinion.it">info@externalopinion.it</a></p>
 </div>
 <script>
   const p=new URLSearchParams(window.location.search);
-  document.getElementById('ref').textContent='Riferimento: '+(p.get('jobId')||p.get('sessionId')||'N/D');
+  const jobId=p.get('jobId');
+  document.getElementById('ref').textContent='Riferimento: '+(jobId||p.get('sessionId')||'N/D');
+  if(jobId){
+    fetch('/api/jobs/'+encodeURIComponent(jobId)).then(r=>r.json()).then(d=>{
+      if(d&&d.job&&d.job.status) document.getElementById('status').textContent='Stato ordine: '+d.job.status;
+    }).catch(()=>{});
+  }
 </script>
 </body>
 </html>

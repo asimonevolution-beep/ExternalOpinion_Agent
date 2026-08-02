@@ -197,7 +197,7 @@ async function createAnalysisPipeline(jobId, payload, tier = 'TIER_2_ADVISORY_15
   // Determina task da eseguire basato sul tier
   const includeReport = tier !== 'TIER_1_ENTRY_89' && tier !== 'TIER_1_SCREENING_69';
   const includeNotify  = includeReport;
-  const includeReview  = includeReport; // Tutti i report passano per revisione umana
+  const includeReview  = includeReport && tier !== 'TIER_1_PROMO_10';
 
   // ============================================================
   // BullMQ FlowProducer: i children corrono PRIMA del padre.
@@ -255,22 +255,22 @@ async function createAnalysisPipeline(jobId, payload, tier = 'TIER_2_ADVISORY_15
       children: [scoringStep],
     };
 
-    // ===== STEP 6: REVIEW (dipende da REPORT) =====
-    const reviewStep = {
+    // ===== ROOT: NOTIFY (parte per ultimo) =====
+    // La promo automatica non dipende dal worker-review, che non è attivo nel
+    // deployment Railway. I tier con revisione mantengono il passaggio umano.
+    const notifyChildren = includeReview ? [{
       name: 'reviewJob',
       queueName: 'reviewQueue',
       data: { jobId, tier },
       opts: { priority, attempts: 1 },
       children: [reportStep],
-    };
-
-    // ===== ROOT: NOTIFY (parte per ultimo) =====
+    }] : [reportStep];
     flow = await enqueueWithTimeout(flowProducer.add({
       name: 'notifyJob',
       queueName: 'notificationQueue',
       data: { jobId, email, tier },
       opts: { priority, attempts: 2, backoff: { type: 'exponential', delay: 5000 } },
-      children: [reviewStep],
+      children: notifyChildren,
     }));
   }
 

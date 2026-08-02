@@ -219,7 +219,8 @@ apiRouter.post(
   '/analyze',
   analyzeApiLimiter,
   async (req, res) => {
-    const { urlAsta, email, token, service, zonaDati = {}, tier = 'TIER_1_CASCADE_79' } = req.body;
+    const { urlAsta, nome, ragioneSociale, email, telefono, token, service,
+      zonaDati = {}, tier = 'TIER_1_CASCADE_79', deferUntilPayment = false } = req.body;
 
     try {
       // Validazione
@@ -259,10 +260,15 @@ apiRouter.post(
       // Crea Job (atomic transaction)
       const jobRecord = await createJob({
         url: urlAsta,
+        nome,
+        ragioneSociale,
         email,
+        telefono,
         token,
         service,
         zonaDati,
+        deferUntilPayment,
+        tier,
       });
 
       console.log(`[API] Job created: ${jobRecord.id} | inputHash: ${inputHash}`);
@@ -290,9 +296,11 @@ apiRouter.post(
         streamUrl: `/api/stream/${jobRecord.id}`,
       });
 
-      // ===== CREA DAG PIPELINE (fire-and-forget) =====
-      createAnalysisPipeline(jobRecord.id, jobRecord.payload, tier)
-        .catch(err => console.error(`[DAG] Pipeline failed for ${jobRecord.id}:`, err.message));
+      // Gli ordini commerciali avviano la produzione solo dopo il webhook Stripe.
+      if (!deferUntilPayment) {
+        createAnalysisPipeline(jobRecord.id, jobRecord.payload, tier)
+          .catch(err => console.error(`[DAG] Pipeline failed for ${jobRecord.id}:`, err.message));
+      }
     } catch (err) {
       console.error(`[API] Error creating job:`, err.message);
       return res.status(500).json({
@@ -406,6 +414,7 @@ apiRouter.post(
       // Validazione tier
       const validTiers = [
         'TIER_1_CASCADE_79',
+        'TIER_1_PROMO_10',
         'TIER_1_SCREENING_69',
         'TIER_1_ENTRY_89',
         'TIER_2_ADVISORY_150',

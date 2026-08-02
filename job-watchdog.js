@@ -19,6 +19,26 @@
 const prisma = require('./db');
 const { publishJobEvent } = require('./realtime-hub');
 
+async function notifyPaidFailure(jobId, previousStatus) {
+  const immobile = await prisma.immobile.findUnique({ where: { jobId }, select: { pagato: true } });
+  if (!immobile?.pagato) return;
+  const text = `ORDINE PAGATO BLOCCATO\nOrdine: ${jobId}\nStato precedente: ${previousStatus}\nAzione: revisione manuale necessaria`;
+  try {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+    if (!token || !chatId) throw new Error('Telegram non configurato');
+    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text }),
+    });
+    if (!response.ok) throw new Error(`Telegram HTTP ${response.status}`);
+    await recordWatchdogEvent(jobId, 'PAID_FAILURE_NOTIFIED', { channel: 'telegram', previousStatus });
+  } catch (err) {
+    console.error(`[WATCHDOG] Notifica ordine pagato ${jobId} fallita:`, err.message);
+    await recordWatchdogEvent(jobId, 'PAID_FAILURE_NOTIFICATION_FAILED', { error: err.message, previousStatus });
+  }
+}
+
 // ============================================================================
 // SOGLIE DI TIMEOUT PER STATO
 // ============================================================================
@@ -100,6 +120,7 @@ async function runWatchdog(opts = {}) {
             data: { status: 'WATCHDOG_FAILED' },
           });
           await recordWatchdogEvent(job.id, 'WATCHDOG_FAILED', { reason: 'max_retries', pastRetries, status });
+          await notifyPaidFailure(job.id, status);
         }
         report.skipped++;
         continue;
