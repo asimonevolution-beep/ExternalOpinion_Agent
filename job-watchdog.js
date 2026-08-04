@@ -6,10 +6,10 @@
  *
  * Logica:
  *   - PENDING > 30min      → rinserisce in BullMQ (DAG restart)
- *   - SCRAPE_DONE > 20min  → rinserisce da OCR in poi
+ *   - SCRAPING_DONE > 20min → rinserisce da OCR in poi
  *   - OCR_DONE > 20min     → rinserisce da LLM in poi
  *   - LLM_DONE > 20min     → rinserisce da SCORING in poi
- *   - SCORING_DONE > 20min → rinserisce da REPORT in poi
+ *   - SCORED > 20min       → rinserisce da REPORT in poi
  *   - REPORT_READY > 60min → rimette in REVIEW se non già fatto
  *
  * Eseguito ogni 10 minuti dal cron in server-v18.3.js.
@@ -45,21 +45,21 @@ async function notifyPaidFailure(jobId, previousStatus) {
 
 const STUCK_THRESHOLDS = {
   PENDING:      30 * 60 * 1000,   // 30 min
-  SCRAPE_DONE:  20 * 60 * 1000,   // 20 min
-  OCR_DONE:     20 * 60 * 1000,   // 20 min
-  LLM_DONE:     20 * 60 * 1000,   // 20 min
-  SCORING_DONE: 20 * 60 * 1000,   // 20 min
-  REPORT_READY: 60 * 60 * 1000,   // 60 min (aspetta revisione Simone)
+  SCRAPING_DONE: 20 * 60 * 1000,  // 20 min
+  OCR_DONE:      20 * 60 * 1000,  // 20 min
+  LLM_DONE:      20 * 60 * 1000,  // 20 min
+  SCORED:        20 * 60 * 1000,  // 20 min
+  REPORT_READY:  60 * 60 * 1000,  // 60 min (aspetta revisione Simone)
 };
 
 // Stato → coda BullMQ di reinserimento
 const RESUME_QUEUE = {
   PENDING:      'scrapeQueue',
-  SCRAPE_DONE:  'ocrQueue',
-  OCR_DONE:     'llmExtractionQueue',
-  LLM_DONE:     'deterministicScoringQueue',
-  SCORING_DONE: 'reportRenderQueue',
-  REPORT_READY: 'reviewQueue',
+  SCRAPING_DONE: 'ocrQueue',
+  OCR_DONE:      'llmExtractionQueue',
+  LLM_DONE:      'deterministicScoringQueue',
+  SCORED:        'reportRenderQueue',
+  REPORT_READY:  'reviewQueue',
 };
 
 // ============================================================================
@@ -117,7 +117,10 @@ async function runWatchdog(opts = {}) {
         if (!dryRun) {
           await prisma.job.update({
             where: { id: job.id },
-            data: { status: 'WATCHDOG_FAILED' },
+            data: {
+              status: 'WATCHDOG_FAILED',
+              error: `Watchdog: superato limite di ${maxRetry} tentativi da stato ${status}`,
+            },
           });
           await recordWatchdogEvent(job.id, 'WATCHDOG_FAILED', { reason: 'max_retries', pastRetries, status });
           await notifyPaidFailure(job.id, status);
@@ -151,17 +154,20 @@ async function runWatchdog(opts = {}) {
 // ============================================================================
 
 async function checkBullMQActive(jobId, queueName) {
+  let queue;
   try {
     const { getSharedRedis } = require('./redis-connection');
     const { Queue } = require('bullmq');
     const redisConnection = getSharedRedis();
-    const queue = new Queue(queueName, { connection: redisConnection });
+    queue = new Queue(queueName, { connection: redisConnection });
     // Cerca job con questo jobId nei dati della coda
     const waiting = await queue.getJobs(['waiting', 'active', 'delayed'], 0, 20);
     const found = waiting.some(j => j.data?.jobId === jobId);
     return found;
   } catch (_) {
     return false; // Se non riesce a verificare, procede con il restart
+  } finally {
+    if (queue) await queue.close().catch(() => {});
   }
 }
 
@@ -177,21 +183,38 @@ async function restartJob(job, fromStatus) {
   const queueName = RESUME_QUEUE[fromStatus];
   const queue = new Queue(queueName, { connection: redisConnection });
 
-  // Determina tier dal payload
+  // Determina tier, email e url dal payload
   let tier = 'TIER_1_CASCADE_79';
   let email = null;
+  let url = job.url || null;
   try {
     const payload = JSON.parse(job.payload || '{}');
     tier  = payload.tier  || tier;
     email = payload.email || null;
+    url   = url || payload.url || payload.urlAsta || null;
   } catch (_) {}
 
+  // scrapeQueue è l'unica coda che consuma l'url: senza di esso il worker
+  // riceverebbe url=undefined e fallirebbe con "Invalid URL" a ogni tentativo.
+  if (queueName === 'scrapeQueue' && !url) {
+    await queue.close().catch(() => {});
+    await recordWatchdogEvent(job.id, 'WATCHDOG_RESTART_SKIPPED', { fromStatus, reason: 'url_mancante' });
+    throw new Error(`Job ${job.id}: url assente in job.url e nel payload — restart scrape annullato`);
+  }
+
   // Reinserisce in coda BullMQ
-  await queue.add(`watchdog-restart-${job.id}`, { jobId: job.id, tier, email }, {
-    attempts: 2,
-    backoff: { type: 'exponential', delay: 10000 },
-    priority: 5,
-  });
+  try {
+    await queue.add(`watchdog-restart-${job.id}`, { jobId: job.id, url, tier, email }, {
+      jobId: `watchdog-${fromStatus}-${job.id}`,
+      attempts: 2,
+      backoff: { type: 'exponential', delay: 10000 },
+      priority: 5,
+      removeOnComplete: 100,
+      removeOnFail: 200,
+    });
+  } finally {
+    await queue.close().catch(() => {});
+  }
 
   // Aggiorna stato → PENDING (così il worker lo elabora)
   if (fromStatus === 'PENDING') {

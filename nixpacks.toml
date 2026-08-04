@@ -1,3 +1,8 @@
+# ATTENZIONE — FILE INATTIVO.
+# railway.toml imposta builder = "dockerfile": Railway non legge questo file.
+# Le variabili sotto sono replicate nel Dockerfile, che è la sorgente reale.
+# Modificare qui non ha alcun effetto sul deploy.
+
 [variables]
 PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING = "1"
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
