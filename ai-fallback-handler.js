@@ -83,8 +83,27 @@ REGOLE CRITICHE:
 // ============================================================================
 
 async function tryOllama(testoGrezzo, timeoutMs = 30000) {
+  // Ollama e un runtime LLM locale (localhost:11434): su hosting gestito non
+  // esiste. Senza questa guardia ogni job tentava il backend locale, fallendo
+  // sempre, e il messaggio d'errore mascherava la causa reale a valle.
+  if (process.env.OLLAMA_ENABLED !== 'true') {
+    return {
+      success: false,
+      error: 'Ollama non abilitato (OLLAMA_ENABLED!=true): nessun runtime locale disponibile',
+      model: 'ollama-skipped',
+      skipped: true,
+    };
+  }
+
   try {
-    const ollama = require('ollama');
+    // In CommonJS il pacchetto `ollama` espone l'istanza sul default export:
+    // require('ollama').generate e undefined, da cui
+    // "ollama.generate is not a function".
+    const ollamaModule = require('ollama');
+    const ollama = ollamaModule.default || ollamaModule;
+    if (typeof ollama.generate !== 'function') {
+      throw new Error('API ollama.generate non disponibile in questa versione del pacchetto');
+    }
 
     const response = await Promise.race([
       ollama.generate({
@@ -383,6 +402,7 @@ async function estraiDatiConFallback(
   ];
 
   let lastError = null;
+  const erroriPerBackend = [];
 
   for (const backend of orderedBackends) {
     console.log(`[AI_FALLBACK] Tentativo con: ${backend.name}`);
@@ -412,17 +432,21 @@ async function estraiDatiConFallback(
         };
       } else {
         lastError = result.error;
+        erroriPerBackend.push(`${backend.name}: ${result.error}`);
         console.warn(`[AI_FALLBACK] ✗ ${backend.name}: ${result.error}`);
       }
     } catch (err) {
       lastError = err.message;
+      erroriPerBackend.push(`${backend.name}: ${err.message}`);
       console.warn(`[AI_FALLBACK] ✗ ${backend.name}: ${err.message}`);
     }
   }
 
-  // Tutti i backend hanno fallito
+  // Tutti i backend hanno fallito. Riportiamo l'errore di OGNUNO: prima veniva
+  // propagato solo lastError, cioe quello dell'ultimo backend della catena
+  // (ollama), che mascherava il motivo reale per cui claude non era riuscito.
   throw new Error(
-    `EXTRACTION_FAILED_ALL_BACKENDS: ${lastError || 'Unknown error'}`
+    `EXTRACTION_FAILED_ALL_BACKENDS: ${erroriPerBackend.length ? erroriPerBackend.join(' | ') : (lastError || 'Unknown error')}`
   );
 }
 
