@@ -166,7 +166,7 @@ async function createJob({ url, nome, ragioneSociale, email, telefono, token, se
         data: {
           jobId: jobRecord.id,
           urlAsta: url,
-          valoreOMI: zonaDati.valoreOMI || 2100,
+          valoreOMI: zonaDati.valoreOMI || null,
         },
       });
 

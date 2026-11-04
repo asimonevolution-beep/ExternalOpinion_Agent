@@ -107,10 +107,101 @@ async function scrapeWithAxios(url) {
   }
   const html = Buffer.from(resp.data).toString('utf-8');
   const $ = cheerio.load(html || '');
+  const allegati = trovaAllegatiPdf($, url);
   $('script, style, nav, footer, header, aside').remove();
   const testoGrezzo = $('body').text().replace(/\s+/g, ' ').trim();
   const title = $('title').text().trim();
-  return { testoGrezzo, title, httpStatus: resp.status, isPdf: false };
+  return { testoGrezzo, title, httpStatus: resp.status, isPdf: false, allegati };
+}
+
+
+// ============================================================================
+// ALLEGATI PDF DELLA PAGINA ANNUNCIO (perizia, avviso, ordinanza)
+// ============================================================================
+// Le pagine d'asta (IVG, astegiudiziarie, PVP) espongono il testo dell'annuncio
+// e collegano la perizia come PDF. Senza scaricarla il motore lavorava sul solo
+// annuncio e produceva un giudizio senza documenti tecnici.
+
+const MAX_ALLEGATI = 4;
+const MAX_PDF_BYTES = 25 * 1024 * 1024;
+const MAX_TESTO_ALLEGATI = 200000;
+
+const ESCLUSI_ALLEGATI = /manuale|privacy|trattamento dati|autodichiarazione|presa visione|modulo|informativa|istruzioni/i;
+
+function classificaAllegato(testo, href) {
+  // Il testo del link decide; l'indirizzo serve solo se il link non ha testo
+  // (molti portali usano il percorso /allegato/ per qualsiasi documento).
+  const t = (testo && testo.trim() ? testo : href).toLowerCase();
+  if (ESCLUSI_ALLEGATI.test(t)) return null;
+  if (/allegato\s*[a-z]?\b.*perizia/.test(t)) return 'ALLEGATO_PERIZIA';
+  if (/perizia|stima|relazione|ctu|elaborato peritale/.test(t)) return 'PERIZIA';
+  if (/avviso/.test(t)) return 'AVVISO';
+  if (/ordinanza/.test(t)) return 'ORDINANZA';
+  if (/planimetri/.test(t)) return 'PLANIMETRIA';
+  return 'ALTRO';
+}
+
+const PRIORITA_ALLEGATI = { PERIZIA: 1, ALLEGATO_PERIZIA: 2, AVVISO: 3, ORDINANZA: 4, PLANIMETRIA: 5, ALTRO: 6 };
+
+function trovaAllegatiPdf($, baseUrl) {
+  const visti = new Set();
+  const allegati = [];
+  $('a[href]').each((_, el) => {
+    const href = ($(el).attr('href') || '').trim();
+    const testo = ($(el).text() || $(el).attr('title') || '').replace(/\s+/g, ' ').trim();
+    let assoluto;
+    try { assoluto = new URL(href, baseUrl).toString(); } catch { return; }
+    const sembraPdf = /\.pdf(\?|#|$)/i.test(assoluto) || /\/allegato\//i.test(assoluto);
+    if (!sembraPdf || visti.has(assoluto)) return;
+    const tipo = classificaAllegato(testo, assoluto);
+    if (!tipo || tipo === 'ALTRO') return;
+    visti.add(assoluto);
+    allegati.push({ tipo, url: assoluto, etichetta: testo.slice(0, 120) });
+  });
+  allegati.sort((a, b) => PRIORITA_ALLEGATI[a.tipo] - PRIORITA_ALLEGATI[b.tipo]);
+  return allegati.slice(0, MAX_ALLEGATI);
+}
+
+async function scaricaTestoPdf(url) {
+  const safeUrl = validatePublicHttpUrl(url);
+  const resp = await axios.get(safeUrl, {
+    headers: { ...HTTP_HEADERS, Accept: 'application/pdf,*/*' },
+    responseType: 'arraybuffer',
+    timeout: 30000,
+    maxRedirects: 5,
+    maxContentLength: MAX_PDF_BYTES,
+    httpAgent: safeHttpAgent,
+    httpsAgent: safeHttpsAgent,
+  });
+  const pdfParse = require('pdf-parse');
+  const data = await pdfParse(Buffer.from(resp.data));
+  return { testo: data.text.replace(/\s+/g, ' ').trim(), pagine: data.numpages, bytes: resp.data.byteLength };
+}
+
+async function leggiAllegati(allegati) {
+  const documenti = [];
+  const blocchi = [];
+  let totale = 0;
+  for (const allegato of allegati) {
+    const voce = { tipo: allegato.tipo, url: allegato.url, etichetta: allegato.etichetta };
+    try {
+      const { testo, pagine, bytes } = await scaricaTestoPdf(allegato.url);
+      voce.pagine = pagine;
+      voce.bytes = bytes;
+      voce.caratteri = testo.length;
+      voce.esito = testo.length >= 300 ? 'LETTO' : 'TESTO_ASSENTE';
+      if (voce.esito === 'LETTO' && totale < MAX_TESTO_ALLEGATI) {
+        const quota = testo.slice(0, MAX_TESTO_ALLEGATI - totale);
+        totale += quota.length;
+        blocchi.push(`=== DOCUMENTO: ${allegato.tipo} (${pagine} pagine) — ${allegato.url} ===\n${quota}`);
+      }
+    } catch (err) {
+      voce.esito = 'ERRORE';
+      voce.errore = err.message;
+    }
+    documenti.push(voce);
+  }
+  return { documenti, testoAllegati: blocchi.join('\n\n') };
 }
 
 const worker = new Worker('scrapeQueue', async (job) => {
@@ -146,8 +237,23 @@ const worker = new Worker('scrapeQueue', async (job) => {
       if (result.isPdf || looksLikePdf) {
         scraperUsed = 'pdf-parse';
         metadata.numPages = result.numPages;
+        // Un PDF caricato direttamente è il documento tecnico fornito dal cliente.
+        metadata.documenti = [{
+          tipo: 'PERIZIA', url: safeUrl, pagine: result.numPages, caratteri: testoGrezzo.length,
+          esito: testoGrezzo.length >= 300 ? 'LETTO' : 'TESTO_ASSENTE',
+        }];
         console.log(`[SCRAPER ${WORKER_ID}] PDF estratto: ${result.numPages} pagine, ${testoGrezzo.length} caratteri`);
+      } else {
+        const allegati = result.allegati || [];
+        const { documenti, testoAllegati } = await leggiAllegati(allegati);
+        metadata.documenti = documenti;
+        if (testoAllegati) {
+          testoGrezzo = `=== PAGINA ANNUNCIO — ${safeUrl} ===\n${testoGrezzo}\n\n${testoAllegati}`;
+          scraperUsed = 'axios+pdf-allegati';
+        }
+        console.log(`[SCRAPER ${WORKER_ID}] Allegati trovati ${allegati.length}, letti ${documenti.filter((d) => d.esito === 'LETTO').length}: ${documenti.map((d) => `${d.tipo}=${d.esito}`).join(', ') || 'nessuno'}`);
       }
+      metadata.periziaLetta = (metadata.documenti || []).some((d) => d.tipo === 'PERIZIA' && d.esito === 'LETTO');
     } catch (axiosErr) {
       // Il fallback browser e intenzionalmente escluso: consentirebbe a redirect o
       // JavaScript della pagina di raggiungere servizi privati della piattaforma.
@@ -179,6 +285,8 @@ const worker = new Worker('scrapeQueue', async (job) => {
       textLength: testoGrezzo.length,
       scraperUsed,
       textHash,
+      periziaLetta: metadata.periziaLetta,
+      documenti: (metadata.documenti || []).map(({ tipo, url, pagine, caratteri, esito, errore }) => ({ tipo, url, pagine, caratteri, esito, errore })),
     }, WORKER_ID, durationMs);
 
     return { jobId, urlOriginale: safeUrl, testoGrezzo, metadata, screenshotHash: textHash };
@@ -207,3 +315,5 @@ worker.on('failed', (job, err) => {
 console.log(`[SCRAPER ${WORKER_ID}] Ready to process scrapeQueue`);
 
 module.exports = worker;
+module.exports.trovaAllegatiPdf = trovaAllegatiPdf;
+module.exports.classificaAllegato = classificaAllegato;

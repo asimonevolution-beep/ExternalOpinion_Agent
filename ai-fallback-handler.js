@@ -36,6 +36,11 @@ const SchemaEstrazioneAI = z.object({
     urbanistica: z.boolean().catch(false),
     catastale: z.boolean().catch(false),
   }).catch({ strutturale: false, urbanistica: false, catastale: false }),
+  // Dati economici dichiarati nei documenti: null quando non presenti, mai stimati.
+  prezzoBase: z.number().nonnegative().nullable().catch(null),
+  offertaMinima: z.number().nonnegative().nullable().catch(null),
+  valoreStima: z.number().nonnegative().nullable().catch(null),
+  superficieMq: z.number().nonnegative().nullable().catch(null),
   confidence: z.number().min(0).max(1).catch(0.05),
   source: z.object({
     document: z.string().catch('unknown'),
@@ -47,6 +52,10 @@ const SchemaEstrazioneAI = z.object({
 // ============================================================================
 // SYSTEM PROMPT (Condiviso tra tutti i modelli)
 // ============================================================================
+
+// Limite di testo inviato ai modelli: l'annuncio più la perizia allegata.
+// 8000 caratteri tagliavano la perizia dopo poche righe.
+const MAX_CHARS_MODELLO = 150000;
 
 const SYSTEM_PROMPT = `Sei un esperto analista immobiliare con 20 anni di esperienza in valutazioni, perizie e analisi di rischio.
 
@@ -62,6 +71,10 @@ SCHEMA OBBLIGATORIO:
     "urbanistica": booleano (non conformità urbanistica?),
     "catastale": booleano (non conformità catastale?)
   },
+  "prezzoBase": numero in euro del prezzo base d'asta, oppure null se assente,
+  "offertaMinima": numero in euro dell'offerta minima, oppure null se assente,
+  "valoreStima": numero in euro del valore di stima finale indicato nella perizia, oppure null se assente,
+  "superficieMq": superficie commerciale in mq, oppure null se assente,
   "confidence": numero 0-1 (quanto sei sicuro di questi dati? 0.95 = molto sicuro),
   "source": {
     "document": "nome perizia.pdf",
@@ -76,6 +89,8 @@ REGOLE CRITICHE:
 - Confidence deve riflettere l'incertezza
 - Sempre indicare la pagina/paragrafo della fonte
 - Mai allucinare dati che non sono nel documento
+- prezzoBase, offertaMinima, valoreStima e superficieMq vanno copiati solo se scritti nel testo: altrimenti null, mai stimati
+- Se il testo contiene solo l'annuncio e nessun documento tecnico (perizia), confidence non può superare 0.4
 `;
 
 // ============================================================================
@@ -192,7 +207,7 @@ async function tryClaude(testoGrezzo, timeoutMs = 45000) {
 
     // Haiku per estrazione dati (8x più economico di Sonnet, 60x di Opus)
     const model = 'claude-haiku-4-5-20251001';
-    const inputTokenEstimate = Math.ceil(testoGrezzo.length / 4);
+    const inputTokenEstimate = Math.ceil(Math.min(testoGrezzo.length, MAX_CHARS_MODELLO) / 4);
 
     const response = await client.messages.create({
       model,
@@ -208,7 +223,7 @@ async function tryClaude(testoGrezzo, timeoutMs = 45000) {
       messages: [
         {
           role: 'user',
-          content: `Testo da analizzare:\n${testoGrezzo.slice(0, 8000)}`,
+          content: `Testo da analizzare:\n${testoGrezzo.slice(0, MAX_CHARS_MODELLO)}`,
         },
       ],
     });
@@ -220,17 +235,19 @@ async function tryClaude(testoGrezzo, timeoutMs = 45000) {
       throw new Error(`Claude refusal (categoria: ${cat})`);
     }
 
-    // Cost tracking (con cache: input cached = $0.025/Mtok invece di $0.25/Mtok)
+    // Cost tracking sui token reali restituiti dall'API.
+    // Listino Claude Haiku 4.5: input $1/Mtok, output $5/Mtok,
+    // scrittura cache $1.25/Mtok, lettura cache $0.10/Mtok.
     const outputTokens = response.usage?.output_tokens || 0;
     const cacheRead    = response.usage?.cache_read_input_tokens || 0;
     const cacheWrite   = response.usage?.cache_creation_input_tokens || 0;
-    const normalIn     = (inputTokenEstimate - cacheRead - cacheWrite);
-    const costUsd = (normalIn    * 0.00000025)
-                  + (cacheWrite  * 0.0000003)
-                  + (cacheRead   * 0.000000025)
-                  + (outputTokens * 0.00000125);
+    const normalIn     = response.usage?.input_tokens ?? Math.max(0, inputTokenEstimate - cacheRead - cacheWrite);
+    const costUsd = (normalIn    * 0.000001)
+                  + (cacheWrite  * 0.00000125)
+                  + (cacheRead   * 0.0000001)
+                  + (outputTokens * 0.000005);
     const cacheLabel = cacheRead > 0 ? ` [cache_hit:${cacheRead}tok]` : '';
-    console.log(`[AI-COST] Claude Haiku: ~${inputTokenEstimate} in + ${outputTokens} out = $${costUsd.toFixed(5)}${cacheLabel}`);
+    console.log(`[AI-COST] Claude Haiku: ${normalIn + cacheRead + cacheWrite} in + ${outputTokens} out = $${costUsd.toFixed(5)}${cacheLabel}`);
 
     // Estrai JSON dalla risposta (gestisce markdown code blocks e testo libero)
     // Cerca il primo blocco di tipo "text" invece di assumere content[0]
@@ -279,7 +296,7 @@ async function tryGemini(testoGrezzo, timeoutMs = 45000) {
       generationConfig: { temperature: 0, responseMimeType: 'application/json' },
     });
 
-    const prompt = `${SYSTEM_PROMPT}\n\nTesto da analizzare:\n${testoGrezzo.slice(0, 8000)}`;
+    const prompt = `${SYSTEM_PROMPT}\n\nTesto da analizzare:\n${testoGrezzo.slice(0, MAX_CHARS_MODELLO)}`;
 
     const response = await Promise.race([
       geminiModel.generateContent(prompt),
@@ -335,7 +352,7 @@ async function tryQwen(testoGrezzo, timeoutMs = 45000) {
       model: 'qwen-plus',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: `Testo da analizzare:\n${testoGrezzo.slice(0, 8000)}` },
+        { role: 'user', content: `Testo da analizzare:\n${testoGrezzo.slice(0, MAX_CHARS_MODELLO)}` },
       ],
       temperature: 0,
       response_format: { type: 'json_object' },
