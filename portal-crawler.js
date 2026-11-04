@@ -174,7 +174,7 @@ async function queueNewAuctionsForAnalysis(limit = 5) {
       const jobRecord = await createJob({
         url:    auction.url,
         email:  process.env.ADMIN_REVIEW_EMAIL || 'a.simonevolution@gmail.com',
-        zonaDati: { valoreOMI: auction.basePrice || 2100 },
+        zonaDati: { valoreOMI: auction.basePrice || null },
       });
       await createAnalysisPipeline(jobRecord.id, jobRecord.payload, 'TIER_1_SCREENING_69');
       await prisma.discoveredAuction.update({

@@ -340,10 +340,17 @@ apiRouter.get('/jobs/:jobId', async (req, res) => {
 
     // Includi immobile data se completato
     if (jobRecord.immobile) {
+      // Quando il giudizio non è possibile (perizia non letta) la colonna DB vale 0
+      // per vincolo di schema: al cliente si restituisce null, non uno "0%".
+      let giudizioNonPossibile = false;
+      try {
+        giudizioNonPossibile = JSON.parse(jobRecord.immobile.datiComputati || '{}')?.calcoliScoring?.giudizioNonPossibile === true;
+      } catch { /* datiComputati non JSON: comportamento invariato */ }
       responseData.immobile = {
         id: jobRecord.immobile.id,
         status: jobRecord.immobile.status,
-        coherenceIndex: jobRecord.immobile.coherenceIndex,
+        giudizioNonPossibile,
+        coherenceIndex: giudizioNonPossibile ? null : jobRecord.immobile.coherenceIndex,
         roi: jobRecord.immobile.roi,
         roiConveniente: jobRecord.immobile.roiConveniente,
         valoreAttuale: jobRecord.immobile.valoreAttuale,
