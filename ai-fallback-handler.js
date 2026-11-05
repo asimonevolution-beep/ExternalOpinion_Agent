@@ -91,6 +91,8 @@ REGOLE CRITICHE:
 - Mai allucinare dati che non sono nel documento
 - prezzoBase, offertaMinima, valoreStima e superficieMq vanno copiati solo se scritti nel testo: altrimenti null, mai stimati
 - Se il testo contiene solo l'annuncio e nessun documento tecnico (perizia), confidence non può superare 0.4
+- Rispondi esclusivamente con l'oggetto JSON: nessun testo, commento o spiegazione prima o dopo, nessun commento dentro il JSON
+- I numeri vanno scritti senza separatori delle migliaia e senza simbolo dell'euro (es. 6000, non 6.000 €)
 `;
 
 // ============================================================================
@@ -211,7 +213,9 @@ async function tryClaude(testoGrezzo, timeoutMs = 45000) {
 
     const response = await client.messages.create({
       model,
-      max_tokens: 1024,
+      // Con la perizia allegata la risposta superava 1024 token e il JSON
+      // arrivava troncato (prova reale 04/11/2026, job 3d30a03e).
+      max_tokens: 4096,
       // Prompt caching: il SYSTEM_PROMPT è fisso → cache hit rate ~95% → risparmio 90% sui token input
       system: [
         {
@@ -230,6 +234,10 @@ async function tryClaude(testoGrezzo, timeoutMs = 45000) {
 
     // Guardia: classificatori di sicurezza possono restituire stop_reason "refusal"
     // (HTTP 200, content vuoto o parziale). Va intercettato PRIMA di leggere content[0].
+    if (response.stop_reason === 'max_tokens') {
+      throw new Error(`Risposta Claude troncata al limite di token (${response.usage?.output_tokens || '?'} in uscita)`);
+    }
+
     if (response.stop_reason === 'refusal') {
       const cat = response.stop_details?.category || 'sconosciuta';
       throw new Error(`Claude refusal (categoria: ${cat})`);
