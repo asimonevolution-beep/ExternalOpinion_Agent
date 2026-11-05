@@ -91,5 +91,18 @@ t('schema AI: prezzi assenti restano null', () => {
   assert.match(src, /slice\(0, MAX_CHARS_MODELLO\)/);
   assert.doesNotMatch(src, /slice\(0, 8000\)/);
 });
+t('garage reale con perizia letta: dati della perizia -> VERDE', () => {
+  // Valori estratti in produzione il 05/11/2026 (job 85f977ad) e verificati sulla perizia
+  const d = { costiSanatoria:0, costiRipristino:0, statoImmobile:'STATO_BUONO', difformita:{strutturale:false,urbanistica:false,catastale:false}, confidence:0.98, prezzoBase:6000, offertaMinima:4500, valoreStima:7690, superficieMq:9.5 };
+  const c = scoring.eseguiMotoreDeterministico(d, { valoreRiferimento: 7690, trendZona: 0.02, anniProiezione: 2, documentiVerificati: true });
+  assert.strictEqual(c.roi, 28.17);
+  assert.strictEqual(c.semaforo, 'VERDE');
+  const senzaVerifica = scoring.eseguiMotoreDeterministico(d, { valoreRiferimento: 7690, trendZona: 0.02, anniProiezione: 2 });
+  assert.strictEqual(senzaVerifica.semaforo, 'GIALLO');
+});
+t('API: ROI esposto come frazione per la pagina pubblica', () => {
+  const src = require('fs').readFileSync(path.join(REPO,'server-v18.3.js'),'utf8');
+  assert.match(src, /roi: jobRecord\.immobile\.roi == null \? null : jobRecord\.immobile\.roi \/ 100/);
+});
 console.log(`\n${ok} test superati`);
 process.exit(0);
