@@ -351,7 +351,11 @@ apiRouter.get('/jobs/:jobId', async (req, res) => {
         status: jobRecord.immobile.status,
         giudizioNonPossibile,
         coherenceIndex: giudizioNonPossibile ? null : jobRecord.immobile.coherenceIndex,
-        roi: jobRecord.immobile.roi,
+        // Nel DB il ROI è in percentuale (28.17 = 28,17%). La pagina pubblica
+        // lo moltiplica per 100, quindi qui si espone come frazione (0.2817):
+        // prima la pagina mostrava "2817.0%". roiPercentuale resta esplicito.
+        roi: jobRecord.immobile.roi == null ? null : jobRecord.immobile.roi / 100,
+        roiPercentuale: jobRecord.immobile.roi,
         roiConveniente: jobRecord.immobile.roiConveniente,
         valoreAttuale: jobRecord.immobile.valoreAttuale,
         valorePotenziale: jobRecord.immobile.valorePotenziale,

@@ -92,7 +92,7 @@ function esitoGiudizioNonPossibile(motivi, riferimento) {
 // ============================================================================
 
 function eseguiMotoreDeterministico(datiAI, parametriMercato) {
-  const { valoreRiferimento, trendZona, anniProiezione } = parametriMercato;
+  const { valoreRiferimento, trendZona, anniProiezione, documentiVerificati = false } = parametriMercato;
   const { costiSanatoria, costiRipristino, statoImmobile, difformita } = datiAI;
 
   // --- Coherence Index ---
@@ -126,7 +126,9 @@ function eseguiMotoreDeterministico(datiAI, parametriMercato) {
     riskScore:         100 - coherenceIndex,
     coherenceIndex,
     roi:               roiCalcolato !== null ? parseFloat(roiCalcolato.toFixed(2)) : 0,
-    documentsVerified: false,
+    // Verificati = perizia letta e estrazione sopra soglia: solo allora il
+    // semaforo può essere verde. Prima era sempre false, quindi mai verde.
+    documentsVerified: documentiVerificati === true,
   });
 
   return {
@@ -195,8 +197,8 @@ const worker = new Worker('deterministicScoringQueue', async (job) => {
         },
       };
     } else {
-      // MOTORE DETERMINISTICO
-      calcoliScoring = eseguiMotoreDeterministico(datiEstrattiEValidati, parametriMercato);
+      // MOTORE DETERMINISTICO — qui i presupposti sono soddisfatti
+      calcoliScoring = eseguiMotoreDeterministico(datiEstrattiEValidati, { ...parametriMercato, documentiVerificati: true });
       calcoliScoring.fonteValoreRiferimento = riferimento.fonte;
       // Explainability: le formule testuali richiedono un valore numerico
       spiegazione = calcoliScoring.valoreAttuale !== null
