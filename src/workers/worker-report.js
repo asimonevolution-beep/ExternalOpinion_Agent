@@ -90,11 +90,11 @@ async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValida
 
     // Breakdown penalita
     doc.moveDown(1);
-    doc.font('Helvetica-Bold').fontSize(12).text('Penalita rilevate:');
+    doc.font('Helvetica-Bold').fontSize(12).text('Penalità rilevate:');
     doc.moveDown(0.5);
     const penalties = spiegazione?.coherence?.penaltyBreakdown || [];
     if (penalties.length === 0) {
-      doc.font('Helvetica').fontSize(11).fillColor(GREEN).text('Nessuna penalita rilevata — immobile conforme.');
+      doc.font('Helvetica').fontSize(11).fillColor(GREEN).text('Nessuna difformità segnalata nei documenti.');
     } else {
       penalties.forEach(p => {
         doc.fillColor(RED).font('Helvetica-Bold').fontSize(11)
@@ -184,9 +184,11 @@ async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValida
 
     doc.moveDown(2);
     doc.fillColor(INK).font('Helvetica-Bold').fontSize(12)
-       .text('Azione diagnostica:');
+       .text('Cosa fare:');
     const signal = calcoliScoring.decisionSignal;
-    const actionText = signal
+    const actionText = calcoliScoring.esitoCliente?.azione
+      ? calcoliScoring.esitoCliente.azione
+      : signal
       ? signal.customerAction
       : (spiegazione?.riskProfile?.recommendation || '');
     doc.font('Helvetica').fontSize(11)
@@ -198,12 +200,12 @@ async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValida
     doc.moveTo(50, 75).lineTo(545, 75).strokeColor(ACCENT).lineWidth(1).stroke();
 
     doc.moveDown(1).font('Helvetica').fontSize(10).fillColor(INK);
-    doc.text(`Modello AI:          ${datiEstrattiEValidati?.source?.document || 'N/D'}`);
+    doc.text(`Documento fonte:     ${datiEstrattiEValidati?.source?.document || 'N/D'}`);
     doc.text(`Confidence Score:    ${((datiEstrattiEValidati?.confidence || 0) * 100).toFixed(1)}%`);
     doc.text(`Logic Engine:        V18.3 — Deterministico`);
     doc.text(`Generato il:         ${new Date().toISOString()}`);
     doc.moveDown(1);
-    doc.font('Helvetica-Bold').fontSize(10).text('Hash Forensico SHA-256 (integrita documento):');
+    doc.font('Helvetica-Bold').fontSize(10).text('Hash Forensico SHA-256 (integrità del documento):');
     doc.font('Courier').fontSize(9).fillColor(ACCENT).text(hashScoring);
 
     doc.moveDown(2);
@@ -319,3 +321,4 @@ worker.on('failed',    (job, err) => console.error(`[REPORT ${WORKER_ID}] Failed
 
 console.log(`[REPORT ${WORKER_ID}] Ready to process reportRenderQueue`);
 module.exports = worker;
+module.exports.generaPDF = generaPDF;

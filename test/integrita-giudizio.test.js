@@ -139,7 +139,7 @@ t('Carpi con perizia letta: stima 98.952, margine 0% al base e 33,3% all\'offert
   assert.match(e.frasi[0], /non segnala difformità/);
   assert.match(e.frasi[1], /98\.952 €/);
   assert.match(e.frasi[1], /33,3%/);
-  assert.strictEqual(e.punti[0], 'Immobile nella disponibilità del debitore: va liberato dopo l\'aggiudicazione.');
+  assert.match(e.punti[0], /disponibilità del debitore: verificare con il custode/);
 });
 t('email esito: testo dal calcolo, link per tornare all\'esito', () => {
   const { componiEmailVerdetto } = require(path.join(REPO,'src/email/verdetto-email.js'));

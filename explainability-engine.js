@@ -75,7 +75,7 @@ function spiegaCoherenceIndex(coherenceIndex, difformita, statoImmobile) {
 
 function generateCoherenceInterpretation(coherenceIndex) {
   if (coherenceIndex > 85) {
-    return 'Immobile conforme e in buone condizioni. Operazione a rischio contenuto.';
+    return 'Nessuna difformità strutturale, urbanistica o catastale segnalata nei documenti.';
   } else if (coherenceIndex > 70) {
     return 'Conformità generale con lievi anomalie. Operazione supportata, con dovute cautele.';
   } else if (coherenceIndex > 55) {
@@ -212,7 +212,7 @@ function generaProfiloRischio(calcoliScoring, datiEstrazione) {
       categoria: 'Economico',
       severita: calcoliScoring.roi < 0 ? 'ALTA' : 'MEDIA',
       descrizione: 'Margine contenuto al prezzo base',
-      impatto: `Margine ${calcoliScoring.roi.toFixed(2)}% al prezzo base${calcoliScoring.roiOffertaMinima != null ? `, ${calcoliScoring.roiOffertaMinima.toFixed(2)}% all'offerta minima` : ''}`,
+      impatto: `Margine ${calcoliScoring.roi.toLocaleString('it-IT', { maximumFractionDigits: 1 })}% al prezzo base${calcoliScoring.roiOffertaMinima != null ? `, ${calcoliScoring.roiOffertaMinima.toLocaleString('it-IT', { maximumFractionDigits: 1 })}% all'offerta minima` : ''}`,
     } : {
       categoria: 'Economico',
       severita: 'MEDIA',

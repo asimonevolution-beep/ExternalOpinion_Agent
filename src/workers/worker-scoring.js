@@ -205,7 +205,7 @@ function costruisciEsitoCliente(calcoli, datiAI = {}) {
 
   const occupazione = {
     LIBERO: 'Immobile indicato come libero.',
-    OCCUPATO_DEBITORE: 'Immobile nella disponibilità del debitore: va liberato dopo l\'aggiudicazione.',
+    OCCUPATO_DEBITORE: 'Immobile indicato nella disponibilità del debitore: verificare con il custode stato e tempi di liberazione.',
     OCCUPATO_TERZI: 'Immobile occupato da terzi: verificare titolo e tempi di liberazione.',
   }[datiAI.statoOccupazione];
   const punti = [...(occupazione ? [occupazione] : []), ...(datiAI.puntiDaVerificare || [])].slice(0, 6);
