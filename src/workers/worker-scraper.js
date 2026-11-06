@@ -116,17 +116,17 @@ async function scrapeWithAxios(url) {
 
 
 // ============================================================================
-// ALLEGATI PDF DELLA PAGINA ANNUNCIO (perizia, avviso, ordinanza)
+// ALLEGATI PDF DELLA PAGINA ANNUNCIO (aste e annunci immobiliari)
 // ============================================================================
 // Le pagine d'asta (IVG, astegiudiziarie, PVP) espongono il testo dell'annuncio
 // e collegano la perizia come PDF. Senza scaricarla il motore lavorava sul solo
 // annuncio e produceva un giudizio senza documenti tecnici.
 
-const MAX_ALLEGATI = 4;
+const MAX_ALLEGATI = 6;
 const MAX_PDF_BYTES = 25 * 1024 * 1024;
 const MAX_TESTO_ALLEGATI = 200000;
 
-const ESCLUSI_ALLEGATI = /manuale|privacy|trattamento dati|autodichiarazione|presa visione|modulo|informativa|istruzioni/i;
+const ESCLUSI_ALLEGATI = /manuale|privacy|trattamento dati|autodichiarazione|presa visione|modulo|informativa|istruzioni|cookie|condizioni generali|termini e condizioni|regolamento del sito|listino servizi/i;
 
 function classificaAllegato(testo, href) {
   // Il testo del link decide; l'indirizzo serve solo se il link non ha testo
@@ -138,10 +138,16 @@ function classificaAllegato(testo, href) {
   if (/avviso/.test(t)) return 'AVVISO';
   if (/ordinanza/.test(t)) return 'ORDINANZA';
   if (/planimetri/.test(t)) return 'PLANIMETRIA';
+  // Documenti tipici delle compravendite e degli annunci privati (07/11/2026):
+  // l'analisi non riguarda solo le aste giudiziarie.
+  if (/\bape\b|attestato.*prestazione|certificazione energetica|classe energetica/.test(t)) return 'APE';
+  if (/visura|catast/.test(t)) return 'VISURA';
+  if (/capitolato|computo|preventivo lavori/.test(t)) return 'CAPITOLATO';
+  if (/scheda tecnica|scheda immobile|dossier|brochure|valutazione|analisi|conformit|agibilit|abitabilit|condominio|regolamento condominiale/.test(t)) return 'DOCUMENTO_TECNICO';
   return 'ALTRO';
 }
 
-const PRIORITA_ALLEGATI = { PERIZIA: 1, ALLEGATO_PERIZIA: 2, AVVISO: 3, ORDINANZA: 4, PLANIMETRIA: 5, ALTRO: 6 };
+const PRIORITA_ALLEGATI = { PERIZIA: 1, ALLEGATO_PERIZIA: 2, AVVISO: 3, ORDINANZA: 4, PLANIMETRIA: 5, APE: 6, VISURA: 7, DOCUMENTO_TECNICO: 8, CAPITOLATO: 9, ALTRO: 10 };
 
 function trovaAllegatiPdf($, baseUrl) {
   const visti = new Set();
@@ -154,7 +160,9 @@ function trovaAllegatiPdf($, baseUrl) {
     const sembraPdf = /\.pdf(\?|#|$)/i.test(assoluto) || /\/allegato\//i.test(assoluto);
     if (!sembraPdf || visti.has(assoluto)) return;
     const tipo = classificaAllegato(testo, assoluto);
-    if (!tipo || tipo === 'ALTRO') return;
+    // I PDF non riconosciuti entrano comunque, con priorita' piu' bassa:
+    // su un annuncio privato anche un PDF senza etichetta chiara puo' contenere dati utili.
+    if (!tipo) return;
     visti.add(assoluto);
     allegati.push({ tipo, url: assoluto, etichetta: testo.slice(0, 120) });
   });
