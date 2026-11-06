@@ -90,11 +90,11 @@ async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValida
 
     // Breakdown penalita
     doc.moveDown(1);
-    doc.font('Helvetica-Bold').fontSize(12).text('Penalita rilevate:');
+    doc.font('Helvetica-Bold').fontSize(12).text('Penalità rilevate:');
     doc.moveDown(0.5);
     const penalties = spiegazione?.coherence?.penaltyBreakdown || [];
     if (penalties.length === 0) {
-      doc.font('Helvetica').fontSize(11).fillColor(GREEN).text('Nessuna penalita rilevata — immobile conforme.');
+      doc.font('Helvetica').fontSize(11).fillColor(GREEN).text('Nessuna difformità segnalata nei documenti.');
     } else {
       penalties.forEach(p => {
         doc.fillColor(RED).font('Helvetica-Bold').fontSize(11)
@@ -109,13 +109,16 @@ async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValida
     doc.fillColor(INK).font('Helvetica-Bold').fontSize(18).text('2. Valutazione Economica', 50, 50);
     doc.moveTo(50, 75).lineTo(545, 75).strokeColor(ACCENT).lineWidth(1).stroke();
 
+    const perc = (v) => (typeof v === 'number' ? `${v.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%` : 'N/D');
     const rows = [
-      ['Valore Attuale (stato corrente)',       eur(calcoliScoring.valoreAttuale)],
-      ['Valore Potenziale (post-sanatoria)',     eur(calcoliScoring.valorePotenziale)],
-      ['Valore Futuro Proiettato (2 anni)',      eur(calcoliScoring.valoreFuturoProiettato)],
-      ['Costi Totali Operativi',                eur(calcoliScoring.costiTotaliOperativi)],
-      ['Margine Reale',                         eur(calcoliScoring.margineReale)],
-      ['Profitto Futuro Post-Rivendita',         eur(calcoliScoring.profittoFuturoPostRivendita)],
+      ['Stima del perito',                      eur(calcoliScoring.valoreAttuale)],
+      ['Prezzo base d\'asta',                  eur(calcoliScoring.prezzoBase)],
+      ['Offerta minima',                        eur(calcoliScoring.offertaMinima)],
+      ['Costi indicati nei documenti',          eur(calcoliScoring.costiTotaliOperativi)],
+      ['Margine al prezzo base',                eur(calcoliScoring.margineReale)],
+      ['Margine % al prezzo base',              perc(calcoliScoring.roi)],
+      ['Margine % all\'offerta minima',        perc(calcoliScoring.roiOffertaMinima)],
+      ['Valore proiettato a 2 anni (+2%/anno)', eur(calcoliScoring.valoreFuturoProiettato)],
     ];
 
     let y = 90;
@@ -134,14 +137,28 @@ async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValida
     doc.fillColor(INK).font('Helvetica-Bold').fontSize(18).text('3. Analisi ROI', 50, 50);
     doc.moveTo(50, 75).lineTo(545, 75).strokeColor(ACCENT).lineWidth(1).stroke();
 
-    const roiColor = calcoliScoring.roiConveniente ? GREEN : RED;
+    const roiNum = typeof calcoliScoring.roi === 'number' ? calcoliScoring.roi : null;
+    const roiColor = roiNum === null ? INK : roiNum > 18 ? GREEN : roiNum >= 0 ? ACCENT : RED;
     doc.fillColor(roiColor).font('Helvetica-Bold').fontSize(52)
-       .text(`${calcoliScoring.roi}%`, 50, 90, { align: 'center' });
-    const roiEsito = calcoliScoring.roiConveniente
-      ? 'Esito ROI: positivo — coerente con la soglia minima'
-      : 'Esito ROI: negativo — approfondimento necessario prima di procedere';
+       .text(roiNum === null ? 'N/D' : perc(roiNum), 50, 90, { align: 'center' });
+    const roiEsito = roiNum === null
+      ? 'Margine non calcolabile: mancano stima del perito o prezzo base'
+      : roiNum > 18 ? 'Margine al prezzo base superiore al 18%'
+        : roiNum >= 0 ? `Margine contenuto al prezzo base${typeof calcoliScoring.roiOffertaMinima === 'number' ? ` — ${perc(calcoliScoring.roiOffertaMinima)} all'offerta minima` : ''}`
+          : 'Al prezzo base si paga più della stima del perito';
     doc.fillColor(INK).font('Helvetica-Bold').fontSize(12)
        .text(roiEsito, 50, 155, { align: 'center' });
+    const esitoC = calcoliScoring.esitoCliente;
+    if (esitoC) {
+      doc.font('Helvetica').fontSize(11).fillColor(INK).moveDown(1);
+      (esitoC.frasi || []).forEach((f) => doc.text(f, 50, doc.y, { width: 495, lineGap: 4 }).moveDown(0.4));
+      if ((esitoC.punti || []).length) {
+        doc.font('Helvetica-Bold').text('Da verificare nei documenti:', 50, doc.y, { width: 495 }).moveDown(0.3);
+        doc.font('Helvetica');
+        esitoC.punti.forEach((pt) => doc.text(`- ${pt}`, 60, doc.y, { width: 485, lineGap: 3 }));
+      }
+      if (esitoC.azione) doc.moveDown(0.6).font('Helvetica-Bold').text(`Cosa fare: ${esitoC.azione}`, 50, doc.y, { width: 495 });
+    }
     doc.font('Helvetica').fontSize(11).fillColor(INK).moveDown(1)
        .text(spiegazione?.roi?.recommendation || '', 50, doc.y, { width: 495, lineGap: 4 });
 
@@ -167,9 +184,11 @@ async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValida
 
     doc.moveDown(2);
     doc.fillColor(INK).font('Helvetica-Bold').fontSize(12)
-       .text('Azione diagnostica:');
+       .text('Cosa fare:');
     const signal = calcoliScoring.decisionSignal;
-    const actionText = signal
+    const actionText = calcoliScoring.esitoCliente?.azione
+      ? calcoliScoring.esitoCliente.azione
+      : signal
       ? signal.customerAction
       : (spiegazione?.riskProfile?.recommendation || '');
     doc.font('Helvetica').fontSize(11)
@@ -181,12 +200,12 @@ async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValida
     doc.moveTo(50, 75).lineTo(545, 75).strokeColor(ACCENT).lineWidth(1).stroke();
 
     doc.moveDown(1).font('Helvetica').fontSize(10).fillColor(INK);
-    doc.text(`Modello AI:          ${datiEstrattiEValidati?.source?.document || 'N/D'}`);
+    doc.text(`Documento fonte:     ${datiEstrattiEValidati?.source?.document || 'N/D'}`);
     doc.text(`Confidence Score:    ${((datiEstrattiEValidati?.confidence || 0) * 100).toFixed(1)}%`);
     doc.text(`Logic Engine:        V18.3 — Deterministico`);
     doc.text(`Generato il:         ${new Date().toISOString()}`);
     doc.moveDown(1);
-    doc.font('Helvetica-Bold').fontSize(10).text('Hash Forensico SHA-256 (integrita documento):');
+    doc.font('Helvetica-Bold').fontSize(10).text('Hash Forensico SHA-256 (integrità del documento):');
     doc.font('Courier').fontSize(9).fillColor(ACCENT).text(hashScoring);
 
     doc.moveDown(2);
@@ -197,7 +216,7 @@ async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValida
        .text('External Opinion — Parere Tecnico Indipendente', 60, doc.y + 5)
        .moveDown(0.5)
        .fontSize(8).fillColor('#888888')
-       .text('Analisi tecnica di parte a scopo informativo. Non costituisce perizia né consulenza d\'ufficio.', 60, doc.y + 5);
+       .text('Analisi documentale integrata e indipendente: i risultati derivano dai documenti citati e dai calcoli riportati.', 60, doc.y + 5);
 
     doc.end();
   });
@@ -302,3 +321,4 @@ worker.on('failed',    (job, err) => console.error(`[REPORT ${WORKER_ID}] Failed
 
 console.log(`[REPORT ${WORKER_ID}] Ready to process reportRenderQueue`);
 module.exports = worker;
+module.exports.generaPDF = generaPDF;

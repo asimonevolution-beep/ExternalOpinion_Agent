@@ -141,6 +141,35 @@ function classificaAllegato(testo, href) {
   return 'ALTRO';
 }
 
+// Un PDF incollato direttamente non è per forza una perizia: spesso è l'avviso di
+// vendita. Prima veniva sempre marcato PERIZIA, e il giudizio partiva senza la
+// stima del perito (caso reale: avviso E.I. 181/2025 Modena, 06/11/2026).
+function classificaPdfDiretto(url, testo) {
+  let nomeFile = '';
+  try { nomeFile = decodeURIComponent(new URL(url).pathname).toLowerCase(); } catch { nomeFile = String(url || '').toLowerCase(); }
+  if (/\/perizia[-_]/.test(nomeFile)) return 'PERIZIA';
+  if (/\/avviso[-_]/.test(nomeFile)) return 'AVVISO';
+  if (/\/ordinanza[-_]/.test(nomeFile)) return 'ORDINANZA';
+  const t = String(testo || '').toLowerCase();
+  const inizio = t.slice(0, 3000);
+  const segniPerizia = (t.match(/esperto stimatore|relazione di stima|valore di stima|stima del valore|perito estimatore|consulenza tecnica d'ufficio/g) || []).length;
+  if (/avviso di vendita|avviso d'asta|avviso di asta/.test(inizio) && segniPerizia < 3) return 'AVVISO';
+  if (/ordinanza di vendita/.test(inizio) && segniPerizia < 3) return 'ORDINANZA';
+  return 'PERIZIA';
+}
+
+// Su astegiudiziarie.it avviso, ordinanza e perizia della stessa procedura
+// condividono l'identificativo finale dell'allegato: dall'avviso si risale alla
+// perizia (lotto 1) senza chiedere nulla al cliente.
+function urlPeriziaCollegata(url) {
+  let u;
+  try { u = new URL(url); } catch { return null; }
+  if (!/(^|\.)astegiudiziarie\.it$/i.test(u.hostname)) return null;
+  const m = u.pathname.match(/^\/allegato\/(?:avviso|ordinanza)-(.+?)-dv\d{8}-\d+\.pdf\/(\d+)\/?$/i);
+  if (!m) return null;
+  return `${u.protocol}//${u.host}/allegato/Perizia-${m[1]}-C-1.pdf/${m[2]}`;
+}
+
 const PRIORITA_ALLEGATI = { PERIZIA: 1, ALLEGATO_PERIZIA: 2, AVVISO: 3, ORDINANZA: 4, PLANIMETRIA: 5, ALTRO: 6 };
 
 function trovaAllegatiPdf($, baseUrl) {
@@ -237,12 +266,25 @@ const worker = new Worker('scrapeQueue', async (job) => {
       if (result.isPdf || looksLikePdf) {
         scraperUsed = 'pdf-parse';
         metadata.numPages = result.numPages;
-        // Un PDF caricato direttamente è il documento tecnico fornito dal cliente.
+        const tipoDiretto = classificaPdfDiretto(safeUrl, testoGrezzo);
         metadata.documenti = [{
-          tipo: 'PERIZIA', url: safeUrl, pagine: result.numPages, caratteri: testoGrezzo.length,
+          tipo: tipoDiretto, url: safeUrl, pagine: result.numPages, caratteri: testoGrezzo.length,
           esito: testoGrezzo.length >= 300 ? 'LETTO' : 'TESTO_ASSENTE',
         }];
-        console.log(`[SCRAPER ${WORKER_ID}] PDF estratto: ${result.numPages} pagine, ${testoGrezzo.length} caratteri`);
+        console.log(`[SCRAPER ${WORKER_ID}] PDF estratto (${tipoDiretto}): ${result.numPages} pagine, ${testoGrezzo.length} caratteri`);
+        if (tipoDiretto !== 'PERIZIA') {
+          const collegata = urlPeriziaCollegata(safeUrl);
+          if (collegata) {
+            const { documenti, testoAllegati } = await leggiAllegati([{ tipo: 'PERIZIA', url: collegata, etichetta: 'Perizia collegata alla procedura' }]);
+            metadata.documenti.push(...documenti);
+            if (testoAllegati) {
+              // La perizia va per prima: se il testo supera il limite del modello si taglia l'avviso, non la stima.
+              testoGrezzo = `${testoAllegati}\n\n=== DOCUMENTO: ${tipoDiretto} — ${safeUrl} ===\n${testoGrezzo}`;
+              scraperUsed = 'pdf-parse+perizia-collegata';
+            }
+            console.log(`[SCRAPER ${WORKER_ID}] Perizia collegata ${collegata}: ${documenti.map((d) => d.esito).join(', ')}`);
+          }
+        }
       } else {
         const allegati = result.allegati || [];
         const { documenti, testoAllegati } = await leggiAllegati(allegati);
@@ -317,3 +359,5 @@ console.log(`[SCRAPER ${WORKER_ID}] Ready to process scrapeQueue`);
 module.exports = worker;
 module.exports.trovaAllegatiPdf = trovaAllegatiPdf;
 module.exports.classificaAllegato = classificaAllegato;
+module.exports.classificaPdfDiretto = classificaPdfDiretto;
+module.exports.urlPeriziaCollegata = urlPeriziaCollegata;

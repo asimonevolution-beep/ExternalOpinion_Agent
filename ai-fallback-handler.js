@@ -41,6 +41,11 @@ const SchemaEstrazioneAI = z.object({
   offertaMinima: z.number().nonnegative().nullable().catch(null),
   valoreStima: z.number().nonnegative().nullable().catch(null),
   superficieMq: z.number().nonnegative().nullable().catch(null),
+  // Distingue "costi zero" da "costi non scritti nel documento".
+  costiQuantificati: z.boolean().catch(false),
+  statoOccupazione: z.enum(['LIBERO', 'OCCUPATO_DEBITORE', 'OCCUPATO_TERZI', 'NON_INDICATO']).catch('NON_INDICATO'),
+  speseCondominialiArretrate: z.number().nonnegative().nullable().catch(null),
+  puntiDaVerificare: z.array(z.string()).catch([]).transform((a) => a.map((x) => x.trim()).filter(Boolean).slice(0, 6).map((x) => x.slice(0, 220))),
   confidence: z.number().min(0).max(1).catch(0.05),
   source: z.object({
     document: z.string().catch('unknown'),
@@ -75,6 +80,10 @@ SCHEMA OBBLIGATORIO:
   "offertaMinima": numero in euro dell'offerta minima, oppure null se assente,
   "valoreStima": numero in euro del valore di stima finale indicato nella perizia, oppure null se assente,
   "superficieMq": superficie commerciale in mq, oppure null se assente,
+  "costiQuantificati": booleano (true solo se la perizia scrive un importo per sanatoria, regolarizzazione o ripristino; false se i costi non sono indicati),
+  "statoOccupazione": "LIBERO" | "OCCUPATO_DEBITORE" | "OCCUPATO_TERZI" | "NON_INDICATO",
+  "speseCondominialiArretrate": numero in euro delle spese condominiali insolute o a carico dell'aggiudicatario indicate nei documenti, oppure null,
+  "puntiDaVerificare": lista di massimo 6 frasi brevi in italiano, ciascuna un fatto concreto scritto nei documenti che l'acquirente deve verificare (difformità, degrado, umidità, impianti senza certificazione, vincoli, spese, occupazione), con il numero o il dato del documento quando c'è; nessuna frase generica,
   "confidence": numero 0-1 (quanto sei sicuro di questi dati? 0.95 = molto sicuro),
   "source": {
     "document": "nome perizia.pdf",
@@ -85,7 +94,9 @@ SCHEMA OBBLIGATORIO:
 
 REGOLE CRITICHE:
 - Sii conservativo nelle stime
-- Se non trovi il dato, imposta a 0 (costi) o false (difformita)
+- Se non trovi il dato, imposta a 0 (costi) o false (difformita), e costiQuantificati a false
+- puntiDaVerificare riporta solo fatti presenti nel testo: mai consigli generici, mai fatti inventati
+- Se nel testo ci sono sia l'avviso di vendita sia la perizia, il valoreStima viene dalla perizia e prezzoBase/offertaMinima dall'avviso
 - Confidence deve riflettere l'incertezza
 - Sempre indicare la pagina/paragrafo della fonte
 - Mai allucinare dati che non sono nel documento
