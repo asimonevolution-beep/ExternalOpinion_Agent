@@ -216,7 +216,7 @@ async function generaPDF(jobId, calcoliScoring, spiegazione, datiEstrattiEValida
        .text('External Opinion — Parere Tecnico Indipendente', 60, doc.y + 5)
        .moveDown(0.5)
        .fontSize(8).fillColor('#888888')
-       .text('Analisi tecnica di parte a scopo informativo. Non costituisce perizia né consulenza d\'ufficio.', 60, doc.y + 5);
+       .text('Analisi documentale integrata e indipendente: i risultati derivano dai documenti citati e dai calcoli riportati.', 60, doc.y + 5);
 
     doc.end();
   });

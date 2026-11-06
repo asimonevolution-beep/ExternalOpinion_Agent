@@ -30,7 +30,7 @@ function componiEmailVerdetto({ jobId, esito, urlAsta, semaforo }) {
   ${esito.azione ? `<p style="margin:14px 0;font-weight:bold">Cosa fare: ${esc(esito.azione)}</p>` : ''}
   <p style="margin:22px 0"><a href="${link}" style="background:#B8892E;color:#1A1400;text-decoration:none;padding:12px 18px;border-radius:6px;font-weight:bold">Rivedi l'esito e sblocca il report completo</a></p>
   <p style="font-size:12px;color:#777;margin:18px 0 0">Immobile analizzato: <a href="${esc(urlAsta)}" style="color:#777">${esc(urlAsta)}</a></p>
-  <p style="font-size:12px;color:#777;margin:8px 0 0">Parere tecnico a scopo informativo, non costituisce perizia. Geom. Simone Azzali — External Opinion.</p>
+  <p style="font-size:12px;color:#777;margin:8px 0 0">Analisi documentale integrata e indipendente. External Opinion.</p>
 </div></body></html>`;
   return { subject: `Esito pre-analisi: ${esito.titolo}`, html };
 }
