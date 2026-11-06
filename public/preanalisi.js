@@ -75,6 +75,12 @@ async function avviaAnalisi() {
       body: JSON.stringify({ urlAsta, email, tier: 'TIER_1_SCREENING_69' }),
     });
     const data = await res.json();
+    // Link non utilizzabile (es. home del portale): mostro il motivo preciso del server
+    if (!data.success && data.code === 'URL_NOT_LISTING') {
+      mostraErrore(data.error);
+      resetForm();
+      return;
+    }
     if (!data.success) throw new Error(data.error || 'Errore server');
     currentJobId = data.jobId;
     pollRisultato(currentJobId);
@@ -174,7 +180,8 @@ function pollRisultato(jobId) {
       if (data.job.status === 'FAILED') {
         stop();
         const raw = data.job.error || '';
-        let msg = 'Analisi non completata. Riprova o contatta info@externalopinion.it.';
+        // Il server ora scrive un messaggio già leggibile: lo mostro così com'è
+        let msg = raw && !/[A-Z_]{8,}/.test(raw) ? raw : 'Analisi non completata. Riprova o contatta info@externalopinion.it.';
         if (raw.includes('ENOTFOUND') || raw.includes('ECONNREFUSED') || raw.includes('Scraping fallito'))
           msg = "Non riesco ad accedere all'URL inserito. Verifica che il link sia corretto e pubblicamente accessibile, poi riprova.";
         else if (raw.includes('timeout') || raw.includes('ETIMEDOUT'))
