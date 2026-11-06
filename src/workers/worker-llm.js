@@ -17,6 +17,7 @@ const prisma = require('../../db');
 const { recordJobEvent, validateConfidenceThreshold } = require('../../orchestrator');
 const { estraiDatiConFallback } = require('../../ai-fallback-handler');
 const { runFastConsensus, runFullConsensus } = require('../../ai-consensus-hub');
+const { alertOwner } = require('../../utils/owner-alert');
 
 const WORKER_ID = `llm-${crypto.randomBytes(4).toString('hex')}`;
 
@@ -45,6 +46,35 @@ const SchemaEstrazioneAI = z.object({
     paragraph: z.number().int(),
   }),
 });
+
+const MSG_DATI_INSUFFICIENTI =
+  "Nella pagina indicata non ho trovato i dati di un immobile da analizzare (prezzo, ubicazione, perizia). " +
+  "Controlla di aver copiato il link della scheda del singolo lotto, non la pagina principale o una lista di risultati, e riprova. " +
+  "Se il problema continua scrivi a info@externalopinion.it.";
+
+async function chiudiJobPerDatiInsufficienti(jobId, motivoTecnico) {
+  try {
+    const record = await prisma.job.findUnique({
+      where: { id: jobId },
+      select: { url: true, payload: true, jobEvents: { where: { eventType: 'OWNER_ALERT_JOB_FAILED' }, select: { id: true } } },
+    });
+    await prisma.job.update({ where: { id: jobId }, data: { status: 'FAILED', error: MSG_DATI_INSUFFICIENTI } });
+
+    // Un solo avviso per job, anche se il watchdog o un retry lo ripropongono
+    if (record && record.jobEvents.length === 0) {
+      const p = (() => { try { return JSON.parse(record.payload || '{}'); } catch { return {}; } })();
+      const esito = await alertOwner({
+        title: 'RICHIESTA FALLITA - da ricontattare',
+        body: `Job: ${jobId}\nLink: ${record.url}\nContatto: ${p.email || p.telefono || 'n/d'}\nMotivo: dati insufficienti nella pagina (${motivoTecnico})`,
+        priority: 'urgent',
+        tags: 'rotating_light',
+      });
+      await recordJobEvent(jobId, 'OWNER_ALERT_JOB_FAILED', esito, WORKER_ID);
+    }
+  } catch (e) {
+    console.error(`[LLM ${WORKER_ID}] Chiusura job ${jobId} fallita:`, e.message);
+  }
+}
 
 const worker = new Worker('llmExtractionQueue', async (job) => {
   const { jobId } = job.data;
@@ -142,6 +172,15 @@ const worker = new Worker('llmExtractionQueue', async (job) => {
       { error: err.message, stage: 'LLM_EXTRACTION' },
       WORKER_ID
     );
+
+    // Dati insufficienti nella pagina: ripetere non cambia il risultato.
+    // Chiudo il job come FAILED con un messaggio comprensibile per il cliente
+    // (prima restava fermo in OCR_DONE e la pagina girava a vuoto) e avviso Simone.
+    const isDatiInsufficienti = /LOW_CONFIDENCE_EXTRACTION|EXTRACTION_FAILED_ALL_BACKENDS|testoOCR non trovato/.test(err.message);
+    if (isDatiInsufficienti) {
+      if (typeof job.discard === 'function') job.discard(); // niente tentativi inutili
+      await chiudiJobPerDatiInsufficienti(jobId, err.message);
+    }
 
     throw err;
   }

@@ -52,7 +52,10 @@ const {
   createJob,
   getJob,
   updateJobStatus,
+  recordJobEvent,
 } = require('./orchestrator');
+
+const { alertOwner } = require('./utils/owner-alert');
 
 const {
   createCheckoutSession,
@@ -231,6 +234,30 @@ apiRouter.post(
         });
       }
 
+      // Il link deve puntare alla scheda del singolo immobile, non alla home del portale.
+      // Caso reale 06/11/2026: incollato https://www.astegiudiziarie.it/ → analisi vuota.
+      let urlParsed = null;
+      try { urlParsed = new URL(String(urlAsta).trim()); } catch { /* gestito sotto */ }
+      const protocolloOk = !!urlParsed && /^https?:$/.test(urlParsed.protocol);
+      const pathUtile = urlParsed ? urlParsed.pathname.replace(/\/+$/, '') : '';
+      const isSoloHome = protocolloOk && !pathUtile && !urlParsed.search;
+      if (!protocolloOk || isSoloHome) {
+        const motivo = !protocolloOk ? 'link non valido' : `link alla sola home di ${urlParsed.hostname}`;
+        alertOwner({
+          title: 'Richiesta SCARTATA - link non utilizzabile',
+          body: `Motivo: ${motivo}\nLink: ${urlAsta}\nContatto: ${email || telefono || 'n/d'}\nIP: ${req.ip}`,
+          priority: 'high',
+          tags: 'warning',
+        });
+        return res.status(400).json({
+          success: false,
+          code: 'URL_NOT_LISTING',
+          error: isSoloHome
+            ? `Hai inserito la pagina principale di ${urlParsed.hostname}. Apri la scheda dell'immobile che ti interessa e copia il link di quella pagina (deve contenere il numero del lotto o della procedura).`
+            : "Il link non è valido. Copia l'indirizzo completo della scheda dell'immobile (inizia con https://).",
+        });
+      }
+
       // Token validation (opzionale)
       if (token) {
         try {
@@ -272,6 +299,14 @@ apiRouter.post(
       });
 
       console.log(`[API] Job created: ${jobRecord.id} | inputHash: ${inputHash}`);
+
+      // Avviso a Simone su OGNI nuova richiesta (non dipende dal pagamento né dall'esito)
+      alertOwner({
+        title: 'NUOVA RICHIESTA External Opinion',
+        body: `Job: ${jobRecord.id}\nLink: ${urlAsta}\nContatto: ${email || telefono || 'n/d'}${nome ? `\nNome: ${nome}` : ''}\nTier: ${tier}\nOrigine: ${req.get('referer') || 'diretta'}`,
+        priority: 'urgent',
+        tags: 'bell',
+      }).then((esito) => recordJobEvent(jobRecord.id, 'OWNER_ALERT_NEW_REQUEST', esito).catch(() => {}));
 
       // Traccia il job creato (collega jobId al lead)
       trackLead({
@@ -335,6 +370,8 @@ apiRouter.get('/jobs/:jobId', async (req, res) => {
         createdAt: jobRecord.createdAt,
         updatedAt: jobRecord.updatedAt,
         url: jobRecord.url,
+        // Messaggio leggibile per il cliente quando l'analisi non può proseguire
+        error: jobRecord.status === 'FAILED' ? (jobRecord.error || null) : null,
       },
     };
 
