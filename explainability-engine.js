@@ -93,40 +93,33 @@ function generateCoherenceInterpretation(coherenceIndex) {
 // ROI EXPLANATIONS
 // ============================================================================
 
-function spiegaROI(roi, margineReale, costiTotali, roiConveniente) {
+function spiegaROI(roi, margineReale, investimento, roiConveniente) {
+  const euro = (v) => (v === null || v === undefined ? 'non disponibile' : `€${Math.round(v).toLocaleString('it-IT')}`);
+  const base = {
+    profitMargin: margineReale ?? null,
+    totalInvestment: investimento ?? null,
+    breakdownExplanation: `Investimento (prezzo base + costi indicati): ${euro(investimento)}`,
+    profitExplanation: `Margine sulla stima del perito: ${euro(margineReale)}`,
+  };
   if (roi === null || roi === undefined) {
     return {
       roiPercentage: null,
       roiType: 'NON_CALCOLABILE',
       convenient: false,
-      analysis: {
-        profitMargin: margineReale,
-        totalInvestment: costiTotali,
-        breakdownExplanation: `Investimento totale: €${costiTotali.toLocaleString()}`,
-        profitExplanation: `Margine netto: €${margineReale.toLocaleString()}`,
-        roiExplanation: 'ROI non calcolabile: costi di sanatoria/ripristino non estratti dal documento',
-      },
-      recommendation: 'Dati economici incompleti: acquisire documentazione tecnica per stimare i costi reali prima di decidere.',
+      analysis: { ...base, roiExplanation: 'Margine non calcolabile: nei documenti mancano il valore di stima del perito o il prezzo base' },
+      recommendation: 'Senza valore di stima e prezzo base il margine non si calcola: serve la perizia completa.',
     };
   }
-
-  const roiType = roi > 25 ? 'ECCELLENTE' : roi > 18 ? 'BUONO' : 'INSUFFICIENTE';
-
+  const roiType = roi > 25 ? 'ECCELLENTE' : roi > 18 ? 'BUONO' : roi >= 0 ? 'CONTENUTO' : 'NEGATIVO';
   return {
     roiPercentage: roi.toFixed(2),
     roiType,
     convenient: roiConveniente,
-    analysis: {
-      profitMargin: margineReale,
-      totalInvestment: costiTotali,
-      breakdownExplanation: `Investimento totale: €${costiTotali.toLocaleString()}`,
-      profitExplanation: `Margine netto: €${margineReale.toLocaleString()}`,
-      roiExplanation: `Ritorno sull'investimento: ${roi.toFixed(2)}%`,
-    },
+    analysis: { ...base, roiExplanation: `Margine al prezzo base: ${roi.toFixed(2)}%` },
     recommendation:
-      roi > 18
-        ? `ROI superiore alla soglia minima (18%). Operazione potenzialmente conveniente.`
-        : `ROI insufficiente (${roi.toFixed(2)}% vs soglia 18%). Operazione sconsigliata.`,
+      roi > 18 ? 'Margine al prezzo base superiore al 18%.'
+        : roi >= 0 ? 'Margine al prezzo base contenuto: la convenienza dipende dall\'offerta che presenti.'
+          : 'Al prezzo base si paga più della stima del perito: conviene solo a un prezzo più basso.',
   };
 }
 
@@ -217,14 +210,14 @@ function generaProfiloRischio(calcoliScoring, datiEstrazione) {
   if (!calcoliScoring.roiConveniente) {
     riskFactors.push(calcoliScoring.roi !== null ? {
       categoria: 'Economico',
-      severita: 'MEDIA',
-      descrizione: 'ROI insufficiente',
-      impatto: `ROI ${calcoliScoring.roi.toFixed(2)}% < 18% threshold`,
+      severita: calcoliScoring.roi < 0 ? 'ALTA' : 'MEDIA',
+      descrizione: 'Margine contenuto al prezzo base',
+      impatto: `Margine ${calcoliScoring.roi.toFixed(2)}% al prezzo base${calcoliScoring.roiOffertaMinima != null ? `, ${calcoliScoring.roiOffertaMinima.toFixed(2)}% all'offerta minima` : ''}`,
     } : {
       categoria: 'Economico',
       severita: 'MEDIA',
       descrizione: 'Dati economici incompleti',
-      impatto: 'ROI non calcolabile: costi di sanatoria/ripristino non estratti dal documento',
+      impatto: 'Margine non calcolabile: manca il valore di stima o il prezzo base',
     });
   }
 
@@ -244,16 +237,16 @@ function generaProfiloRischio(calcoliScoring, datiEstrazione) {
   };
 }
 
-function generateRiskRecommendation(calcoliScoring) {
-  if (calcoliScoring.coherenceIndex > 70 && calcoliScoring.roiConveniente) {
-    return 'Operazione supportata. Rischi contenuti e ROI positivo. Procedere con consulenza tecnica standard.';
-  } else if (calcoliScoring.coherenceIndex > 40 && calcoliScoring.roiConveniente) {
-    return 'Operazione possibile ma con rischi moderati. Consultare geom. ed esperti di sanatoria.';
-  } else if (calcoliScoring.coherenceIndex > 40) {
-    return 'Operazione con rischi moderati e ROI insufficiente. Sconsigliata se non supportata da altri fattori.';
-  } else {
-    return 'Operazione ad alto rischio. Sconsigliata senza motivazioni molto forti. Contattare esperti di settore.';
+function generateRiskRecommendation(c) {
+  const conforme = c.coherenceIndex > 70;
+  if (c.roi === null || c.roi === undefined) {
+    return conforme ? 'Documenti senza difformità rilevanti; margine non calcolabile per dati economici mancanti.'
+      : 'Difformità da valutare e dati economici incompleti: serve una verifica tecnica prima di offrire.';
   }
+  if (conforme && c.roiConveniente) return 'Documenti coerenti e margine positivo al prezzo base. Procedere con le verifiche standard.';
+  if (conforme) return 'Documenti coerenti; il margine dipende dall\'offerta: fissare un prezzo massimo sotto la stima del perito.';
+  if (c.coherenceIndex > 40) return 'Difformità da quantificare prima di offrire; tenerne conto nel prezzo.';
+  return 'Difformità gravi: non procedere senza una verifica tecnica completa.';
 }
 
 // ============================================================================
@@ -277,9 +270,7 @@ function generaRelazioneCompletaSpiegata(calcoliScoring, datiEstrazione) {
     roi: spiegaROI(
       calcoliScoring.roi,
       calcoliScoring.margineReale,
-      calcoliScoring.roi > 0
-        ? calcoliScoring.margineReale / (calcoliScoring.roi / 100)
-        : 0,
+      calcoliScoring.investimento ?? null,
       calcoliScoring.roiConveniente
     ),
     riskProfile: generaProfiloRischio(calcoliScoring, datiEstrazione),

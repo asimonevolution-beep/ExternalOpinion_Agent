@@ -17,6 +17,7 @@ const { recordJobEvent, safeRoiCalculation } = require('../../orchestrator');
 const { generaRelazioneCompletaSpiegata } = require('../../explainability-engine');
 
 const { calculateDecisionSignal, colorToSemaforo } = require('../engines/decision-signal');
+const { inviaEmailVerdetto } = require('../email/verdetto-email');
 
 const WORKER_ID = `scoring-${crypto.randomBytes(4).toString('hex')}`;
 
@@ -92,8 +93,8 @@ function esitoGiudizioNonPossibile(motivi, riferimento) {
 // ============================================================================
 
 function eseguiMotoreDeterministico(datiAI, parametriMercato) {
-  const { valoreRiferimento, trendZona, anniProiezione } = parametriMercato;
-  const { costiSanatoria, costiRipristino, statoImmobile, difformita } = datiAI;
+  const { valoreRiferimento, trendZona, anniProiezione, documentiVerificati = false } = parametriMercato;
+  const { costiSanatoria, costiRipristino, difformita } = datiAI;
 
   // --- Coherence Index ---
   let penalty = 0;
@@ -102,47 +103,133 @@ function eseguiMotoreDeterministico(datiAI, parametriMercato) {
   if (difformita.catastale)    penalty += 0.15;
   const coherenceIndex = Math.max(0, 100 * (1 - penalty));
 
-  // --- Valuation Engine ---
-  // Il valore di riferimento è quello scritto nei documenti (stima della perizia
-  // o prezzo base): lo stato dell'immobile è già considerato da chi l'ha stimato,
-  // quindi non si applica un secondo coefficiente di degrado.
-  const haValore             = valoreRiferimento > 0;
-  const valoreAttuale        = haValore ? valoreRiferimento : null;
-  const valorePotenziale     = haValore ? valoreRiferimento : null;
-  const valoreFuturoProiettato = haValore ? valorePotenziale * Math.pow(1 + trendZona, anniProiezione) : null;
+  // --- Valore di mercato ---
+  // È solo quello stimato dal perito (o un valore di zona fornito). Il prezzo
+  // base d'asta NON è un valore di mercato: prima veniva mostrato come "valore
+  // attuale" e il margine risultava pari all'intero valore (98.952 € su Carpi).
+  const fonte                = parametriMercato.fonteValoreRiferimento;
+  const valoreDiMercato      = (valoreRiferimento > 0 && fonte !== 'PREZZO_BASE_ASTA') ? valoreRiferimento : null;
+  const haValore             = valoreDiMercato !== null;
+  const valoreFuturoProiettato = haValore ? valoreDiMercato * Math.pow(1 + trendZona, anniProiezione) : null;
 
-  // --- ROI Engine ---
-  const costiTotaliOperativi      = (costiSanatoria || 0) + (costiRipristino || 0);
-  const margineReale              = haValore ? valorePotenziale - costiTotaliOperativi : null;
-  const profittoFuturoPostRivendita = haValore ? valoreFuturoProiettato - costiTotaliOperativi : null;
-  // ROI = (valore di stima − investimento) / investimento, dove l'investimento è
-  // il prezzo base più i costi di sanatoria e ripristino. Calcolabile solo se i
-  // documenti riportano sia la stima sia il prezzo base: altrimenti null.
-  const investimento = datiAI.prezzoBase > 0 ? datiAI.prezzoBase + costiTotaliOperativi : null;
-  const roiCalcolato = (datiAI.valoreStima > 0 && investimento > 0)
-    ? safeRoiCalculation(datiAI.valoreStima - investimento, investimento)
-    : null;
-  const signal       = calculateDecisionSignal({
+  // --- Costi noti e investimento ---
+  const speseCondominiali    = datiAI.speseCondominialiArretrate > 0 ? datiAI.speseCondominialiArretrate : 0;
+  const costiTotaliOperativi = (costiSanatoria || 0) + (costiRipristino || 0) + speseCondominiali;
+  const investimento         = datiAI.prezzoBase > 0 ? datiAI.prezzoBase + costiTotaliOperativi : null;
+  const investimentoMinimo   = datiAI.offertaMinima > 0 ? datiAI.offertaMinima + costiTotaliOperativi : null;
+
+  // --- ROI: (valore di mercato − investimento) / investimento ---
+  const roiCalcolato        = (haValore && investimento > 0) ? safeRoiCalculation(valoreDiMercato - investimento, investimento) : null;
+  const roiOffertaMinimaRaw = (haValore && investimentoMinimo > 0) ? safeRoiCalculation(valoreDiMercato - investimentoMinimo, investimentoMinimo) : null;
+  const margineReale        = (haValore && investimento > 0) ? valoreDiMercato - investimento : null;
+  const profittoFuturo      = (haValore && investimento > 0) ? valoreFuturoProiettato - investimento : null;
+  const arrotonda2          = (v) => (v === null || v === undefined ? null : parseFloat(Number(v).toFixed(2)));
+
+  const signal = calculateDecisionSignal({
     riskScore:         100 - coherenceIndex,
     coherenceIndex,
-    roi:               roiCalcolato !== null ? parseFloat(roiCalcolato.toFixed(2)) : 0,
-    documentsVerified: false,
+    roi:               roiCalcolato !== null ? arrotonda2(roiCalcolato) : 0,
+    // Verde solo con perizia letta e valore di stima del perito.
+    documentsVerified: documentiVerificati === true && haValore,
   });
 
   return {
-    coherenceIndex:            parseFloat(coherenceIndex.toFixed(2)),
+    coherenceIndex:            arrotonda2(coherenceIndex),
     semaforo:                  colorToSemaforo(signal.color),
     decisionSignal:            signal,
     giudizioNonPossibile:      false,
-    valoreRiferimento:         haValore ? Math.round(valoreRiferimento) : null,
-    valoreAttuale:             haValore ? Math.round(valoreAttuale) : null,
-    valorePotenziale:          haValore ? Math.round(valorePotenziale) : null,
+    valoreRiferimento:         haValore ? Math.round(valoreDiMercato) : null,
+    valoreAttuale:             haValore ? Math.round(valoreDiMercato) : null,
+    valorePotenziale:          haValore ? Math.round(valoreDiMercato) : null,
     valoreFuturoProiettato:    haValore ? Math.round(valoreFuturoProiettato) : null,
-    margineReale:              haValore ? Math.round(margineReale) : null,
-    profittoFuturoPostRivendita: haValore ? Math.round(profittoFuturoPostRivendita) : null,
+    margineReale:              margineReale !== null ? Math.round(margineReale) : null,
+    profittoFuturoPostRivendita: profittoFuturo !== null ? Math.round(profittoFuturo) : null,
     costiTotaliOperativi:      Math.round(costiTotaliOperativi),
-    roi:                       roiCalcolato !== null ? parseFloat(roiCalcolato.toFixed(2)) : null,
+    investimento:              investimento !== null ? Math.round(investimento) : null,
+    investimentoMinimo:        investimentoMinimo !== null ? Math.round(investimentoMinimo) : null,
+    prezzoBase:                datiAI.prezzoBase > 0 ? datiAI.prezzoBase : null,
+    offertaMinima:             datiAI.offertaMinima > 0 ? datiAI.offertaMinima : null,
+    roi:                       arrotonda2(roiCalcolato),
+    roiOffertaMinima:          arrotonda2(roiOffertaMinimaRaw),
     roiConveniente:            roiCalcolato !== null ? roiCalcolato > 18 : false,
+  };
+}
+
+// ============================================================================
+// ESITO PER IL CLIENTE — testi costruiti solo dai numeri calcolati
+// ============================================================================
+// La pagina mostrava una frase fissa per colore ("Alcune anomalie rilevate")
+// anche con zero difformità. Ogni frase qui deriva da un dato del calcolo.
+
+const euro = (v) => `${Math.round(v).toLocaleString('it-IT')} €`;
+const perc = (v) => `${Number(v).toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
+
+function costruisciEsitoCliente(calcoli, datiAI = {}) {
+  if (calcoli.giudizioNonPossibile) {
+    return {
+      titolo: 'Giudizio non possibile',
+      sottotitolo: 'Manca la perizia: senza documento tecnico non emettiamo un semaforo.',
+      frasi: calcoli.motiviGiudizioNonPossibile || [],
+      azione: 'Incolla il link della pagina dell\'asta oppure il PDF della perizia.',
+      rischioDocumentale: null,
+      punti: [],
+    };
+  }
+
+  const frasi = [];
+  const d = datiAI.difformita || {};
+  const elenco = [d.strutturale && 'strutturale', d.urbanistica && 'urbanistica', d.catastale && 'catastale'].filter(Boolean);
+  frasi.push(elenco.length
+    ? `La perizia segnala difformità: ${elenco.join(', ')}.`
+    : 'La perizia non segnala difformità strutturali, urbanistiche o catastali.');
+
+  if (calcoli.valoreAttuale) {
+    let f = `Il perito stima l'immobile ${euro(calcoli.valoreAttuale)}.`;
+    if (calcoli.roi !== null && calcoli.prezzoBase) {
+      f += ` Al prezzo base di ${euro(calcoli.prezzoBase)} il margine sulla stima è ${perc(calcoli.roi)}`;
+      f += (calcoli.roiOffertaMinima !== null && calcoli.offertaMinima)
+        ? `; all'offerta minima di ${euro(calcoli.offertaMinima)} sale a ${perc(calcoli.roiOffertaMinima)}.`
+        : '.';
+    }
+    frasi.push(f);
+  } else {
+    frasi.push('Nei documenti non c\'è un valore di stima del perito: il margine non è calcolabile.');
+  }
+
+  if (calcoli.costiTotaliOperativi > 0) {
+    frasi.push(`Costi indicati nei documenti e inclusi nel calcolo: ${euro(calcoli.costiTotaliOperativi)}.`);
+  }
+  if (!datiAI.costiQuantificati && elenco.length) {
+    frasi.push('I costi per sistemare le difformità non sono quantificati: vanno stimati prima di offrire.');
+  }
+
+  const occupazione = {
+    LIBERO: 'Immobile indicato come libero.',
+    OCCUPATO_DEBITORE: 'Immobile nella disponibilità del debitore: va liberato dopo l\'aggiudicazione.',
+    OCCUPATO_TERZI: 'Immobile occupato da terzi: verificare titolo e tempi di liberazione.',
+  }[datiAI.statoOccupazione];
+  const punti = [...(occupazione ? [occupazione] : []), ...(datiAI.puntiDaVerificare || [])].slice(0, 6);
+
+  const titoli = {
+    VERDE:  { titolo: 'Verde — Scenario favorevole', sottotitolo: 'Documenti coerenti e margine positivo al prezzo base.' },
+    GIALLO: { titolo: 'Giallo — Da verificare prima di offrire', sottotitolo: elenco.length
+      ? 'Ci sono difformità da valutare prima di decidere.'
+      : 'Documenti in ordine, ma il margine dipende dal prezzo che offri.' },
+    ROSSO:  { titolo: 'Rosso — Scenario critico', sottotitolo: 'Difformità gravi o margine fortemente negativo.' },
+  }[calcoli.semaforo];
+
+  let azione;
+  if (calcoli.semaforo === 'VERDE') azione = 'Procedi con le verifiche standard prima dell\'offerta: il report completo le elenca una per una.';
+  else if (calcoli.semaforo === 'ROSSO') azione = 'Non partecipare senza una verifica tecnica completa dell\'immobile.';
+  else if (elenco.length) azione = 'Fai stimare i costi delle difformità prima di offrire e tienili fuori dal prezzo che proponi.';
+  else azione = 'Stabilisci un\'offerta massima sotto la stima del perito e controlla i punti qui sotto prima di partecipare.';
+
+  return {
+    ...titoli,
+    frasi,
+    azione,
+    rischioDocumentale: calcoli.coherenceIndex > 70 ? 'Basso' : calcoli.coherenceIndex > 40 ? 'Medio' : 'Alto',
+    punti,
   };
 }
 
@@ -196,7 +283,7 @@ const worker = new Worker('deterministicScoringQueue', async (job) => {
       };
     } else {
       // MOTORE DETERMINISTICO
-      calcoliScoring = eseguiMotoreDeterministico(datiEstrattiEValidati, parametriMercato);
+      calcoliScoring = eseguiMotoreDeterministico(datiEstrattiEValidati, { ...parametriMercato, documentiVerificati: metadata.periziaLetta === true });
       calcoliScoring.fonteValoreRiferimento = riferimento.fonte;
       // Explainability: le formule testuali richiedono un valore numerico
       spiegazione = calcoliScoring.valoreAttuale !== null
@@ -204,6 +291,8 @@ const worker = new Worker('deterministicScoringQueue', async (job) => {
         : { valoreNonDisponibile: true, motivo: 'Nessun valore di stima o prezzo base presente nei documenti' };
       spiegazione.documentiAnalizzati = metadata.documenti || [];
     }
+
+    calcoliScoring.esitoCliente = costruisciEsitoCliente(calcoliScoring, datiEstrattiEValidati);
 
     // Forensic hash SHA-256
     const canonicalJSON = JSON.stringify({
@@ -255,6 +344,26 @@ const worker = new Worker('deterministicScoringQueue', async (job) => {
       data:  { status: finalStatus, riskScore: calcoliScoring.coherenceIndex === null ? null : 100 - calcoliScoring.coherenceIndex },
     });
 
+    // Email dell'esito al cliente (e avviso a Simone). Un errore d'invio non
+    // blocca il pagamento: resta registrato negli eventi del job.
+    if (finalStatus === 'READY_FOR_PAYMENT' && calcoliScoring.esitoCliente) {
+      try {
+        const giaInviata = await prisma.jobEvent.findFirst({ where: { jobId, eventType: 'VERDICT_EMAIL_SENT' } });
+        if (!giaInviata) {
+          const jobRec = await prisma.job.findUnique({ where: { id: jobId }, select: { payload: true } });
+          let emailCliente = null;
+          try { emailCliente = JSON.parse(jobRec?.payload || '{}').email || null; } catch { /* payload non JSON */ }
+          const esitiInvio = await inviaEmailVerdetto({
+            jobId, email: emailCliente, esito: calcoliScoring.esitoCliente, urlAsta: urlOriginale, semaforo: calcoliScoring.semaforo,
+          });
+          await recordJobEvent(jobId, 'VERDICT_EMAIL_SENT', { cliente: esitiInvio.cliente?.messageId || null, admin: esitiInvio.admin?.messageId || null, adminErrore: esitiInvio.adminErrore || null }, WORKER_ID);
+        }
+      } catch (err) {
+        console.error(`[SCORING ${WORKER_ID}] Email esito non inviata per ${jobId}: ${err.message}`);
+        await recordJobEvent(jobId, 'VERDICT_EMAIL_FAILED', { error: err.message }, WORKER_ID);
+      }
+    }
+
     const durationMs = Date.now() - startTime;
     await recordJobEvent(jobId, 'SCORING_COMPLETED', {
       coherenceIndex: calcoliScoring.coherenceIndex,
@@ -291,3 +400,4 @@ module.exports.eseguiMotoreDeterministico = eseguiMotoreDeterministico;
 module.exports.determinaValoreRiferimento = determinaValoreRiferimento;
 module.exports.valutaPresupposti = valutaPresupposti;
 module.exports.esitoGiudizioNonPossibile = esitoGiudizioNonPossibile;
+module.exports.costruisciEsitoCliente = costruisciEsitoCliente;

@@ -343,19 +343,31 @@ apiRouter.get('/jobs/:jobId', async (req, res) => {
       // Quando il giudizio non è possibile (perizia non letta) la colonna DB vale 0
       // per vincolo di schema: al cliente si restituisce null, non uno "0%".
       let giudizioNonPossibile = false;
+      let calcoli = {};
       try {
-        giudizioNonPossibile = JSON.parse(jobRecord.immobile.datiComputati || '{}')?.calcoliScoring?.giudizioNonPossibile === true;
+        calcoli = JSON.parse(jobRecord.immobile.datiComputati || '{}')?.calcoliScoring || {};
+        giudizioNonPossibile = calcoli.giudizioNonPossibile === true;
       } catch { /* datiComputati non JSON: comportamento invariato */ }
       responseData.immobile = {
         id: jobRecord.immobile.id,
         status: jobRecord.immobile.status,
         giudizioNonPossibile,
         coherenceIndex: giudizioNonPossibile ? null : jobRecord.immobile.coherenceIndex,
-        roi: jobRecord.immobile.roi,
+        // Nel DB il ROI è in percentuale (28.17 = 28,17%). La pagina pubblica
+        // lo moltiplica per 100, quindi qui si espone come frazione (0.2817):
+        // prima la pagina mostrava "2817.0%". roiPercentuale resta esplicito.
+        roi: jobRecord.immobile.roi == null ? null : jobRecord.immobile.roi / 100,
+        roiPercentuale: jobRecord.immobile.roi,
         roiConveniente: jobRecord.immobile.roiConveniente,
         valoreAttuale: jobRecord.immobile.valoreAttuale,
         valorePotenziale: jobRecord.immobile.valorePotenziale,
-        datiComputati: jobRecord.immobile.datiComputati,
+        // Solo l'esito: testo dei documenti e dettaglio dei calcoli restano nel
+        // report a pagamento (prima l'intero datiComputati era pubblico).
+        esitoCliente: calcoli.esitoCliente || null,
+        roiOffertaMinima: calcoli.roiOffertaMinima ?? null,
+        prezzoBase: calcoli.prezzoBase ?? null,
+        offertaMinima: calcoli.offertaMinima ?? null,
+        fonteValore: calcoli.fonteValoreRiferimento || null,
         hashReport: jobRecord.immobile.hashReport,
         pagato: jobRecord.immobile.pagato,
         livelloCommerciale: jobRecord.immobile.livelloCommerciale,

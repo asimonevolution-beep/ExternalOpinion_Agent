@@ -66,12 +66,12 @@ t('priorità valore: stima perizia > prezzo base', () => {
   assert.deepStrictEqual(scoring.determinaValoreRiferimento({ valoreStima: null, prezzoBase: 6000 }, {}), { valore: 6000, fonte: 'PREZZO_BASE_ASTA' });
 });
 // 5. Con perizia letta: valori dai documenti, nessun coefficiente aggiunto
-t('con perizia: valore = prezzo base, ROI calcolato sui costi della perizia', () => {
+t('con perizia senza stima: il prezzo base non è valore di mercato', () => {
   const d = { ...datiStasera, confidence: 0.85, costiSanatoria: 1000, costiRipristino: 0 };
   assert.strictEqual(scoring.valutaPresupposti(d, { periziaLetta:true }, 0.30).giudizioPossibile, true);
-  const c = scoring.eseguiMotoreDeterministico(d, { valoreRiferimento: 6000, trendZona: 0.02, anniProiezione: 2 });
-  assert.strictEqual(c.valoreAttuale, 6000);
-  assert.strictEqual(c.margineReale, 5000);
+  const c = scoring.eseguiMotoreDeterministico(d, { valoreRiferimento: 6000, fonteValoreRiferimento: 'PREZZO_BASE_ASTA', trendZona: 0.02, anniProiezione: 2 });
+  assert.strictEqual(c.valoreAttuale, null);
+  assert.strictEqual(c.margineReale, null);
   assert.strictEqual(c.coherenceIndex, 100);
   assert.strictEqual(c.roi, null); // senza valore di stima il ROI non si calcola
 });
@@ -90,6 +90,63 @@ t('schema AI: prezzi assenti restano null', () => {
   assert.match(src, /prezzoBase: z\.number\(\)\.nonnegative\(\)\.nullable\(\)\.catch\(null\)/);
   assert.match(src, /slice\(0, MAX_CHARS_MODELLO\)/);
   assert.doesNotMatch(src, /slice\(0, 8000\)/);
+});
+t('garage reale con perizia letta: dati della perizia -> VERDE', () => {
+  // Valori estratti in produzione il 05/11/2026 (job 85f977ad) e verificati sulla perizia
+  const d = { costiSanatoria:0, costiRipristino:0, statoImmobile:'STATO_BUONO', difformita:{strutturale:false,urbanistica:false,catastale:false}, confidence:0.98, prezzoBase:6000, offertaMinima:4500, valoreStima:7690, superficieMq:9.5 };
+  const c = scoring.eseguiMotoreDeterministico(d, { valoreRiferimento: 7690, trendZona: 0.02, anniProiezione: 2, documentiVerificati: true });
+  assert.strictEqual(c.roi, 28.17);
+  assert.strictEqual(c.semaforo, 'VERDE');
+  const senzaVerifica = scoring.eseguiMotoreDeterministico(d, { valoreRiferimento: 7690, trendZona: 0.02, anniProiezione: 2 });
+  assert.strictEqual(senzaVerifica.semaforo, 'GIALLO');
+});
+t('API: ROI esposto come frazione per la pagina pubblica', () => {
+  const src = require('fs').readFileSync(path.join(REPO,'server-v18.3.js'),'utf8');
+  assert.match(src, /roi: jobRecord\.immobile\.roi == null \? null : jobRecord\.immobile\.roi \/ 100/);
+});
+
+// Caso reale 06/11/2026 — E.I. 181/2025 Modena, Carpi via del Tiglio 26
+t('avviso incollato direttamente: classificato AVVISO, non PERIZIA', () => {
+  const u = 'https://www.astegiudiziarie.it/allegato/Avviso-MO-EI-181-2025-DV20261110-1.pdf/2336721';
+  assert.strictEqual(scraper.classificaPdfDiretto(u, 'TRIBUNALE DI MODENA AVVISO DI VENDITA ...'), 'AVVISO');
+  assert.strictEqual(scraper.classificaPdfDiretto('https://x.it/doc.pdf', 'relazione di stima esperto stimatore valore di stima'), 'PERIZIA');
+});
+t('dall\'avviso si risale alla perizia della stessa procedura', () => {
+  assert.strictEqual(
+    scraper.urlPeriziaCollegata('https://www.astegiudiziarie.it/allegato/Avviso-MO-EI-181-2025-DV20261110-1.pdf/2336721'),
+    'https://www.astegiudiziarie.it/allegato/Perizia-MO-EI-181-2025-C-1.pdf/2336721');
+  assert.strictEqual(scraper.urlPeriziaCollegata('https://altro.it/allegato/Avviso-x-DV20261110-1.pdf/1'), null);
+});
+t('prezzo base non diventa valore di mercato né margine', () => {
+  const d = { costiSanatoria:0, costiRipristino:0, statoImmobile:'STATO_BUONO', difformita:{strutturale:false,urbanistica:false,catastale:false}, prezzoBase:98952, offertaMinima:74214, valoreStima:null };
+  const c = scoring.eseguiMotoreDeterministico(d, { valoreRiferimento: 98952, fonteValoreRiferimento: 'PREZZO_BASE_ASTA', trendZona: 0.02, anniProiezione: 2, documentiVerificati: true });
+  assert.strictEqual(c.valoreAttuale, null);
+  assert.strictEqual(c.margineReale, null);
+  assert.strictEqual(c.roi, null);
+  assert.notStrictEqual(c.semaforo, 'VERDE');
+});
+t('Carpi con perizia letta: stima 98.952, margine 0% al base e 33,3% all\'offerta minima, GIALLO coerente', () => {
+  const d = { costiSanatoria:0, costiRipristino:0, statoImmobile:'STATO_MEDIO', difformita:{strutturale:false,urbanistica:false,catastale:false}, prezzoBase:98952, offertaMinima:74214, valoreStima:98952, costiQuantificati:false, statoOccupazione:'OCCUPATO_DEBITORE', puntiDaVerificare:['Cantina con aloni da perdite e umidità'] };
+  const c = scoring.eseguiMotoreDeterministico(d, { valoreRiferimento: 98952, fonteValoreRiferimento: 'VALORE_STIMA_PERIZIA', trendZona: 0.02, anniProiezione: 2, documentiVerificati: true });
+  assert.strictEqual(c.valoreAttuale, 98952);
+  assert.strictEqual(c.roi, 0);
+  assert.strictEqual(c.roiOffertaMinima, 33.33);
+  assert.strictEqual(c.margineReale, 0);
+  assert.strictEqual(c.semaforo, 'GIALLO');
+  const e = scoring.costruisciEsitoCliente(c, d);
+  assert.match(e.titolo, /^Giallo/);
+  assert.doesNotMatch(JSON.stringify(e), /anomalie rilevate/i);
+  assert.match(e.frasi[0], /non segnala difformità/);
+  assert.match(e.frasi[1], /98\.952 €/);
+  assert.match(e.frasi[1], /33,3%/);
+  assert.strictEqual(e.punti[0], 'Immobile nella disponibilità del debitore: va liberato dopo l\'aggiudicazione.');
+});
+t('email esito: testo dal calcolo, link per tornare all\'esito', () => {
+  const { componiEmailVerdetto } = require(path.join(REPO,'src/email/verdetto-email.js'));
+  const { subject, html } = componiEmailVerdetto({ jobId:'abc', semaforo:'GIALLO', urlAsta:'https://x.it', esito:{ titolo:'Giallo — Da verificare prima di offrire', sottotitolo:'s', frasi:['f1'], punti:['p<1>'], azione:'a' } });
+  assert.match(subject, /Giallo/);
+  assert.match(html, /index-legacy\.html\?job=abc/);
+  assert.match(html, /p&lt;1&gt;/);
 });
 console.log(`\n${ok} test superati`);
 process.exit(0);
