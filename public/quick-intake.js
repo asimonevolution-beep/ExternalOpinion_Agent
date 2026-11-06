@@ -8,7 +8,22 @@
     jobId: null,
     checkoutUrl: null,
     allegati: [],
+    // Livello di analisi scelto (07/11/2026): default prima analisi promo 10 €
+    tier: 'TIER_1_PROMO_10',
+    tierPrezzo: '10',
+    tierNome: 'Analisi completa',
   };
+
+  // Scelta del livello di analisi
+  document.querySelectorAll('.livello').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.livello').forEach(function (b) { b.classList.remove('sel'); });
+      btn.classList.add('sel');
+      state.tier       = btn.dataset.tier;
+      state.tierPrezzo = btn.dataset.prezzo;
+      state.tierNome   = btn.dataset.nome;
+    });
+  });
 
   // Refs
   var catBtns      = document.querySelectorAll('.cat-btn');
@@ -122,7 +137,7 @@
       email:    emailVal || null,
       telefono: phoneVal || null,
       service:  state.service,
-      tier:     'TIER_1_PROMO_10',
+      tier:     state.tier,
       deferUntilPayment: true,
       zonaDati: {
         categoria:          state.label,
@@ -158,7 +173,7 @@
       return fetch('/api/jobs/' + encodeURIComponent(jobId) + '/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier: 'TIER_1_PROMO_10', email: emailVal || null })
+        body: JSON.stringify({ tier: state.tier, email: emailVal || null })
       }).then(function (res) {
         return res.json().then(function (data) {
           if (!res.ok || !data.checkoutUrl) throw new Error(data.error || 'Checkout non disponibile');
@@ -176,13 +191,26 @@
         document.getElementById('summary-url').textContent     = urlVal.length > 50 ? urlVal.slice(0, 50) + '…' : urlVal;
         document.getElementById('summary-contact').textContent = emailVal || phoneVal;
 
+        // Riepilogo coerente con il livello scelto: prezzo mostrato = prezzo addebitato
+        var promo = state.tier === 'TIER_1_PROMO_10';
+        document.getElementById('summary-livello').textContent =
+          promo ? "l'analisi completa" : 'il livello ' + state.tierNome;
+        document.getElementById('summary-tempi').textContent = promo ? '24–48 ore' : '48–72 ore';
+        document.getElementById('summary-prezzo').innerHTML = promo
+          ? '<span style="text-decoration:line-through;opacity:.55;">€69</span>' +
+            '<strong style="color:var(--gold-bright);font-size:20px;margin-left:6px;">€10</strong>' +
+            '<span style="opacity:.7;font-size:12px;margin-left:6px;">promo di lancio</span>'
+          : '<strong style="color:var(--gold-bright);font-size:20px;">€' + state.tierPrezzo + '</strong>' +
+            '<span style="opacity:.7;font-size:12px;margin-left:6px;">' + state.tierNome + '</span>';
+
         if (res2.checkout && res2.checkout.checkoutUrl) {
           checkoutBtn.href        = res2.checkout.checkoutUrl;
           checkoutBtn.textContent = 'Procedi al pagamento →';
         } else {
-          checkoutBtn.href        = '/landing.html#piani';
-          checkoutBtn.textContent = 'Scegli il piano (indica codice caso) →';
-          checkoutBtn.title       = 'Copia il codice caso e indicalo nel pagamento';
+          // La landing non esiste più: senza link di pagamento si contatta Simone
+          checkoutBtn.href        = 'mailto:info@externalopinion.it?subject=' + encodeURIComponent('Caso EO-' + shortId.toUpperCase());
+          checkoutBtn.textContent = 'Pagamento non disponibile: scrivici →';
+          checkoutBtn.title       = 'Indica il codice caso nella mail';
         }
 
         intakeForm.classList.remove('visible');

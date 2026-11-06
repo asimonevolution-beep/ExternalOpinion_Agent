@@ -124,7 +124,7 @@ nav {
   transition: max-height .45s ease, opacity .3s ease, margin .3s ease;
 }
 #intake-form.visible {
-  max-height: 700px; opacity: 1; margin-top: 14px;
+  max-height: 1600px; opacity: 1; margin-top: 14px;
 }
 
 /* CONFIRM PANEL */
@@ -450,6 +450,22 @@ body { min-height: 100vh; min-height: 100dvh; padding: env(safe-area-inset-top) 
   #cat-section, #stage-pop, #intake-form, #confirm-panel, #steps, nav { max-width: 760px; }
 }
 
+
+/* Livello di analisi (07/11/2026) */
+.livello-section { margin: 4px 0 14px; }
+.livelli { display: grid; gap: 8px; }
+.livello {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  background: var(--field); color: var(--ink); font: inherit;
+  border: 1px solid var(--line-soft); border-radius: 12px; padding: 12px 14px;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.livello.sel { border-color: var(--gold-bright); background: rgba(246,224,140,.06); box-shadow: 0 0 0 1px var(--gold-bright), 0 0 18px rgba(221,180,94,.25); }
+.lv-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.lv-top b { font-size: 14px; font-weight: 600; }
+.lv-prezzo { font-size: 16px; font-weight: 700; color: var(--gold-bright); white-space: nowrap; }
+.lv-prezzo s { font-size: 12px; font-weight: 400; color: var(--ink-dim); margin-right: 4px; }
+.lv-desc { display: block; font-size: 12px; color: var(--ink-dim); line-height: 1.45; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -525,7 +541,7 @@ body { min-height: 100vh; min-height: 100dvh; padding: env(safe-area-inset-top) 
     </ol>
 
     <div class="app-cta-bar">
-      <div class="app-price">Prima analisi a <b>10 €</b><small>promo di lancio fino al 30 novembre</small></div>
+      <div class="app-price">Prima analisi a <b>10 €</b><small>promo fino al 30 novembre · approfondimenti da 150 €</small></div>
       <button class="hot cta app-cta" id="go" aria-label="Inizia analisi">Inizia analisi <span aria-hidden="true">›</span></button>
     </div>
   </div>
@@ -553,6 +569,24 @@ body { min-height: 100vh; min-height: 100dvh; padding: env(safe-area-inset-top) 
                placeholder="https://www.immobiliare.it/annunci/... oppure link portale aste"
                autocomplete="off" />
         <div class="error" id="error-url">Inserisci un link valido (inizia con http:// o https://)</div>
+      </div>
+    </div>
+
+    <div class="livello-section" id="livello-section">
+      <div class="allegati-label">Livello di analisi</div>
+      <div class="livelli">
+        <button class="livello sel" type="button" data-tier="TIER_1_PROMO_10" data-prezzo="10" data-nome="Analisi completa">
+          <span class="lv-top"><b>Analisi completa</b><span class="lv-prezzo"><s>69 €</s> 10 €</span></span>
+          <span class="lv-desc">Semaforo e rapporto sui link e sui documenti che ci fornisci. Prezzo promo di lancio fino al 30 novembre.</span>
+        </button>
+        <button class="livello" type="button" data-tier="TIER_2_ADVISORY_150" data-prezzo="150" data-nome="Approfondimento">
+          <span class="lv-top"><b>Approfondimento</b><span class="lv-prezzo">150 €</span></span>
+          <span class="lv-desc">Tutto dell'analisi completa, più ricerche aggiuntive, comparabili di zona, proiezione del valore a 2 anni e consulenza online di 30 minuti in videochiamata.</span>
+        </button>
+        <button class="livello" type="button" data-tier="TIER_3_PREMIUM_690" data-prezzo="690" data-nome="Due Diligence Pro">
+          <span class="lv-top"><b>Due Diligence Pro</b><span class="lv-prezzo">690 €</span></span>
+          <span class="lv-desc">Tutto dell'approfondimento, più visura catastale completa, relazione tecnica dettagliata e consulenza online dedicata, anche per la fase d'asta.</span>
+        </button>
       </div>
     </div>
 
@@ -628,8 +662,8 @@ body { min-height: 100vh; min-height: 100dvh; padding: env(safe-area-inset-top) 
 
     <div class="confirm-section">
       <h4>Prossima fase</h4>
-      <p>Procedi al pagamento per avviare l'analisi completa. Il report sarà disponibile entro 24–48 ore.</p>
-      <p style="margin-top:8px;font-size:15px;">
+      <p>Procedi al pagamento per avviare <span id="summary-livello">l'analisi completa</span>. Il report sarà disponibile entro <span id="summary-tempi">24–48 ore</span>.</p>
+      <p style="margin-top:8px;font-size:15px;" id="summary-prezzo">
         <span style="text-decoration:line-through;opacity:.55;">€69</span>
         <strong style="color:var(--gold-bright);font-size:20px;margin-left:6px;">€10</strong>
         <span style="opacity:.7;font-size:12px;margin-left:6px;">promo di lancio</span>
