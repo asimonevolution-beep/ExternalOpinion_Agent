@@ -56,6 +56,10 @@ const {
 } = require('./orchestrator');
 
 const { alertOwner } = require('./utils/owner-alert');
+const { salvaDocumentoCaricato, ErroreDocumento } = require('./utils/documenti-caricati');
+
+// Segnaposto per le richieste fatte solo con documenti caricati (nessun link)
+const DOCUMENTI_URL = 'documenti://caricati-dal-cliente';
 
 const {
   createCheckoutSession,
@@ -222,20 +226,26 @@ apiRouter.post(
   '/analyze',
   analyzeApiLimiter,
   async (req, res) => {
-    const { urlAsta, nome, ragioneSociale, email, telefono, token, service,
-      zonaDati = {}, tier = 'TIER_1_CASCADE_79', deferUntilPayment = false } = req.body;
+    const { nome, ragioneSociale, email, telefono, token, service,
+      zonaDati = {}, tier = 'TIER_1_CASCADE_79', deferUntilPayment = false,
+      documentiInArrivo = 0 } = req.body;
+    let { urlAsta } = req.body;
 
     try {
-      // Validazione
-      if (!urlAsta) {
+      // Link OPPURE documenti caricati dall'app: basta uno dei due (07/11/2026)
+      const soloDocumenti = !urlAsta && Number(documentiInArrivo) > 0;
+      if (!urlAsta && !soloDocumenti) {
         return res.status(400).json({
           success: false,
-          error: 'urlAsta Ã¨ obbligatorio',
+          code: 'INPUT_MANCANTE',
+          error: "Inserisci il link dell'immobile oppure carica almeno un documento.",
         });
       }
+      if (soloDocumenti) urlAsta = DOCUMENTI_URL;
 
       // Il link deve puntare alla scheda del singolo immobile, non alla home del portale.
       // Caso reale 06/11/2026: incollato https://www.astegiudiziarie.it/ → analisi vuota.
+      if (!soloDocumenti) {
       let urlParsed = null;
       try { urlParsed = new URL(String(urlAsta).trim()); } catch { /* gestito sotto */ }
       const protocolloOk = !!urlParsed && /^https?:$/.test(urlParsed.protocol);
@@ -256,6 +266,7 @@ apiRouter.post(
             ? `Hai inserito la pagina principale di ${urlParsed.hostname}. Apri la scheda dell'immobile che ti interessa e copia il link di quella pagina (deve contenere il numero del lotto o della procedura).`
             : "Il link non è valido. Copia l'indirizzo completo della scheda dell'immobile (inizia con https://).",
         });
+      }
       }
 
       // Token validation (opzionale)
@@ -303,7 +314,7 @@ apiRouter.post(
       // Avviso a Simone su OGNI nuova richiesta (non dipende dal pagamento né dall'esito)
       alertOwner({
         title: 'NUOVA RICHIESTA External Opinion',
-        body: `Job: ${jobRecord.id}\nLink: ${urlAsta}\nContatto: ${email || telefono || 'n/d'}${nome ? `\nNome: ${nome}` : ''}\nTier: ${tier}\nOrigine: ${req.get('referer') || 'diretta'}`,
+        body: `Job: ${jobRecord.id}\nLink: ${soloDocumenti ? 'nessuno (solo documenti)' : urlAsta}${Number(documentiInArrivo) > 0 ? `\nDocumenti in arrivo: ${Number(documentiInArrivo)}` : ''}\nContatto: ${email || telefono || 'n/d'}${nome ? `\nNome: ${nome}` : ''}\nTier: ${tier}\nOrigine: ${req.get('referer') || 'diretta'}`,
         priority: 'urgent',
         tags: 'bell',
       }).then((esito) => recordJobEvent(jobRecord.id, 'OWNER_ALERT_NEW_REQUEST', esito).catch(() => {}));
@@ -414,6 +425,29 @@ apiRouter.get('/jobs/:jobId', async (req, res) => {
     return res.status(500).json({
       success: false,
       error: 'Error retrieving job',
+    });
+  }
+});
+
+/**
+ * POST /api/jobs/:jobId/documents — Documento caricato dal cliente nell'app
+ * Body JSON: { nome, tipo, dati } con dati in base64 (max 7 MB per file).
+ */
+const documentsLimiter = require('express-rate-limit')({
+  windowMs: 15 * 60 * 1000,
+  max: 30, // fino a 30 file per IP ogni 15 minuti (max 8 per richiesta)
+  message: { success: false, error: 'Troppi caricamenti, riprova tra qualche minuto.' },
+});
+apiRouter.post('/jobs/:jobId/documents', documentsLimiter, async (req, res) => {
+  try {
+    const esito = await salvaDocumentoCaricato(req.params.jobId, req.body || {});
+    return res.status(201).json({ success: true, ...esito });
+  } catch (err) {
+    const status = err instanceof ErroreDocumento ? err.status : 500;
+    if (status === 500) console.error('[DOCUMENTI] Errore caricamento:', err.message);
+    return res.status(status).json({
+      success: false,
+      error: status === 500 ? 'Caricamento non riuscito, riprova.' : err.message,
     });
   }
 });

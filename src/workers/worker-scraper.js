@@ -215,12 +215,21 @@ const worker = new Worker('scrapeQueue', async (job) => {
     if (!url) {
       throw new Error(`url assente in job.data (chiavi presenti: ${Object.keys(job.data || {}).join(', ') || 'nessuna'})`);
     }
-    const safeUrl = validatePublicHttpUrl(url);
-    await recordJobEvent(jobId, 'SCRAPE_STARTED', { url: safeUrl }, WORKER_ID);
+    // Documenti caricati dal cliente nell'app (07/11/2026): entrano nell'analisi.
+    // Con il segnaposto documenti:// la richiesta e' fatta solo di documenti.
+    const soloDocumenti = String(url).startsWith('documenti://');
+    const immobilePre = await prisma.immobile.findUnique({ where: { jobId } });
+    const datiPre = (() => { try { return JSON.parse(immobilePre?.datiComputati || '{}'); } catch { return {}; } })();
+    const caricati = Array.isArray(datiPre.documentiCaricati) ? datiPre.documentiCaricati : [];
+
+    const safeUrl = soloDocumenti ? url : validatePublicHttpUrl(url);
+    await recordJobEvent(jobId, 'SCRAPE_STARTED', { url: safeUrl, documentiCaricati: caricati.length }, WORKER_ID);
 
     let testoGrezzo = '';
     let metadata = { title: '', url: safeUrl, timestamp: new Date().toISOString() };
-    let scraperUsed = 'axios';
+    let scraperUsed = soloDocumenti ? 'documenti-caricati' : 'axios';
+
+    if (!soloDocumenti) {
 
     // Rilevamento PDF da URL prima di fare la richiesta
     const looksLikePdf = isPdfUrl(safeUrl, null);
@@ -258,6 +267,33 @@ const worker = new Worker('scrapeQueue', async (job) => {
       // Il fallback browser e intenzionalmente escluso: consentirebbe a redirect o
       // JavaScript della pagina di raggiungere servizi privati della piattaforma.
       throw new Error(`Scraping fallito: ${axiosErr.message}`);
+    }
+    }
+
+    if (caricati.length) {
+      const blocchi = caricati
+        .filter((d) => d.testo)
+        .map((d) => `=== DOCUMENTO CARICATO DAL CLIENTE: ${d.nome}${d.pagine ? ` (${d.pagine} pagine)` : ''} ===\n${d.testo}`);
+      if (blocchi.length) {
+        testoGrezzo = testoGrezzo
+          ? `${testoGrezzo}\n\n${blocchi.join('\n\n')}`
+          : blocchi.join('\n\n');
+        if (!soloDocumenti) scraperUsed += '+documenti-caricati';
+      }
+      metadata.documenti = [
+        ...(metadata.documenti || []),
+        ...caricati.map(({ nome, categoria, pagine, caratteri, esito }) => ({
+          tipo: 'CARICATO', url: nome, categoria, pagine, caratteri, esito,
+        })),
+      ];
+      metadata.periziaLetta = metadata.periziaLetta || caricati.some((d) => d.esito === 'LETTO');
+      console.log(`[SCRAPER ${WORKER_ID}] Documenti caricati dal cliente: ${caricati.length}, letti ${caricati.filter((d) => d.esito === 'LETTO').length}`);
+    }
+    if (soloDocumenti && !testoGrezzo) {
+      // Solo foto o PDF scansionati: nessun testo automatico. Il flusso prosegue e
+      // il controllo di confidenza porta il caso alla revisione di Simone, che ha
+      // gia' ricevuto gli originali su Telegram.
+      testoGrezzo = `Documenti caricati dal cliente senza testo leggibile automaticamente: ${caricati.map((d) => d.nome).join(', ')}.`;
     }
 
     const textHash = crypto.createHash('sha256').update(testoGrezzo).digest('hex');

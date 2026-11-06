@@ -48,8 +48,8 @@ const SchemaEstrazioneAI = z.object({
 });
 
 const MSG_DATI_INSUFFICIENTI =
-  "Nella pagina indicata non ho trovato i dati di un immobile da analizzare (prezzo, ubicazione, perizia). " +
-  "Controlla di aver copiato il link della scheda del singolo lotto, non la pagina principale o una lista di risultati, e riprova. " +
+  "Nel link o nei documenti forniti non ho trovato i dati di un immobile da analizzare (prezzo, ubicazione, perizia). " +
+  "Controlla di aver copiato il link della scheda del singolo lotto, non la pagina principale o una lista di risultati, oppure carica la perizia in PDF, e riprova. " +
   "Se il problema continua scrivi a info@externalopinion.it.";
 
 async function chiudiJobPerDatiInsufficienti(jobId, motivoTecnico) {

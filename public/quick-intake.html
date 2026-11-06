@@ -466,6 +466,24 @@ body { min-height: 100vh; min-height: 100dvh; padding: env(safe-area-inset-top) 
 .lv-prezzo { font-size: 16px; font-weight: 700; color: var(--gold-bright); white-space: nowrap; }
 .lv-prezzo s { font-size: 12px; font-weight: 400; color: var(--ink-dim); margin-right: 4px; }
 .lv-desc { display: block; font-size: 12px; color: var(--ink-dim); line-height: 1.45; margin-top: 4px; }
+
+/* Caricamento documenti (07/11/2026) */
+.upload-section { margin: 10px 0 14px; }
+.upload-btn {
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+  border: 1.5px dashed rgba(221,180,94,.55); border-radius: 12px; padding: 14px;
+  background: rgba(246,224,140,.04); color: var(--ink);
+}
+.upload-btn:active { transform: scale(.99); }
+.upload-btn b { display: block; font-size: 14px; color: var(--gold-bright); }
+.upload-btn small { display: block; font-size: 11.5px; color: var(--ink-dim); margin-top: 2px; line-height: 1.35; }
+.upload-ico { font-size: 22px; color: var(--gold); width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: rgba(246,224,140,.1); flex: none; }
+.upload-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 6px; }
+.upload-list li { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; background: var(--field); border: 1px solid var(--line-soft); border-radius: 8px; padding: 8px 10px; }
+.upload-list .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upload-list .st { flex: none; font-size: 11px; color: var(--ink-dim); }
+.upload-list .st.ok { color: var(--green); } .upload-list .st.ko { color: var(--red); }
+.upload-list button { flex: none; background: none; border: none; color: var(--ink-dim); font-size: 16px; cursor: pointer; padding: 0 2px; }
 </style>
 </head>
 <body>
@@ -564,12 +582,21 @@ body { min-height: 100vh; min-height: 100dvh; padding: env(safe-area-inset-top) 
 
     <div class="grid">
       <div class="fld full" id="field-url">
-        <label>Link immobile / asta / annuncio</label>
+        <label>Link immobile / asta / annuncio <span style="color:var(--ink-dim);font-weight:400">(oppure carica i documenti qui sotto)</span></label>
         <input type="url" id="input-url"
                placeholder="https://www.immobiliare.it/annunci/... oppure link portale aste"
                autocomplete="off" />
-        <div class="error" id="error-url">Inserisci un link valido (inizia con http:// o https://)</div>
+        <div class="error" id="error-url">Inserisci un link valido (inizia con http:// o https://) oppure carica un documento</div>
       </div>
+    </div>
+
+    <div class="upload-section" id="upload-section">
+      <label class="upload-btn" for="input-docs">
+        <span class="upload-ico" aria-hidden="true">⇪</span>
+        <span><b>Carica documenti</b><small>Perizia, planimetria, visura, APE, foto · PDF o immagini, max 7 MB l'uno</small></span>
+      </label>
+      <input type="file" id="input-docs" multiple accept="application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif" hidden />
+      <ul class="upload-list" id="upload-list"></ul>
     </div>
 
     <div class="livello-section" id="livello-section">
@@ -587,20 +614,6 @@ body { min-height: 100vh; min-height: 100dvh; padding: env(safe-area-inset-top) 
           <span class="lv-top"><b>Due Diligence Pro</b><span class="lv-prezzo">690 €</span></span>
           <span class="lv-desc">Tutto dell'approfondimento, più visura catastale completa, relazione tecnica dettagliata e consulenza online dedicata, anche per la fase d'asta.</span>
         </button>
-      </div>
-    </div>
-
-    <div class="allegati-section">
-      <div class="allegati-label">Documenti disponibili <span class="allegati-hint">opzionale — invia via email al codice caso</span></div>
-      <div class="allegati-grid">
-        <button class="a-chip" data-doc="planimetria"    type="button">Planimetria</button>
-        <button class="a-chip" data-doc="foto"           type="button">Foto</button>
-        <button class="a-chip" data-doc="perizia"        type="button">Perizia</button>
-        <button class="a-chip" data-doc="visura"         type="button">Visura</button>
-        <button class="a-chip" data-doc="ape"            type="button">APE</button>
-        <button class="a-chip" data-doc="documenti-asta" type="button">Doc. Asta</button>
-        <button class="a-chip" data-doc="computo"        type="button">Computo</button>
-        <button class="a-chip" data-doc="note-cliente"   type="button">Note</button>
       </div>
     </div>
 
@@ -671,8 +684,8 @@ body { min-height: 100vh; min-height: 100dvh; padding: env(safe-area-inset-top) 
     </div>
 
     <div class="confirm-section">
-      <h4>Documenti facoltativi</h4>
-      <p>Se hai perizia, planimetria, APE o visure, inviaci i documenti a <strong>documents@externalopinion.it</strong> indicando il codice caso.</p>
+      <h4>Documenti</h4>
+      <p id="summary-docs">Nessun documento caricato.</p>
     </div>
 
     <div class="confirm-actions">

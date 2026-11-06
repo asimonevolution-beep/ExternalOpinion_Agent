@@ -59,16 +59,84 @@
     });
   });
 
-  // Chip documenti disponibili
-  document.querySelectorAll('.a-chip').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      chip.classList.toggle('sel');
-      var doc = chip.dataset.doc;
-      var i = state.allegati.indexOf(doc);
-      if (i === -1) { state.allegati.push(doc); }
-      else          { state.allegati.splice(i, 1); }
+  // Documenti caricati dal telefono o dal computer (07/11/2026)
+  var MAX_DOC_BYTES = 7 * 1024 * 1024;
+  var MAX_DOCS = 8;
+  var TIPI_OK = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+  state.files = [];
+  var inputDocs  = document.getElementById('input-docs');
+  var uploadList = document.getElementById('upload-list');
+
+  function tipoFile(f) {
+    if (f.type) return f.type.toLowerCase();
+    var n = (f.name || '').toLowerCase();
+    if (/\.pdf$/.test(n)) return 'application/pdf';
+    if (/\.jpe?g$/.test(n)) return 'image/jpeg';
+    if (/\.png$/.test(n)) return 'image/png';
+    if (/\.hei[cf]$/.test(n)) return 'image/heic';
+    return '';
+  }
+  function renderFiles() {
+    uploadList.innerHTML = '';
+    state.files.forEach(function (it, i) {
+      var li = document.createElement('li');
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = it.file.name;
+      var st = document.createElement('span'); st.className = 'st' + (it.esito === 'ok' ? ' ok' : it.esito === 'ko' ? ' ko' : '');
+      st.textContent = it.stato || (Math.max(1, Math.round(it.file.size / 1024)) + ' KB');
+      li.appendChild(nm); li.appendChild(st);
+      if (!it.esito) {
+        var rm = document.createElement('button'); rm.type = 'button'; rm.textContent = '×'; rm.setAttribute('aria-label', 'Rimuovi ' + it.file.name);
+        rm.addEventListener('click', function () { state.files.splice(i, 1); renderFiles(); });
+        li.appendChild(rm);
+      }
+      uploadList.appendChild(li);
     });
-  });
+  }
+  if (inputDocs) {
+    inputDocs.addEventListener('change', function () {
+      globalError.classList.remove('visible');
+      Array.prototype.forEach.call(inputDocs.files, function (f) {
+        if (state.files.length >= MAX_DOCS) { globalError.textContent = 'Puoi caricare al massimo ' + MAX_DOCS + ' documenti.'; globalError.classList.add('visible'); return; }
+        if (TIPI_OK.indexOf(tipoFile(f)) === -1) { globalError.textContent = '"' + f.name + '": carica un PDF o una foto (JPG, PNG).'; globalError.classList.add('visible'); return; }
+        if (f.size > MAX_DOC_BYTES) { globalError.textContent = '"' + f.name + '" supera 7 MB: caricane una versione più leggera.'; globalError.classList.add('visible'); return; }
+        if (state.files.some(function (x) { return x.file.name === f.name && x.file.size === f.size; })) return;
+        state.files.push({ file: f });
+      });
+      inputDocs.value = '';
+      if (state.files.length) showFieldError('field-url', 'error-url', false);
+      renderFiles();
+    });
+  }
+  function leggiBase64(file) {
+    return new Promise(function (resolve, reject) {
+      var r = new FileReader();
+      r.onload = function () { resolve(String(r.result).replace(/^data:[^,]*,/, '')); };
+      r.onerror = function () { reject(new Error('Lettura del file non riuscita')); };
+      r.readAsDataURL(file);
+    });
+  }
+  // Carica i file uno alla volta sulla richiesta appena creata
+  function caricaDocumenti(jobId) {
+    var caricati = 0;
+    return state.files.reduce(function (p, it) {
+      return p.then(function () {
+        it.stato = 'caricamento…'; renderFiles();
+        return leggiBase64(it.file).then(function (b64) {
+          return fetch('/api/jobs/' + encodeURIComponent(jobId) + '/documents', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome: it.file.name, tipo: tipoFile(it.file), dati: b64 }),
+          });
+        }).then(function (res) {
+          return res.json().then(function (d) {
+            if (!res.ok || !d.success) throw new Error(d.error || 'Caricamento non riuscito');
+            it.esito = 'ok'; it.stato = 'caricato ✓'; caricati++;
+          });
+        }).catch(function (err) {
+          it.esito = 'ko'; it.stato = 'non caricato'; it.errore = err.message;
+        }).then(renderFiles);
+      });
+    }, Promise.resolve()).then(function () { return caricati; });
+  }
 
   // Validazione
   function validateUrl(val) {
@@ -105,7 +173,8 @@
     var noteVal    = inputNote.value.trim();
     var valid      = true;
 
-    if (!validateUrl(urlVal)) {
+    // Link oppure documenti: basta uno dei due
+    if (urlVal ? !validateUrl(urlVal) : !state.files.length) {
       showFieldError('field-url', 'error-url', true);
       valid = false;
     }
@@ -131,7 +200,8 @@
     if (!valid) return;
 
     var payload = {
-      urlAsta:  urlVal,
+      urlAsta:  urlVal || null,
+      documentiInArrivo: state.files.length,
       nome:     nameVal,
       ragioneSociale: companyVal || null,
       email:    emailVal || null,
@@ -143,7 +213,7 @@
         categoria:          state.label,
         note:               noteVal || null,
         telefono:           phoneVal || null,
-        allegatiDichiarati: state.allegati.length ? state.allegati.slice() : null,
+        documentiCaricati:  state.files.length || null,
         source:             'quick-intake',
       },
     };
@@ -170,7 +240,13 @@
       var jobId = result.data.jobId;
       state.jobId = jobId;
 
-      return fetch('/api/jobs/' + encodeURIComponent(jobId) + '/checkout', {
+      return caricaDocumenti(jobId).then(function (nCaricati) {
+        state.docCaricati = nCaricati;
+        var falliti = state.files.filter(function (x) { return x.esito === 'ko'; });
+        if (!urlVal && nCaricati === 0) {
+          throw new Error('Nessun documento è stato caricato: ' + (falliti[0] && falliti[0].errore || 'riprova'));
+        }
+      }).then(function () { return fetch('/api/jobs/' + encodeURIComponent(jobId) + '/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tier: state.tier, email: emailVal || null })
@@ -179,7 +255,7 @@
           if (!res.ok || !data.checkoutUrl) throw new Error(data.error || 'Checkout non disponibile');
           return { jobId: jobId, checkout: data };
         });
-      })
+      }); })
       .then(function (res2) {
         loadingState.classList.remove('visible');
         submitBtn.disabled = false;
@@ -188,7 +264,12 @@
 
         displayCase.textContent = 'EO-' + shortId.toUpperCase();
         document.getElementById('summary-tipo').textContent    = state.label || '—';
-        document.getElementById('summary-url').textContent     = urlVal.length > 50 ? urlVal.slice(0, 50) + '…' : urlVal;
+        document.getElementById('summary-url').textContent     = urlVal ? (urlVal.length > 50 ? urlVal.slice(0, 50) + '…' : urlVal) : 'nessuno (solo documenti)';
+        var nonCaricati = state.files.filter(function (x) { return x.esito === 'ko'; }).map(function (x) { return x.file.name; });
+        document.getElementById('summary-docs').textContent = state.docCaricati
+          ? state.docCaricati + (state.docCaricati === 1 ? ' documento caricato' : ' documenti caricati') +
+            (nonCaricati.length ? ' · non caricati: ' + nonCaricati.join(', ') : '') + '.'
+          : 'Nessun documento caricato.';
         document.getElementById('summary-contact').textContent = emailVal || phoneVal;
 
         // Riepilogo coerente con il livello scelto: prezzo mostrato = prezzo addebitato
@@ -222,7 +303,9 @@
     .catch(function (err) {
       loadingState.classList.remove('visible');
       submitBtn.disabled = false;
-      globalError.textContent = 'Connessione non riuscita. Verifica la connessione e riprova.';
+      globalError.textContent = (err && /documento|Checkout/.test(err.message))
+        ? err.message
+        : 'Connessione non riuscita. Verifica la connessione e riprova.';
       globalError.classList.add('visible');
       console.error('[QuickIntake]', err);
     });
