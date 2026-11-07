@@ -487,6 +487,61 @@ body { min-height: 100vh; min-height: 100dvh; padding: env(safe-area-inset-top) 
 
 /* Telefono come contatto principale (07/11/2026) */
 .input-phone-main { font-size: 17px !important; letter-spacing: .02em; border-color: rgba(221,180,94,.45) !important; }
+
+/* ===== CONFERMA E PAGAMENTO (07/11/2026) ===== */
+#confirm-panel { margin-top: 6px; }
+#confirm-panel.visible .cf { animation: cf-in .45s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes cf-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { #confirm-panel.visible .cf { animation: none; } }
+.cf {
+  display: grid; gap: 14px;
+  background: radial-gradient(120% 60% at 50% 0%, #26262b 0%, #17181b 60%, #121316 100%);
+  border: 1px solid rgba(221,180,94,.28); border-radius: 22px; padding: 20px 16px 16px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.55);
+}
+.cf-head { display: flex; align-items: center; gap: 12px; }
+.cf-check {
+  width: 44px; height: 44px; border-radius: 50%; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 700; color: #1a1408;
+  background: linear-gradient(180deg, #fff0a8, #f2c94c 55%, #d9a72a);
+  box-shadow: 0 0 22px rgba(246,224,140,.45);
+}
+.cf-kicker { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--green); font-weight: 600; }
+.cf-title { font-family: "Cinzel", Georgia, serif; font-weight: 500; font-size: 19px; line-height: 1.25; color: var(--gold-bright); margin-top: 2px; text-wrap: balance; }
+
+.cf-case { background: rgba(0,0,0,.22); border: 1px solid var(--line-soft); border-radius: 16px; padding: 14px; display: grid; gap: 10px; }
+.cf-case-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cf-tag { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold-bright); background: rgba(246,224,140,.08); border: 1px solid rgba(246,224,140,.3); border-radius: 999px; padding: 5px 10px; }
+.cf-code { display: inline-flex; align-items: baseline; gap: 6px; background: none; border: none; cursor: pointer; font: 600 13px/1 ui-monospace, "SF Mono", Menlo, monospace; color: var(--ink); letter-spacing: .04em; padding: 4px 0; }
+.cf-code small { font: 500 11px/1 var(--sans); color: var(--ink-dim); text-decoration: underline dotted; }
+.cf-desc { font-size: 14px; line-height: 1.55; color: #e6dfcd; }
+.cf-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 7px; }
+.cf-list li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; font-size: 13px; line-height: 1.45; color: #cfc8b6; }
+.cf-list li::before { content: ""; width: 8px; height: 8px; margin-top: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 8px rgba(221,180,94,.6); justify-self: center; }
+.cf-list .sem { display: inline-flex; gap: 3px; vertical-align: -1px; margin-right: 4px; }
+.cf-list .sem i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+.cf-pay { display: grid; gap: 12px; padding: 14px; border-radius: 16px; border: 1.5px solid rgba(221,180,94,.55); background: linear-gradient(180deg, rgba(246,224,140,.07), rgba(246,224,140,.02)); }
+.cf-price { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.cf-old { font-size: 15px; color: var(--ink-dim); text-decoration: line-through; }
+.cf-now { font-size: 34px; font-weight: 700; color: var(--gold-bright); line-height: 1; letter-spacing: -.01em; }
+.cf-promo { font-size: 12px; color: var(--ink-dim); }
+.cf-cta { display: flex !important; justify-content: center; width: 100%; padding: 16px 18px !important; font-size: 15px !important; text-decoration: none; }
+.cf-trust { list-style: none; padding: 0; margin: 0; display: grid; gap: 5px; font-size: 12px; color: var(--ink-dim); }
+.cf-trust li { display: block; padding-left: 20px; text-indent: -20px; line-height: 1.45; }
+.cf-trust li::before { content: "✓"; display: inline-block; width: 20px; text-indent: 0; color: var(--green); font-weight: 700; }
+.cf-list li.li-sem::before { background: none; box-shadow: none; }
+.cf-trust b { color: var(--ink); font-weight: 600; }
+
+.cf-recap { border-top: 1px solid var(--line-soft); padding-top: 10px; }
+.cf-recap summary { cursor: pointer; font-size: 12.5px; color: var(--ink-dim); list-style: none; }
+.cf-recap summary::before { content: "▸ "; color: var(--gold); }
+.cf-recap[open] summary::before { content: "▾ "; }
+.cf-recap dl { display: grid; grid-template-columns: 80px minmax(0,1fr); gap: 6px 10px; margin-top: 10px; font-size: 12.5px; }
+.cf-recap dt { color: var(--ink-dim); }
+.cf-recap dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; min-width: 0; }
+.cf-new { background: none; border: none; color: var(--ink-dim); font: inherit; font-size: 12.5px; text-decoration: underline; cursor: pointer; justify-self: center; padding: 6px; }
 </style>
 </head>
 <body>
@@ -647,40 +702,50 @@ body { min-height: 100vh; min-height: 100dvh; padding: env(safe-area-inset-top) 
 
 <!-- CONFIRM (step 3) -->
 <div id="confirm-panel">
-  <div class="box">
-    <div class="case-id-label">Caso ricevuto</div>
-    <div class="case-id-val" id="display-case-id">EO---------</div>
-    <div class="case-id-copy" id="copy-btn">Copia codice</div>
+  <div class="cf">
 
-    <ul class="confirm-summary" id="confirm-summary">
-      <li><span class="lbl">Tipo</span><span id="summary-tipo">—</span></li>
-      <li><span class="lbl">Link</span><span id="summary-url">—</span></li>
-      <li><span class="lbl">Contatto</span><span id="summary-contact">—</span></li>
-    </ul>
+    <header class="cf-head">
+      <div class="cf-check" aria-hidden="true">✓</div>
+      <div>
+        <div class="cf-kicker">Richiesta ricevuta</div>
+        <h2 class="cf-title" id="cf-title">Il tuo caso è pronto per l'analisi</h2>
+      </div>
+    </header>
 
-    <div class="confirm-section">
-      <h4>Prossima fase</h4>
-      <p>Procedi al pagamento per avviare <span id="summary-livello">l'analisi completa</span>. Il report sarà disponibile entro <span id="summary-tempi">24–48 ore</span>.</p>
-      <p style="margin-top:8px;font-size:15px;" id="summary-prezzo">
-        <span style="text-decoration:line-through;opacity:.55;">€69</span>
-        <strong style="color:var(--gold-bright);font-size:20px;margin-left:6px;">€10</strong>
-        <span style="opacity:.7;font-size:12px;margin-left:6px;">promo di lancio</span>
-      </p>
-    </div>
+    <section class="cf-case">
+      <div class="cf-case-top">
+        <span class="cf-tag" id="summary-tipo">—</span>
+        <button class="cf-code" id="copy-btn" type="button" aria-label="Copia codice caso">
+          <span id="display-case-id">EO---------</span><small>copia</small>
+        </button>
+      </div>
+      <p class="cf-desc" id="cf-desc"></p>
+      <ul class="cf-list" id="cf-list"></ul>
+    </section>
 
-    <div class="confirm-section">
-      <h4>Documenti</h4>
-      <p id="summary-docs">Nessun documento caricato.</p>
-    </div>
+    <section class="cf-pay">
+      <div class="cf-price" id="summary-prezzo">
+        <span class="cf-old">69 €</span><span class="cf-now">10 €</span><span class="cf-promo">promo di lancio</span>
+      </div>
+      <a class="btn-go cf-cta" id="checkout-btn" href="#" target="_blank" rel="noopener">Paga 10 € e avvia l'analisi →</a>
+      <ul class="cf-trust">
+        <li><b>Pagamento sicuro</b> con Stripe</li>
+        <li>Rapporto via email entro <b id="summary-tempi">24–48 ore</b></li>
+        <li>Ogni rapporto è verificato da <b>Geom. Simone Azzali</b> prima dell'invio</li>
+      </ul>
+      <p class="cf-sr" hidden>Procedi al pagamento per avviare <span id="summary-livello">l'analisi completa</span>.</p>
+    </section>
 
-    <div class="confirm-actions">
-      <a class="btn-go" id="checkout-btn" href="#" target="_blank">
-        Procedi al pagamento →
-      </a>
-      <button class="btn-new" id="new-case-btn" type="button">
-        Inizia un nuovo caso
-      </button>
-    </div>
+    <details class="cf-recap">
+      <summary>Riepilogo dati inseriti</summary>
+      <dl>
+        <dt>Link</dt><dd id="summary-url">—</dd>
+        <dt>Contatto</dt><dd id="summary-contact">—</dd>
+        <dt>Documenti</dt><dd id="summary-docs">Nessun documento caricato.</dd>
+      </dl>
+    </details>
+
+    <button class="cf-new" id="new-case-btn" type="button">Inizia un nuovo caso</button>
   </div>
 </div>
 

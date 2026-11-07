@@ -14,6 +14,31 @@
     tierNome: 'Analisi completa',
   };
 
+  // Descrizione dell'analisi per ciascun caso d'uso (schermata di conferma)
+  var DESCRIZIONI_CASO = {
+    'prima-casa': {
+      desc: "Leggiamo i documenti dell'immobile che vuoi comprare e ti mostriamo, prima di firmare, cosa è in regola e cosa va verificato.",
+      punti: ["Conformità urbanistica e catastale, vincoli e servitù", "Spese e costi che non si vedono nell'annuncio"]
+    },
+    'investimento': {
+      desc: "Mettiamo in fila documenti e numeri dell'operazione: valore, costi per sistemare e regolarizzare, rischi che pesano sul rendimento.",
+      punti: ["Stima di valore e ritorno dell'investimento sui dati disponibili", "Costi di ripristino, sanatoria e regolarizzazione"]
+    },
+    'asta': {
+      desc: "Analizziamo perizia, avviso e allegati d'asta per capire cosa comporta davvero aggiudicarsi l'immobile, oltre il prezzo base.",
+      punti: ["Stato di occupazione, difformità e oneri a carico dell'aggiudicatario", "Costi reali da aggiungere al prezzo d'asta"]
+    },
+    'compravendita': {
+      desc: "Controlliamo che quello che compri o vendi corrisponda ai documenti, così arrivi al rogito senza sorprese.",
+      punti: ["Coerenza tra stato dei luoghi, catasto e titoli edilizi", "APE, vincoli e punti da chiarire prima dell'atto"]
+    },
+    'analisi-tecnica': {
+      desc: "Esaminiamo difformità e aspetti normativi dell'immobile: cosa è regolare, cosa va sanato e con quale impatto.",
+      punti: ["Difformità urbanistiche, catastali e strutturali", "Percorso di regolarizzazione e costi indicativi"]
+    }
+  };
+  var PUNTI_COMUNI = ['__SEMAFORO__', "Elenco dei documenti mancanti per avere un quadro completo a 360°"];
+
   // Scelta del livello di analisi
   document.querySelectorAll('.livello').forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -273,7 +298,7 @@
 
         displayCase.textContent = 'EO-' + shortId.toUpperCase();
         document.getElementById('summary-tipo').textContent    = state.label || '—';
-        document.getElementById('summary-url').textContent     = urlVal ? (urlVal.length > 50 ? urlVal.slice(0, 50) + '…' : urlVal) : 'nessuno (solo documenti)';
+        document.getElementById('summary-url').textContent     = urlVal || 'nessuno (solo documenti caricati)';
         var nonCaricati = state.files.filter(function (x) { return x.esito === 'ko'; }).map(function (x) { return x.file.name; });
         document.getElementById('summary-docs').textContent = state.docCaricati
           ? state.docCaricati + (state.docCaricati === 1 ? ' documento caricato' : ' documenti caricati') +
@@ -281,23 +306,37 @@
           : 'Nessun documento caricato.';
         document.getElementById('summary-contact').textContent = [phoneVal, emailVal].filter(Boolean).join(' · ');
 
-        // Riepilogo coerente con il livello scelto: prezzo mostrato = prezzo addebitato
+        // Cosa analizziamo per il caso scelto (07/11/2026)
+        var caso = DESCRIZIONI_CASO[state.service] || DESCRIZIONI_CASO['prima-casa'];
+        document.getElementById('cf-desc').textContent = caso.desc;
+        var lista = document.getElementById('cf-list');
+        lista.innerHTML = '';
+        caso.punti.concat(PUNTI_COMUNI).forEach(function (t, i) {
+          var li = document.createElement('li');
+          if (t === '__SEMAFORO__') {
+            li.className = 'li-sem';
+            li.innerHTML = '<span><span class="sem"><i style="background:var(--green)"></i><i style="background:var(--yellow)"></i><i style="background:var(--red)"></i></span>' +
+              'Semaforo <b>verde, giallo o rosso</b> per capire subito come è messa l\'operazione</span>';
+          } else {
+            var sp = document.createElement('span'); sp.textContent = t; li.appendChild(sp);
+          }
+          lista.appendChild(li);
+        });
+
+        // Prezzo mostrato = prezzo addebitato
         var promo = state.tier === 'TIER_1_PROMO_10';
         document.getElementById('summary-livello').textContent =
           promo ? "l'analisi completa" : 'il livello ' + state.tierNome;
         document.getElementById('summary-tempi').textContent = promo ? '24–48 ore' : '48–72 ore';
         document.getElementById('summary-prezzo').innerHTML = promo
-          ? '<span style="text-decoration:line-through;opacity:.55;">€69</span>' +
-            '<strong style="color:var(--gold-bright);font-size:20px;margin-left:6px;">€10</strong>' +
-            '<span style="opacity:.7;font-size:12px;margin-left:6px;">promo di lancio</span>'
-          : '<strong style="color:var(--gold-bright);font-size:20px;">€' + state.tierPrezzo + '</strong>' +
-            '<span style="opacity:.7;font-size:12px;margin-left:6px;">' + state.tierNome + '</span>';
+          ? '<span class="cf-old">69 €</span><span class="cf-now">10 €</span><span class="cf-promo">promo di lancio fino al 30 novembre</span>'
+          : '<span class="cf-now">' + state.tierPrezzo + ' €</span><span class="cf-promo">' + state.tierNome + '</span>';
 
         if (res2.checkout && res2.checkout.checkoutUrl) {
           checkoutBtn.href        = res2.checkout.checkoutUrl;
-          checkoutBtn.textContent = 'Procedi al pagamento →';
+          checkoutBtn.textContent = 'Paga ' + (promo ? '10' : state.tierPrezzo) + ' € e avvia l\'analisi →';
         } else {
-          // La landing non esiste più: senza link di pagamento si contatta Simone
+          // Senza link di pagamento si contatta Simone
           checkoutBtn.href        = 'mailto:info@externalopinion.it?subject=' + encodeURIComponent('Caso EO-' + shortId.toUpperCase());
           checkoutBtn.textContent = 'Pagamento non disponibile: scrivici →';
           checkoutBtn.title       = 'Indica il codice caso nella mail';
@@ -307,6 +346,7 @@
         catSection.style.display = 'none';
         document.getElementById('steps').style.display = 'none';
         confirmPanel.classList.add('visible');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
     })
     .catch(function (err) {
@@ -323,23 +363,26 @@
   // Copia caseId
   copyBtn.addEventListener('click', function () {
     var text = displayCase.textContent;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(function () {
-        copyBtn.textContent = 'Copiato!';
-        setTimeout(function () { copyBtn.textContent = 'Copia codice'; }, 2000);
-      });
-    } else {
+    var nota = copyBtn.querySelector('small');
+    function fatto() { if (nota) { nota.textContent = 'copiato'; setTimeout(function () { nota.textContent = 'copia'; }, 2000); } }
+    function ripiego() {
       var ta = document.createElement('textarea');
       ta.value = text; document.body.appendChild(ta);
-      ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-      copyBtn.textContent = 'Copiato!';
-      setTimeout(function () { copyBtn.textContent = 'Copia codice'; }, 2000);
+      ta.select(); try { document.execCommand('copy'); } catch (_) {} document.body.removeChild(ta);
+      fatto();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(fatto, ripiego);
+    } else {
+      ripiego();
     }
   });
 
   // Nuovo caso
   newCaseBtn.addEventListener('click', function () {
-    state = { service: null, label: null, jobId: null, checkoutUrl: null };
+    state = { service: null, label: null, jobId: null, checkoutUrl: null, allegati: [], files: [],
+              tier: 'TIER_1_PROMO_10', tierPrezzo: '10', tierNome: 'Analisi completa' };
+    if (typeof renderFiles === 'function') renderFiles();
     catBtns.forEach(function (b) { b.classList.remove('selected'); });
     inputUrl.value = ''; inputNote.value = '';
     document.getElementById('input-name').value = '';
