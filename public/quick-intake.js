@@ -8,7 +8,47 @@
     jobId: null,
     checkoutUrl: null,
     allegati: [],
+    // Livello di analisi scelto (07/11/2026): default prima analisi promo 10 €
+    tier: 'TIER_1_PROMO_10',
+    tierPrezzo: '10',
+    tierNome: 'Analisi completa',
   };
+
+  // Descrizione dell'analisi per ciascun caso d'uso (schermata di conferma)
+  var DESCRIZIONI_CASO = {
+    'prima-casa': {
+      desc: "Leggiamo i documenti dell'immobile che vuoi comprare e ti mostriamo, prima di firmare, cosa è in regola e cosa va verificato.",
+      punti: ["Conformità urbanistica e catastale, vincoli e servitù", "Spese e costi che non si vedono nell'annuncio"]
+    },
+    'investimento': {
+      desc: "Mettiamo in fila documenti e numeri dell'operazione: valore, costi per sistemare e regolarizzare, rischi che pesano sul rendimento.",
+      punti: ["Stima di valore e ritorno dell'investimento sui dati disponibili", "Costi di ripristino, sanatoria e regolarizzazione"]
+    },
+    'asta': {
+      desc: "Analizziamo perizia, avviso e allegati d'asta per capire cosa comporta davvero aggiudicarsi l'immobile, oltre il prezzo base.",
+      punti: ["Stato di occupazione, difformità e oneri a carico dell'aggiudicatario", "Costi reali da aggiungere al prezzo d'asta"]
+    },
+    'compravendita': {
+      desc: "Controlliamo che quello che compri o vendi corrisponda ai documenti, così arrivi al rogito senza sorprese.",
+      punti: ["Coerenza tra stato dei luoghi, catasto e titoli edilizi", "APE, vincoli e punti da chiarire prima dell'atto"]
+    },
+    'analisi-tecnica': {
+      desc: "Esaminiamo difformità e aspetti normativi dell'immobile: cosa è regolare, cosa va sanato e con quale impatto.",
+      punti: ["Difformità urbanistiche, catastali e strutturali", "Percorso di regolarizzazione e costi indicativi"]
+    }
+  };
+  var PUNTI_COMUNI = ['__SEMAFORO__', "Elenco dei documenti mancanti per avere un quadro completo a 360°"];
+
+  // Scelta del livello di analisi
+  document.querySelectorAll('.livello').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.livello').forEach(function (b) { b.classList.remove('sel'); });
+      btn.classList.add('sel');
+      state.tier       = btn.dataset.tier;
+      state.tierPrezzo = btn.dataset.prezzo;
+      state.tierNome   = btn.dataset.nome;
+    });
+  });
 
   // Refs
   var catBtns      = document.querySelectorAll('.cat-btn');
@@ -44,16 +84,93 @@
     });
   });
 
-  // Chip documenti disponibili
-  document.querySelectorAll('.a-chip').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      chip.classList.toggle('sel');
-      var doc = chip.dataset.doc;
-      var i = state.allegati.indexOf(doc);
-      if (i === -1) { state.allegati.push(doc); }
-      else          { state.allegati.splice(i, 1); }
+  // Documenti caricati dal telefono o dal computer (07/11/2026)
+  var MAX_DOC_BYTES = 7 * 1024 * 1024;
+  var MAX_DOCS = 8;
+  var TIPI_OK = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+  state.files = [];
+  var inputDocs  = document.getElementById('input-docs');
+  var uploadList = document.getElementById('upload-list');
+
+  function tipoFile(f) {
+    if (f.type) return f.type.toLowerCase();
+    var n = (f.name || '').toLowerCase();
+    if (/\.pdf$/.test(n)) return 'application/pdf';
+    if (/\.jpe?g$/.test(n)) return 'image/jpeg';
+    if (/\.png$/.test(n)) return 'image/png';
+    if (/\.hei[cf]$/.test(n)) return 'image/heic';
+    return '';
+  }
+  function renderFiles() {
+    uploadList.innerHTML = '';
+    state.files.forEach(function (it, i) {
+      var li = document.createElement('li');
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = it.file.name;
+      var st = document.createElement('span'); st.className = 'st' + (it.esito === 'ok' ? ' ok' : it.esito === 'ko' ? ' ko' : '');
+      st.textContent = it.stato || (Math.max(1, Math.round(it.file.size / 1024)) + ' KB');
+      li.appendChild(nm); li.appendChild(st);
+      if (!it.esito) {
+        var rm = document.createElement('button'); rm.type = 'button'; rm.textContent = '×'; rm.setAttribute('aria-label', 'Rimuovi ' + it.file.name);
+        rm.addEventListener('click', function () { state.files.splice(i, 1); renderFiles(); });
+        li.appendChild(rm);
+      }
+      uploadList.appendChild(li);
     });
-  });
+  }
+  if (inputDocs) {
+    inputDocs.addEventListener('change', function () {
+      globalError.classList.remove('visible');
+      Array.prototype.forEach.call(inputDocs.files, function (f) {
+        if (state.files.length >= MAX_DOCS) { globalError.textContent = 'Puoi caricare al massimo ' + MAX_DOCS + ' documenti.'; globalError.classList.add('visible'); return; }
+        if (TIPI_OK.indexOf(tipoFile(f)) === -1) { globalError.textContent = '"' + f.name + '": carica un PDF o una foto (JPG, PNG).'; globalError.classList.add('visible'); return; }
+        if (f.size > MAX_DOC_BYTES) { globalError.textContent = '"' + f.name + '" supera 7 MB: caricane una versione più leggera.'; globalError.classList.add('visible'); return; }
+        if (state.files.some(function (x) { return x.file.name === f.name && x.file.size === f.size; })) return;
+        state.files.push({ file: f });
+      });
+      inputDocs.value = '';
+      if (state.files.length) showFieldError('field-url', 'error-url', false);
+      renderFiles();
+    });
+  }
+  function leggiBase64(file) {
+    return new Promise(function (resolve, reject) {
+      var r = new FileReader();
+      r.onload = function () { resolve(String(r.result).replace(/^data:[^,]*,/, '')); };
+      r.onerror = function () { reject(new Error('Lettura del file non riuscita')); };
+      r.readAsDataURL(file);
+    });
+  }
+  // Carica i file uno alla volta sulla richiesta appena creata
+  function caricaDocumenti(jobId) {
+    var caricati = 0;
+    return state.files.reduce(function (p, it) {
+      return p.then(function () {
+        it.stato = 'caricamento…'; renderFiles();
+        return leggiBase64(it.file).then(function (b64) {
+          return fetch('/api/jobs/' + encodeURIComponent(jobId) + '/documents', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome: it.file.name, tipo: tipoFile(it.file), dati: b64 }),
+          });
+        }).then(function (res) {
+          return res.json().then(function (d) {
+            if (!res.ok || !d.success) throw new Error(d.error || 'Caricamento non riuscito');
+            it.esito = 'ok'; it.stato = 'caricato ✓'; caricati++;
+          });
+        }).catch(function (err) {
+          it.esito = 'ko'; it.stato = 'non caricato'; it.errore = err.message;
+        }).then(renderFiles);
+      });
+    }, Promise.resolve()).then(function () { return caricati; });
+  }
+
+  // Telefono: tolgo spazi e trattini, aggiungo +39 ai cellulari italiani (3xx…)
+  function normalizzaTelefono(v) {
+    var t = String(v || '').trim().replace(/[\s.\-()\/]/g, '');
+    if (!t) return '';
+    if (/^00\d+$/.test(t)) t = '+' + t.slice(2);
+    if (/^3\d{8,9}$/.test(t)) t = '+39' + t;
+    return t;
+  }
 
   // Validazione
   function validateUrl(val) {
@@ -86,11 +203,12 @@
     var nameVal    = document.getElementById('input-name').value.trim();
     var companyVal = document.getElementById('input-company').value.trim();
     var emailVal   = document.getElementById('input-email').value.trim();
-    var phoneVal   = document.getElementById('input-phone').value.trim();
+    var phoneVal   = normalizzaTelefono(document.getElementById('input-phone').value);
     var noteVal    = inputNote.value.trim();
     var valid      = true;
 
-    if (!validateUrl(urlVal)) {
+    // Link oppure documenti: basta uno dei due
+    if (urlVal ? !validateUrl(urlVal) : !state.files.length) {
       showFieldError('field-url', 'error-url', true);
       valid = false;
     }
@@ -99,7 +217,7 @@
       valid = false;
     }
     var emailOk = !emailVal || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
-    var phoneOk = !phoneVal || phoneVal.replace(/\D/g, '').length >= 7;
+    var phoneOk = !phoneVal || /^\+?\d{9,15}$/.test(phoneVal);
     if ((!emailVal && !phoneVal) || !emailOk) {
       showFieldError('field-email', 'error-email', true);
       valid = false;
@@ -116,19 +234,20 @@
     if (!valid) return;
 
     var payload = {
-      urlAsta:  urlVal,
+      urlAsta:  urlVal || null,
+      documentiInArrivo: state.files.length,
       nome:     nameVal,
       ragioneSociale: companyVal || null,
       email:    emailVal || null,
       telefono: phoneVal || null,
       service:  state.service,
-      tier:     'TIER_1_PROMO_10',
+      tier:     state.tier,
       deferUntilPayment: true,
       zonaDati: {
         categoria:          state.label,
         note:               noteVal || null,
         telefono:           phoneVal || null,
-        allegatiDichiarati: state.allegati.length ? state.allegati.slice() : null,
+        documentiCaricati:  state.files.length || null,
         source:             'quick-intake',
       },
     };
@@ -155,16 +274,22 @@
       var jobId = result.data.jobId;
       state.jobId = jobId;
 
-      return fetch('/api/jobs/' + encodeURIComponent(jobId) + '/checkout', {
+      return caricaDocumenti(jobId).then(function (nCaricati) {
+        state.docCaricati = nCaricati;
+        var falliti = state.files.filter(function (x) { return x.esito === 'ko'; });
+        if (!urlVal && nCaricati === 0) {
+          throw new Error('Nessun documento è stato caricato: ' + (falliti[0] && falliti[0].errore || 'riprova'));
+        }
+      }).then(function () { return fetch('/api/jobs/' + encodeURIComponent(jobId) + '/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier: 'TIER_1_PROMO_10', email: emailVal || null })
+        body: JSON.stringify({ tier: state.tier, email: emailVal || null })
       }).then(function (res) {
         return res.json().then(function (data) {
           if (!res.ok || !data.checkoutUrl) throw new Error(data.error || 'Checkout non disponibile');
           return { jobId: jobId, checkout: data };
         });
-      })
+      }); })
       .then(function (res2) {
         loadingState.classList.remove('visible');
         submitBtn.disabled = false;
@@ -173,28 +298,63 @@
 
         displayCase.textContent = 'EO-' + shortId.toUpperCase();
         document.getElementById('summary-tipo').textContent    = state.label || '—';
-        document.getElementById('summary-url').textContent     = urlVal.length > 50 ? urlVal.slice(0, 50) + '…' : urlVal;
-        document.getElementById('summary-contact').textContent = emailVal || phoneVal;
+        document.getElementById('summary-url').textContent     = urlVal || 'nessuno (solo documenti caricati)';
+        var nonCaricati = state.files.filter(function (x) { return x.esito === 'ko'; }).map(function (x) { return x.file.name; });
+        document.getElementById('summary-docs').textContent = state.docCaricati
+          ? state.docCaricati + (state.docCaricati === 1 ? ' documento caricato' : ' documenti caricati') +
+            (nonCaricati.length ? ' · non caricati: ' + nonCaricati.join(', ') : '') + '.'
+          : 'Nessun documento caricato.';
+        document.getElementById('summary-contact').textContent = [phoneVal, emailVal].filter(Boolean).join(' · ');
+
+        // Cosa analizziamo per il caso scelto (07/11/2026)
+        var caso = DESCRIZIONI_CASO[state.service] || DESCRIZIONI_CASO['prima-casa'];
+        document.getElementById('cf-desc').textContent = caso.desc;
+        var lista = document.getElementById('cf-list');
+        lista.innerHTML = '';
+        caso.punti.concat(PUNTI_COMUNI).forEach(function (t, i) {
+          var li = document.createElement('li');
+          if (t === '__SEMAFORO__') {
+            li.className = 'li-sem';
+            li.innerHTML = '<span><span class="sem"><i style="background:var(--green)"></i><i style="background:var(--yellow)"></i><i style="background:var(--red)"></i></span>' +
+              'Semaforo <b>verde, giallo o rosso</b> per capire subito come è messa l\'operazione</span>';
+          } else {
+            var sp = document.createElement('span'); sp.textContent = t; li.appendChild(sp);
+          }
+          lista.appendChild(li);
+        });
+
+        // Prezzo mostrato = prezzo addebitato
+        var promo = state.tier === 'TIER_1_PROMO_10';
+        document.getElementById('summary-livello').textContent =
+          promo ? "l'analisi completa" : 'il livello ' + state.tierNome;
+        document.getElementById('summary-tempi').textContent = promo ? '24–48 ore' : '48–72 ore';
+        document.getElementById('summary-prezzo').innerHTML = promo
+          ? '<span class="cf-old">69 €</span><span class="cf-now">10 €</span><span class="cf-promo">promo di lancio fino al 30 novembre</span>'
+          : '<span class="cf-now">' + state.tierPrezzo + ' €</span><span class="cf-promo">' + state.tierNome + '</span>';
 
         if (res2.checkout && res2.checkout.checkoutUrl) {
           checkoutBtn.href        = res2.checkout.checkoutUrl;
-          checkoutBtn.textContent = 'Procedi al pagamento →';
+          checkoutBtn.textContent = 'Paga ' + (promo ? '10' : state.tierPrezzo) + ' € e avvia l\'analisi →';
         } else {
-          checkoutBtn.href        = '/landing.html#piani';
-          checkoutBtn.textContent = 'Scegli il piano (indica codice caso) →';
-          checkoutBtn.title       = 'Copia il codice caso e indicalo nel pagamento';
+          // Senza link di pagamento si contatta Simone
+          checkoutBtn.href        = 'mailto:info@externalopinion.it?subject=' + encodeURIComponent('Caso EO-' + shortId.toUpperCase());
+          checkoutBtn.textContent = 'Pagamento non disponibile: scrivici →';
+          checkoutBtn.title       = 'Indica il codice caso nella mail';
         }
 
         intakeForm.classList.remove('visible');
         catSection.style.display = 'none';
         document.getElementById('steps').style.display = 'none';
         confirmPanel.classList.add('visible');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
     })
     .catch(function (err) {
       loadingState.classList.remove('visible');
       submitBtn.disabled = false;
-      globalError.textContent = 'Connessione non riuscita. Verifica la connessione e riprova.';
+      globalError.textContent = (err && /documento|Checkout/.test(err.message))
+        ? err.message
+        : 'Connessione non riuscita. Verifica la connessione e riprova.';
       globalError.classList.add('visible');
       console.error('[QuickIntake]', err);
     });
@@ -203,23 +363,26 @@
   // Copia caseId
   copyBtn.addEventListener('click', function () {
     var text = displayCase.textContent;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(function () {
-        copyBtn.textContent = 'Copiato!';
-        setTimeout(function () { copyBtn.textContent = 'Copia codice'; }, 2000);
-      });
-    } else {
+    var nota = copyBtn.querySelector('small');
+    function fatto() { if (nota) { nota.textContent = 'copiato'; setTimeout(function () { nota.textContent = 'copia'; }, 2000); } }
+    function ripiego() {
       var ta = document.createElement('textarea');
       ta.value = text; document.body.appendChild(ta);
-      ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-      copyBtn.textContent = 'Copiato!';
-      setTimeout(function () { copyBtn.textContent = 'Copia codice'; }, 2000);
+      ta.select(); try { document.execCommand('copy'); } catch (_) {} document.body.removeChild(ta);
+      fatto();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(fatto, ripiego);
+    } else {
+      ripiego();
     }
   });
 
   // Nuovo caso
   newCaseBtn.addEventListener('click', function () {
-    state = { service: null, label: null, jobId: null, checkoutUrl: null };
+    state = { service: null, label: null, jobId: null, checkoutUrl: null, allegati: [], files: [],
+              tier: 'TIER_1_PROMO_10', tierPrezzo: '10', tierNome: 'Analisi completa' };
+    if (typeof renderFiles === 'function') renderFiles();
     catBtns.forEach(function (b) { b.classList.remove('selected'); });
     inputUrl.value = ''; inputNote.value = '';
     document.getElementById('input-name').value = '';

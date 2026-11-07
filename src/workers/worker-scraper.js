@@ -116,17 +116,17 @@ async function scrapeWithAxios(url) {
 
 
 // ============================================================================
-// ALLEGATI PDF DELLA PAGINA ANNUNCIO (perizia, avviso, ordinanza)
+// ALLEGATI PDF DELLA PAGINA ANNUNCIO (aste e annunci immobiliari)
 // ============================================================================
 // Le pagine d'asta (IVG, astegiudiziarie, PVP) espongono il testo dell'annuncio
 // e collegano la perizia come PDF. Senza scaricarla il motore lavorava sul solo
 // annuncio e produceva un giudizio senza documenti tecnici.
 
-const MAX_ALLEGATI = 4;
+const MAX_ALLEGATI = 6;
 const MAX_PDF_BYTES = 25 * 1024 * 1024;
 const MAX_TESTO_ALLEGATI = 200000;
 
-const ESCLUSI_ALLEGATI = /manuale|privacy|trattamento dati|autodichiarazione|presa visione|modulo|informativa|istruzioni/i;
+const ESCLUSI_ALLEGATI = /manuale|privacy|trattamento dati|autodichiarazione|presa visione|modulo|informativa|istruzioni|cookie|condizioni generali|termini e condizioni|regolamento del sito|listino servizi/i;
 
 function classificaAllegato(testo, href) {
   // Il testo del link decide; l'indirizzo serve solo se il link non ha testo
@@ -138,10 +138,16 @@ function classificaAllegato(testo, href) {
   if (/avviso/.test(t)) return 'AVVISO';
   if (/ordinanza/.test(t)) return 'ORDINANZA';
   if (/planimetri/.test(t)) return 'PLANIMETRIA';
+  // Documenti tipici delle compravendite e degli annunci privati (07/11/2026):
+  // l'analisi non riguarda solo le aste giudiziarie.
+  if (/\bape\b|attestato.*prestazione|certificazione energetica|classe energetica/.test(t)) return 'APE';
+  if (/visura|catast/.test(t)) return 'VISURA';
+  if (/capitolato|computo|preventivo lavori/.test(t)) return 'CAPITOLATO';
+  if (/scheda tecnica|scheda immobile|dossier|brochure|valutazione|analisi|conformit|agibilit|abitabilit|condominio|regolamento condominiale/.test(t)) return 'DOCUMENTO_TECNICO';
   return 'ALTRO';
 }
 
-const PRIORITA_ALLEGATI = { PERIZIA: 1, ALLEGATO_PERIZIA: 2, AVVISO: 3, ORDINANZA: 4, PLANIMETRIA: 5, ALTRO: 6 };
+const PRIORITA_ALLEGATI = { PERIZIA: 1, ALLEGATO_PERIZIA: 2, AVVISO: 3, ORDINANZA: 4, PLANIMETRIA: 5, APE: 6, VISURA: 7, DOCUMENTO_TECNICO: 8, CAPITOLATO: 9, ALTRO: 10 };
 
 function trovaAllegatiPdf($, baseUrl) {
   const visti = new Set();
@@ -154,7 +160,9 @@ function trovaAllegatiPdf($, baseUrl) {
     const sembraPdf = /\.pdf(\?|#|$)/i.test(assoluto) || /\/allegato\//i.test(assoluto);
     if (!sembraPdf || visti.has(assoluto)) return;
     const tipo = classificaAllegato(testo, assoluto);
-    if (!tipo || tipo === 'ALTRO') return;
+    // I PDF non riconosciuti entrano comunque, con priorita' piu' bassa:
+    // su un annuncio privato anche un PDF senza etichetta chiara puo' contenere dati utili.
+    if (!tipo) return;
     visti.add(assoluto);
     allegati.push({ tipo, url: assoluto, etichetta: testo.slice(0, 120) });
   });
@@ -215,12 +223,21 @@ const worker = new Worker('scrapeQueue', async (job) => {
     if (!url) {
       throw new Error(`url assente in job.data (chiavi presenti: ${Object.keys(job.data || {}).join(', ') || 'nessuna'})`);
     }
-    const safeUrl = validatePublicHttpUrl(url);
-    await recordJobEvent(jobId, 'SCRAPE_STARTED', { url: safeUrl }, WORKER_ID);
+    // Documenti caricati dal cliente nell'app (07/11/2026): entrano nell'analisi.
+    // Con il segnaposto documenti:// la richiesta e' fatta solo di documenti.
+    const soloDocumenti = String(url).startsWith('documenti://');
+    const immobilePre = await prisma.immobile.findUnique({ where: { jobId } });
+    const datiPre = (() => { try { return JSON.parse(immobilePre?.datiComputati || '{}'); } catch { return {}; } })();
+    const caricati = Array.isArray(datiPre.documentiCaricati) ? datiPre.documentiCaricati : [];
+
+    const safeUrl = soloDocumenti ? url : validatePublicHttpUrl(url);
+    await recordJobEvent(jobId, 'SCRAPE_STARTED', { url: safeUrl, documentiCaricati: caricati.length }, WORKER_ID);
 
     let testoGrezzo = '';
     let metadata = { title: '', url: safeUrl, timestamp: new Date().toISOString() };
-    let scraperUsed = 'axios';
+    let scraperUsed = soloDocumenti ? 'documenti-caricati' : 'axios';
+
+    if (!soloDocumenti) {
 
     // Rilevamento PDF da URL prima di fare la richiesta
     const looksLikePdf = isPdfUrl(safeUrl, null);
@@ -258,6 +275,33 @@ const worker = new Worker('scrapeQueue', async (job) => {
       // Il fallback browser e intenzionalmente escluso: consentirebbe a redirect o
       // JavaScript della pagina di raggiungere servizi privati della piattaforma.
       throw new Error(`Scraping fallito: ${axiosErr.message}`);
+    }
+    }
+
+    if (caricati.length) {
+      const blocchi = caricati
+        .filter((d) => d.testo)
+        .map((d) => `=== DOCUMENTO CARICATO DAL CLIENTE: ${d.nome}${d.pagine ? ` (${d.pagine} pagine)` : ''} ===\n${d.testo}`);
+      if (blocchi.length) {
+        testoGrezzo = testoGrezzo
+          ? `${testoGrezzo}\n\n${blocchi.join('\n\n')}`
+          : blocchi.join('\n\n');
+        if (!soloDocumenti) scraperUsed += '+documenti-caricati';
+      }
+      metadata.documenti = [
+        ...(metadata.documenti || []),
+        ...caricati.map(({ nome, categoria, pagine, caratteri, esito }) => ({
+          tipo: 'CARICATO', url: nome, categoria, pagine, caratteri, esito,
+        })),
+      ];
+      metadata.periziaLetta = metadata.periziaLetta || caricati.some((d) => d.esito === 'LETTO');
+      console.log(`[SCRAPER ${WORKER_ID}] Documenti caricati dal cliente: ${caricati.length}, letti ${caricati.filter((d) => d.esito === 'LETTO').length}`);
+    }
+    if (soloDocumenti && !testoGrezzo) {
+      // Solo foto o PDF scansionati: nessun testo automatico. Il flusso prosegue e
+      // il controllo di confidenza porta il caso alla revisione di Simone, che ha
+      // gia' ricevuto gli originali su Telegram.
+      testoGrezzo = `Documenti caricati dal cliente senza testo leggibile automaticamente: ${caricati.map((d) => d.nome).join(', ')}.`;
     }
 
     const textHash = crypto.createHash('sha256').update(testoGrezzo).digest('hex');
