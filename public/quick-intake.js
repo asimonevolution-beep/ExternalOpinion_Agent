@@ -138,6 +138,15 @@
     }, Promise.resolve()).then(function () { return caricati; });
   }
 
+  // Telefono: tolgo spazi e trattini, aggiungo +39 ai cellulari italiani (3xx…)
+  function normalizzaTelefono(v) {
+    var t = String(v || '').trim().replace(/[\s.\-()\/]/g, '');
+    if (!t) return '';
+    if (/^00\d+$/.test(t)) t = '+' + t.slice(2);
+    if (/^3\d{8,9}$/.test(t)) t = '+39' + t;
+    return t;
+  }
+
   // Validazione
   function validateUrl(val) {
     try { new URL(val); return true; } catch (_) { return false; }
@@ -169,7 +178,7 @@
     var nameVal    = document.getElementById('input-name').value.trim();
     var companyVal = document.getElementById('input-company').value.trim();
     var emailVal   = document.getElementById('input-email').value.trim();
-    var phoneVal   = document.getElementById('input-phone').value.trim();
+    var phoneVal   = normalizzaTelefono(document.getElementById('input-phone').value);
     var noteVal    = inputNote.value.trim();
     var valid      = true;
 
@@ -183,7 +192,7 @@
       valid = false;
     }
     var emailOk = !emailVal || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
-    var phoneOk = !phoneVal || phoneVal.replace(/\D/g, '').length >= 7;
+    var phoneOk = !phoneVal || /^\+?\d{9,15}$/.test(phoneVal);
     if ((!emailVal && !phoneVal) || !emailOk) {
       showFieldError('field-email', 'error-email', true);
       valid = false;
@@ -270,7 +279,7 @@
           ? state.docCaricati + (state.docCaricati === 1 ? ' documento caricato' : ' documenti caricati') +
             (nonCaricati.length ? ' · non caricati: ' + nonCaricati.join(', ') : '') + '.'
           : 'Nessun documento caricato.';
-        document.getElementById('summary-contact').textContent = emailVal || phoneVal;
+        document.getElementById('summary-contact').textContent = [phoneVal, emailVal].filter(Boolean).join(' · ');
 
         // Riepilogo coerente con il livello scelto: prezzo mostrato = prezzo addebitato
         var promo = state.tier === 'TIER_1_PROMO_10';

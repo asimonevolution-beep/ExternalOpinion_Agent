@@ -484,6 +484,9 @@ body { min-height: 100vh; min-height: 100dvh; padding: env(safe-area-inset-top) 
 .upload-list .st { flex: none; font-size: 11px; color: var(--ink-dim); }
 .upload-list .st.ok { color: var(--green); } .upload-list .st.ko { color: var(--red); }
 .upload-list button { flex: none; background: none; border: none; color: var(--ink-dim); font-size: 16px; cursor: pointer; padding: 0 2px; }
+
+/* Telefono come contatto principale (07/11/2026) */
+.input-phone-main { font-size: 17px !important; letter-spacing: .02em; border-color: rgba(221,180,94,.45) !important; }
 </style>
 </head>
 <body>
@@ -600,27 +603,27 @@ body { min-height: 100vh; min-height: 100dvh; padding: env(safe-area-inset-top) 
     </div>
 
     <div class="grid">
-      <div class="fld" id="field-name">
+      <div class="fld full" id="field-name">
         <label>Nome e cognome</label>
         <input type="text" id="input-name" placeholder="Mario Rossi" autocomplete="name" />
         <div class="error" id="error-name">Inserisci nome e cognome</div>
       </div>
 
-      <div class="fld">
-        <label>Ragione sociale <span style="color:var(--ink-dim);font-weight:400">(facoltativa)</span></label>
-        <input type="text" id="input-company" placeholder="Solo per aziende" autocomplete="organization" />
+      <div class="fld full" id="field-phone">
+        <label>Telefono / WhatsApp <span style="color:var(--gold);font-weight:500">· consigliato, ti rispondiamo prima</span></label>
+        <input type="tel" id="input-phone" placeholder="333 123 4567" autocomplete="tel" inputmode="tel" class="input-phone-main" />
+        <div class="error" id="error-phone">Inserisci un numero di telefono valido oppure un’email</div>
       </div>
 
-      <div class="fld" id="field-email">
-        <label>Email <span style="color:var(--ink-dim);font-weight:400">(email o telefono obbligatori)</span></label>
-        <input type="email" id="input-email" placeholder="email@esempio.it" autocomplete="email" />
+      <div class="fld full" id="field-email">
+        <label>Email <span style="color:var(--ink-dim);font-weight:400">(oppure, se preferisci)</span></label>
+        <input type="email" id="input-email" placeholder="email@esempio.it" autocomplete="email" inputmode="email" />
         <div class="error" id="error-email">Inserisci un’email valida oppure un telefono</div>
       </div>
 
-      <div class="fld" id="field-phone">
-        <label>Telefono <span style="color:var(--ink-dim);font-weight:400">(telefono o email obbligatori)</span></label>
-        <input type="tel" id="input-phone" placeholder="+39 333 …" autocomplete="tel" />
-        <div class="error" id="error-phone">Inserisci un telefono valido oppure un’email</div>
+      <div class="fld">
+        <label>Ragione sociale <span style="color:var(--ink-dim);font-weight:400">(facoltativa)</span></label>
+        <input type="text" id="input-company" placeholder="Solo per aziende" autocomplete="organization" />
       </div>
 
       <div class="fld">

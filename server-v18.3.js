@@ -314,7 +314,7 @@ apiRouter.post(
       // Avviso a Simone su OGNI nuova richiesta (non dipende dal pagamento né dall'esito)
       alertOwner({
         title: 'NUOVA RICHIESTA External Opinion',
-        body: `Job: ${jobRecord.id}\nLink: ${soloDocumenti ? 'nessuno (solo documenti)' : urlAsta}${Number(documentiInArrivo) > 0 ? `\nDocumenti in arrivo: ${Number(documentiInArrivo)}` : ''}\nContatto: ${email || telefono || 'n/d'}${nome ? `\nNome: ${nome}` : ''}\nTier: ${tier}\nOrigine: ${req.get('referer') || 'diretta'}`,
+        body: `Job: ${jobRecord.id}\nLink: ${soloDocumenti ? 'nessuno (solo documenti)' : urlAsta}${Number(documentiInArrivo) > 0 ? `\nDocumenti in arrivo: ${Number(documentiInArrivo)}` : ''}${telefono ? `\nTelefono: ${telefono}${String(telefono).startsWith('+') ? `\nWhatsApp: https://wa.me/${String(telefono).replace(/\D/g, '')}` : ''}` : ''}${email ? `\nEmail: ${email}` : ''}${!telefono && !email ? '\nContatto: n/d' : ''}${nome ? `\nNome: ${nome}` : ''}\nTier: ${tier}\nOrigine: ${req.get('referer') || 'diretta'}`,
         priority: 'urgent',
         tags: 'bell',
       }).then((esito) => recordJobEvent(jobRecord.id, 'OWNER_ALERT_NEW_REQUEST', esito).catch(() => {}));
