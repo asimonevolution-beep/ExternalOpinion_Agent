@@ -15,6 +15,56 @@
   status = 200
   force  = true
 
+# INGRESSO UNICO (07/11/2026): tutte le vecchie pagine portano all'app.
+# Restano pubbliche solo /quick-intake.html (l'app) e le pagine di ritorno Stripe.
+[[redirects]]
+  from   = "/"
+  to     = "/quick-intake.html"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from   = "/index.html"
+  to     = "/quick-intake.html"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from   = "/index-legacy.html"
+  to     = "/quick-intake.html"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from   = "/gioiello.html"
+  to     = "/quick-intake.html"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from   = "/aste.html"
+  to     = "/quick-intake.html"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from   = "/landing.html"
+  to     = "/quick-intake.html"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from   = "/demo.html"
+  to     = "/quick-intake.html"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from   = "/demo-interattiva.html"
+  to     = "/quick-intake.html"
+  status = 301
+  force  = true
+
 # SPA fallback
 [[redirects]]
   from   = "/*"

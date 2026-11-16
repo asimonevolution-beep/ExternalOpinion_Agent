@@ -23,9 +23,9 @@
 <body>
 <div class="card">
   <div class="icon">&#10003;</div>
-  <h1>Pagamento completato</h1>
-  <p>Il pagamento è stato ricevuto con successo.<br>Il report è in preparazione e verrà validato personalmente da Simone Azzali.</p>
-  <p>Riceverai il <strong>documento PDF completo via email entro 48 ore</strong>.</p>
+  <h1 id="title">Verifica del pagamento</h1>
+  <p id="message">Stiamo verificando con Stripe che il pagamento sia stato registrato correttamente.</p>
+  <p>Quando la verifica sarà conclusa, riceverai il <strong>documento PDF completo via email entro 24–48 ore</strong>.</p>
   <div class="ref" id="ref">Caricamento...</div>
   <div class="next-steps">
     <strong>Cosa succede adesso:</strong>
@@ -34,18 +34,47 @@
     3. Ricevi il PDF via email (controlla anche la cartella spam)
   </div>
   <a href="/" class="btn">Torna alla home</a>
-  <p id="status">Pagamento registrato. La richiesta è stata presa in carico.</p>
+  <p id="status">Verifica in corso…</p>
   <p class="note">Conserva il riferimento ordine. Se hai indicato un’email riceverai anche la conferma. Domande? <a href="mailto:info@externalopinion.it">info@externalopinion.it</a></p>
 </div>
 <script>
   const p=new URLSearchParams(window.location.search);
   const jobId=p.get('jobId');
+  const sessionId=p.get('sessionId');
   document.getElementById('ref').textContent='Riferimento: '+(jobId||p.get('sessionId')||'N/D');
-  if(jobId){
-    fetch('/api/jobs/'+encodeURIComponent(jobId)).then(r=>r.json()).then(d=>{
-      if(d&&d.job&&d.job.status) document.getElementById('status').textContent='Stato ordine: '+d.job.status;
-    }).catch(()=>{});
+  const title=document.getElementById('title');
+  const message=document.getElementById('message');
+  const status=document.getElementById('status');
+  let attempts=0;
+  async function verifyPayment(){
+    if(!sessionId){
+      title.textContent='Verifica non disponibile';
+      message.textContent='Manca il riferimento Stripe. Contattaci indicando il codice ordine.';
+      status.textContent='Pagamento non verificato';
+      return;
+    }
+    try{
+      const response=await fetch('/api/checkout/'+encodeURIComponent(sessionId),{cache:'no-store'});
+      const data=await response.json();
+      if(!response.ok||!data.success) throw new Error(data.error||'Verifica non disponibile');
+      if(data.paymentVerified){
+        title.textContent='Pagamento verificato';
+        message.textContent='Il pagamento è stato ricevuto. Il report è ora in preparazione e verrà validato personalmente da Simone Azzali.';
+        status.textContent='Stato ordine: '+data.fulfillmentStatus;
+        return;
+      }
+      if(!data.isPaid){
+        title.textContent='Pagamento in elaborazione';
+        message.textContent='Stripe non ha ancora confermato definitivamente il pagamento. Non ripetere il pagamento.';
+      }
+      status.textContent='Verifica in corso…';
+      if(++attempts<20) setTimeout(verifyPayment,3000);
+      else status.textContent='Verifica ancora in corso. Riceverai una conferma via email.';
+    }catch(_){
+      status.textContent='Verifica temporaneamente non disponibile. Non ripetere il pagamento.';
+    }
   }
+  verifyPayment();
 </script>
 </body>
 </html>
